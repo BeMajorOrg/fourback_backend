@@ -1,5 +1,6 @@
 package com.fourback.bemajor.service;
 
+
 import com.fourback.bemajor.dto.PostDto;
 import com.fourback.bemajor.dto.PostListDto;
 import com.fourback.bemajor.domain.Board;

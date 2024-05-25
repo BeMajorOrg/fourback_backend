@@ -1,9 +1,6 @@
 package com.fourback.bemajor.controller;
 
-import com.fourback.bemajor.dto.BoardDto;
-import com.fourback.bemajor.dto.FavoriteDto;
-import com.fourback.bemajor.dto.PostDto;
-import com.fourback.bemajor.dto.PostListDto;
+import com.fourback.bemajor.dto.*;
 import com.fourback.bemajor.service.BoardService;
 import com.fourback.bemajor.service.FavoriteService;
 import com.fourback.bemajor.service.PostService;
@@ -45,6 +42,8 @@ public class CommunityController {
 
         return postService.posts(pageRequest,boardId);
     }
+
+
 
     @GetMapping("/api/post/search")
     public List<PostListDto> postSearch(
