@@ -20,7 +20,7 @@ public class PostListDto {
         id = post.getId();
         title = post.getTitle();
         content = post.getContent();
-        memberName = post.getMember().getName();
+        memberName = post.getUser().getUserName();
         goodCount = post.getGoodCount();
         viewCount = post.getViewCount();
         this.postDate = postDate;

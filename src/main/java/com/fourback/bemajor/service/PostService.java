@@ -1,14 +1,16 @@
 package com.fourback.bemajor.service;
 
 
+import com.fourback.bemajor.domain.User;
 import com.fourback.bemajor.dto.PostDto;
 import com.fourback.bemajor.dto.PostListDto;
 import com.fourback.bemajor.domain.Board;
-import com.fourback.bemajor.domain.Member;
+
 import com.fourback.bemajor.domain.Post;
 import com.fourback.bemajor.repository.BoardRepository;
-import com.fourback.bemajor.repository.MemberRepository;
+
 import com.fourback.bemajor.repository.PostRepository;
+import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,19 +30,19 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final BoardRepository boardRepository;
-    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
 
     @Transactional
-    public Long create(PostDto postDto) {
+    public Long create(PostDto postDto, String oauth2Id) {
         Post post = new Post();
         Optional<Board> optionalBoard = boardRepository.findById(postDto.getBoardId());
         Board board = optionalBoard.orElse(new Board());
-        Member member = memberRepository.findById(postDto.getMemberId()).orElse(null);
+        User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
         post.setTitle(postDto.getTitle());
         post.setContent(postDto.getContent());
         post.setPostDate(LocalDateTime.now());
         post.setBoard(board);
-        post.setMember(member);
+        post.setUser(user);
         postRepository.save(post);
         return post.getId();
     }
