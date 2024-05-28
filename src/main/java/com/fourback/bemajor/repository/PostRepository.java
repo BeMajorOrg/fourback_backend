@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    @Query("select p from Post p join p.member where p.board.id = :boardId")
+    @Query("select p from Post p join p.user where p.board.id = :boardId")
     Page<Post> findAllWithPost(@Param("boardId") Long boardId, Pageable pageable);
 
     @Query("select p from Post p where p.content like %:keyword% or p.title like %:keyword%")

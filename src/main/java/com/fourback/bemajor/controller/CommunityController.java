@@ -1,9 +1,7 @@
 package com.fourback.bemajor.controller;
 
-import com.fourback.bemajor.dto.BoardDto;
-import com.fourback.bemajor.dto.FavoriteDto;
-import com.fourback.bemajor.dto.PostDto;
-import com.fourback.bemajor.dto.PostListDto;
+import com.fourback.bemajor.dto.*;
+import com.fourback.bemajor.jwt.JWTUtil;
 import com.fourback.bemajor.service.BoardService;
 import com.fourback.bemajor.service.FavoriteService;
 import com.fourback.bemajor.service.PostService;
@@ -13,7 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 
-
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -25,10 +23,12 @@ public class CommunityController {
     private final BoardService boardService;
     private final FavoriteService favoriteService;
 
+
     @ResponseBody
     @PostMapping("/api/post")
-    public String postCreate(@RequestBody PostDto postDto){
-        postService.create(postDto);
+    public String postCreate(@RequestBody PostDto postDto,Principal principal){
+        String oauth2Id = principal.getName();
+        postService.create(postDto,oauth2Id);
         return "ok";
     }
 
@@ -46,6 +46,8 @@ public class CommunityController {
         return postService.posts(pageRequest,boardId);
     }
 
+
+
     @GetMapping("/api/post/search")
     public List<PostListDto> postSearch(
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -58,15 +60,16 @@ public class CommunityController {
     }
 
     @GetMapping("/api/board")
-    public List<BoardDto> boards(@RequestParam("memberId") Long memberId) {
+    public List<BoardDto>  boards(Principal principal) {
+        String oauth2Id = principal.getName();
 
-        return boardService.boards(memberId);
+        return boardService.boards(oauth2Id);
     }
 
     @PostMapping("/api/board/favorite")
-    public String favorite(@RequestBody FavoriteDto favoriteDto) {
-
-        favoriteService.add(favoriteDto);
+    public String favorite(@RequestBody FavoriteDto favoriteDto,Principal principal) {
+        String oauth2Id = principal.getName();
+        favoriteService.add(favoriteDto,oauth2Id);
         return "ok";
     }
 

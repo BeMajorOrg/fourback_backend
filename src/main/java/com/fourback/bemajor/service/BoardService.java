@@ -1,21 +1,18 @@
 package com.fourback.bemajor.service;
 
+import com.fourback.bemajor.domain.User;
 import com.fourback.bemajor.dto.BoardDto;
 import com.fourback.bemajor.domain.Board;
 import com.fourback.bemajor.domain.FavoriteBoard;
-import com.fourback.bemajor.domain.Member;
 import com.fourback.bemajor.repository.BoardRepository;
 import com.fourback.bemajor.repository.FavoriteBoardRepository;
-import com.fourback.bemajor.repository.MemberRepository;
+import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -23,12 +20,15 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final FavoriteBoardRepository favoriteBoardRepository;
-    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
+
     @Transactional
-    public List<BoardDto> boards(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElse(null);
+    public List<BoardDto> boards(String oauth2Id) {
+        Optional<User> optionalUser = userRepository.findByOauth2Id(oauth2Id);
+        User user = optionalUser.orElse(null);
+
         List<Board> boards = boardRepository.findAll();
-        List<FavoriteBoard> favoriteBoards = favoriteBoardRepository.findByMemberId(member.getId());
+        List<FavoriteBoard> favoriteBoards = favoriteBoardRepository.findByUserUserId(user.getUserId());
         Set<Long> favoriteBoardIds = new HashSet<>();
         for (FavoriteBoard favoriteBoard : favoriteBoards) {
             Board board = favoriteBoard.getBoard();

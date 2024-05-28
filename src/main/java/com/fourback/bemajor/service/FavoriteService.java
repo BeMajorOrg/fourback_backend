@@ -1,12 +1,14 @@
 package com.fourback.bemajor.service;
 
+import com.fourback.bemajor.domain.User;
 import com.fourback.bemajor.dto.FavoriteDto;
 import com.fourback.bemajor.domain.Board;
 import com.fourback.bemajor.domain.FavoriteBoard;
-import com.fourback.bemajor.domain.Member;
+
 import com.fourback.bemajor.repository.BoardRepository;
 import com.fourback.bemajor.repository.FavoriteBoardRepository;
-import com.fourback.bemajor.repository.MemberRepository;
+
+import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +21,13 @@ public class FavoriteService {
 
     private final FavoriteBoardRepository favoriteBoardRepository;
     private final BoardRepository boardRepository;
-    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
 
     @Transactional
-    public void add(FavoriteDto favoriteDto) {
+    public void add(FavoriteDto favoriteDto, String oauth2Id) {
         Board board = boardRepository.findByBoardName(favoriteDto.getBoardName());
-        Member member = memberRepository.findById(favoriteDto.getMemberId()).orElse(null);
-        Optional<FavoriteBoard> favoriteBoardOpt = favoriteBoardRepository.findByMemberAndBoard(member, board);
+        User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
+        Optional<FavoriteBoard> favoriteBoardOpt = favoriteBoardRepository.findByUserAndBoard(user, board);
 
         if(favoriteBoardOpt.isPresent()){
             FavoriteBoard favoriteBoard = favoriteBoardOpt.get();
@@ -33,7 +35,7 @@ public class FavoriteService {
         } else {
             FavoriteBoard favoriteBoard = new FavoriteBoard();
             favoriteBoard.setBoard(board);
-            favoriteBoard.setMember(member);
+            favoriteBoard.setUser(user);
             favoriteBoardRepository.save(favoriteBoard);
         }
 
