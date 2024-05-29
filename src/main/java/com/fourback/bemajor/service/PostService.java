@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -31,15 +32,19 @@ public class PostService {
 
     @Transactional
     public Long create(PostDto postDto) {
-        Post post = new Post();
+
         Optional<Board> optionalBoard = boardRepository.findById(postDto.getBoardId());
-        Board board = optionalBoard.orElse(new Board());
+        Board board = optionalBoard.orElse(new Board()); // 게시판 있으면 가져오고 아니면 새로 생성
         Member member = memberRepository.findById(postDto.getMemberId()).orElse(null);
-        post.setTitle(postDto.getTitle());
-        post.setContent(postDto.getContent());
-        post.setPostDate(LocalDateTime.now());
-        post.setBoard(board);
-        post.setMember(member);
+
+        Post post = Post.builder().
+                title(postDto.getTitle()).
+                content(postDto.getContent()).
+                postDate(LocalDateTime.now()).
+                board(board).
+                member(member).
+                build();
+
         postRepository.save(post);
         return post.getId();
     }

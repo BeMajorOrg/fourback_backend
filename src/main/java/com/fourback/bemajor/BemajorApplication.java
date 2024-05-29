@@ -1,5 +1,7 @@
 package com.fourback.bemajor;
 
+import com.fourback.bemajor.domain.Board;
+import com.fourback.bemajor.domain.Member;
 import com.fourback.bemajor.domain.Post;
 import com.fourback.bemajor.repository.*;
 import org.springframework.boot.ApplicationRunner;
@@ -20,11 +22,13 @@ public class BemajorApplication {
 
     @Bean
     public ApplicationRunner runner(PostRepository postRepo,
-                                    CommentRepository commentRepo)
+                                    CommentRepository commentRepo,
+                                    MemberRepository memberRepo,
+                                    BoardRepository boardRepo)
             throws Exception {
+            //boardRepo.save(Board.builder().build());
         return (args) -> {
             if (args.containsOption("insertTestData")) {
-
                 for(int i = 0; i < 20; i++) {
                     postRepo.save(Post.builder().title("제목" + i).content("내용" + i).build());
                 }
