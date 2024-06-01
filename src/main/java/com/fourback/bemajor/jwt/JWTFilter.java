@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class JWTFilter extends OncePerRequestFilter
 {
@@ -24,23 +25,24 @@ public class JWTFilter extends OncePerRequestFilter
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authorization = request.getHeader("Authorization");
-        if(authorization == null || !authorization.startsWith("Bearer ")){
+        String accessToken = request.getHeader("access");
+        if(accessToken == null){
             System.out.println("token null");
             filterChain.doFilter(request, response);
             return;
         }
-        String token = authorization.substring("Bearer ".length());
-        if (jwtUtil.isExpired(token)) {
-            // try-catch문으로 바꾸고 재생성하게 해줘야 함
-            System.out.println("token expired");
-            filterChain.doFilter(request, response);
+        if (jwtUtil.isExpired(accessToken)) {
+            PrintWriter writer = response.getWriter();
+            writer.print("access token expired");
+
+            //response status code
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
-        String username = jwtUtil.getUsername(token);
-        String role = jwtUtil.getRole(token);
-        UserAuthDto userAuthDto = new UserAuthDto(username, Role.USER);
+        String username = jwtUtil.getUsername(accessToken);
+        Role role = Role.valueOf(jwtUtil.getRole(accessToken));
+        UserAuthDto userAuthDto = new UserAuthDto(username, role);
         CustomUserDetails customOAuth2User = new CustomUserDetails(userAuthDto);
         Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authToken);

@@ -4,6 +4,7 @@ import com.fourback.bemajor.domain.User;
 import com.fourback.bemajor.dto.UserDto;
 import com.fourback.bemajor.enums.Role;
 import com.fourback.bemajor.jwt.JWTUtil;
+import com.fourback.bemajor.service.RedisService;
 import com.fourback.bemajor.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class UserController {
 
     private final UserService seniorUserService;
     private final JWTUtil jwtUtil;
+    private final RedisService redisService;
 
     @PostMapping("/login")
     public String login(@RequestBody UserDto userDto, HttpServletResponse response) {
@@ -41,7 +43,12 @@ public class UserController {
         } else {
             seniorUser = byOauth2Id.get();
         }
-        response.addHeader("Authorization", "Bearer "+jwtUtil.createToken(oauth2Id, seniorUser.getRole(), 60*60*60L));
+        String newRefresh = jwtUtil.createToken("refresh",oauth2Id,seniorUser.getRole(),86400000L);
+        response.addHeader("access", jwtUtil.createToken("access",oauth2Id, seniorUser.getRole(), 600000L));
+        response.addHeader("refresh", newRefresh);
+
+        redisService.setRefreshToken(oauth2Id,newRefresh,86400000L);
+
         return registrationId+"Login success";
     }
 }
