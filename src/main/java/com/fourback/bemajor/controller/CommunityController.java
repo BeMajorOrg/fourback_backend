@@ -41,7 +41,7 @@ public class CommunityController {
     ) {
 
         PageRequest pageRequest = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC,
-                "postDate"));
+                "createdDate"));
 
         return postService.posts(pageRequest,boardId);
     }
@@ -55,7 +55,7 @@ public class CommunityController {
             @RequestParam(value = "keyword") String keyword
     ) {
         PageRequest pageRequest = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC,
-                "postDate"));
+                "createdDate"));
         return postService.postSearch(pageRequest,keyword);
     }
 

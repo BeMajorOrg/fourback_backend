@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter @Setter
-public class Post {
+public class Post extends BaseTimeEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,6 @@ public class Post {
     @NotEmpty
     private String content;
 
-    private LocalDateTime postDate;
 
     @ColumnDefault("0")
     private int viewCount;

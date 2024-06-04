@@ -40,7 +40,6 @@ public class PostService {
         User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
         post.setTitle(postDto.getTitle());
         post.setContent(postDto.getContent());
-        post.setPostDate(LocalDateTime.now());
         post.setBoard(board);
         post.setUser(user);
         postRepository.save(post);
@@ -53,7 +52,7 @@ public class PostService {
                 .map(p -> {
                     String postDate;
                     LocalDateTime currentTime = LocalDateTime.now();
-                    Duration duration = Duration.between(p.getPostDate(), currentTime);
+                    Duration duration = Duration.between(p.getCreatedDate(), currentTime);
                     long minutes = duration.toMinutes();
                     if (minutes < 1) {
                         postDate = "방금 전";
@@ -79,7 +78,7 @@ public class PostService {
                 .map(p -> {
                     String postDate;
                     LocalDateTime currentTime = LocalDateTime.now();
-                    Duration duration = Duration.between(p.getPostDate(), currentTime);
+                    Duration duration = Duration.between(p.getCreatedDate(), currentTime);
                     long minutes = duration.toMinutes();
                     if (minutes < 1) {
                         postDate = "방금 전";

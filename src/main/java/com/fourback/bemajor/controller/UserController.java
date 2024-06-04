@@ -41,7 +41,7 @@ public class UserController {
         } else {
             seniorUser = byOauth2Id.get();
         }
-        response.addHeader("Authorization", "Bearer "+jwtUtil.createToken(oauth2Id, seniorUser.getRole(), 60*60*60L));
+        response.addHeader("Authorization", "Bearer "+jwtUtil.createToken(oauth2Id, seniorUser.getRole(), 600*600*600L));
         return registrationId+"Login success";
     }
 }
