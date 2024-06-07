@@ -17,14 +17,7 @@ import com.fourback.bemajor.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,17 +27,21 @@ public class CommentController {
     private final CommentService commentService;
     private final PostRepository postRepo;
 
+
     @PostMapping("/api/comment")
     public ResponseEntity<AddCommentResponse> addComment(@RequestBody CommentRequest.Add request) {
         AddCommentResponse res = this.commentService.addComment(request);
         return ResponseEntity.ok().body(res);
     }
 
-    @GetMapping("/api/comment/{postID}/list")
-    public ResponseEntity<GetCommentListResponse> getPostCommentList(@PathVariable("postID") long postID) {
-        Post post = (Post)this.postRepo.findById(postID).get();
-        GetCommentListResponse res = null;
-        res = this.commentService.getCommentList(post);
+    @GetMapping("/api/comment/list")
+    public ResponseEntity<GetCommentListResponse> getCommentList(
+            @RequestParam(value = "postID", defaultValue = "0") long postID
+    ) {
+        Post post = postRepo.getById(postID);
+
+        GetCommentListResponse res = commentService.getCommentList(post);;
+
         return ResponseEntity.ok().body(res);
     }
 

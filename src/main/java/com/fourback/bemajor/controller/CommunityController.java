@@ -46,8 +46,6 @@ public class CommunityController {
         return postService.posts(pageRequest,boardId);
     }
 
-
-
     @GetMapping("/api/post/search")
     public List<PostListDto> postSearch(
             @RequestParam(value = "page", defaultValue = "0") int page,

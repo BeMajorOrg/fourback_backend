@@ -38,7 +38,7 @@ public class CommentService {
     public GetCommentResponse getComment(Long CommentID) {
 
         Comment c = commentRepo.findById(CommentID).get();
-        CommentResult result = CommentResult.fromComment(c);
+        CommentResult result = CommentResult.fromComment(c, c.getPost().getId(), c.getParent().getId());
 
         GetCommentResponse res = GetCommentResponse.builder()
                 .result(result)
@@ -49,30 +49,34 @@ public class CommentService {
 
     public GetCommentListResponse getCommentList(Post post) {
 
-        ArrayList<CommentResult> commentResList = new ArrayList<CommentResult>();
+        List<CommentResult> commentResList = new ArrayList<CommentResult>();
         List<Comment> commentList = commentRepo.findCommentListOrderByIDAsc(post.getId());
 
         for(Comment c : commentList) {
             List<Comment> replyList = commentRepo.findCommentReplies(post.getId(), c.getId());
-            ArrayList<CommentResult> commentReplyResList = new ArrayList<CommentResult>();
+            List<CommentResult> commentReplyResList = new ArrayList<CommentResult>();
 
             for(Comment rc : replyList) {
-                CommentResult replyresult = CommentResult.fromComment(rc);
+                CommentResult replyresult = CommentResult.fromComment(rc, post.getId(), c.getId());
                     commentReplyResList.add(replyresult);
             }
             GetCommentListResponse replyRes = GetCommentListResponse.builder()
                     .result(commentReplyResList)
+                    .size(commentReplyResList.size())
                     .build();
+            long i;
+            i = c.getParent()==null ? 0 : c.getParent().getId();
 
-            CommentResult result = CommentResult.fromComment(c);
+            CommentResult result = CommentResult.fromComment(c, c.getPost().getId(), i);
             result.setReply(replyRes);
             commentResList.add(result);
         }
 
-
         GetCommentListResponse res = GetCommentListResponse.builder()
                 .result(commentResList)
+                .size(commentResList.size())
                 .build();
+
 
         return res;
     }

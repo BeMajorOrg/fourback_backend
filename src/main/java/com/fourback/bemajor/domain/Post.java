@@ -2,14 +2,16 @@ package com.fourback.bemajor.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Post extends BaseTimeEntity{
 
     @Id
@@ -39,9 +41,5 @@ public class Post extends BaseTimeEntity{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")
     private Board board;
-
-
-
-
 
 }
