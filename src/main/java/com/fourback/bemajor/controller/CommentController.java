@@ -19,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(produces = "application/json;charset=UTF-8")
@@ -27,10 +29,14 @@ public class CommentController {
     private final CommentService commentService;
     private final PostRepository postRepo;
 
-
+    @ResponseBody
     @PostMapping("/api/comment")
-    public ResponseEntity<AddCommentResponse> addComment(@RequestBody CommentRequest.Add request) {
-        AddCommentResponse res = this.commentService.addComment(request);
+    public ResponseEntity<AddCommentResponse> addComment(
+            @RequestBody CommentRequest.Add request,
+            Principal principal) {
+
+        String oauth2Id = principal.getName();
+        AddCommentResponse res = commentService.addComment(request,oauth2Id);
         return ResponseEntity.ok().body(res);
     }
 

@@ -1,13 +1,18 @@
 package com.fourback.bemajor.service;
 
+import com.fourback.bemajor.domain.User;
 import com.fourback.bemajor.dto.*;
 import com.fourback.bemajor.repository.PostRepository;
+import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.fourback.bemajor.domain.Comment;
 import com.fourback.bemajor.domain.Post;
 import com.fourback.bemajor.repository.CommentRepository;
 
+import java.security.Principal;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,16 +22,46 @@ public class CommentService {
 
     private final PostRepository postRepo;
     private final CommentRepository commentRepo;
+    private final UserRepository userRepo;
 
-    public AddCommentResponse addComment(CommentRequest.Add request) {
-        Post p = postRepo.findById(request.postId()).get();
-        Comment pc = commentRepo.findById(request.parentCommentId()).get();
+    private String DataDiff(Comment c) {
+        String postDate;
+        LocalDateTime currentTime = LocalDateTime.now();
+        Duration duration = Duration.between(c.getCreatedDate(), currentTime);
+
+        long minutes = duration.toMinutes();
+        if (minutes < 1) {
+            postDate = "방금 전";
+        } else if (minutes < 60) {
+            postDate = minutes + "분 전";
+        } else {
+            long hours = duration.toHours();
+            if (hours < 24) {
+                postDate = hours + "시간 전";
+            } else {
+                long days = duration.toDays();
+                postDate = days + "일 전";
+            }
+        }
+        return postDate;
+    }
+
+    public AddCommentResponse addComment(CommentRequest.Add request, String oauth2Id) {
+        Post p = postRepo.getById(request.postId());
+        User user = userRepo.findByOauth2Id(oauth2Id).orElse(null);
+        Comment pc;
+
+        if(request.parentCommentId() == (long) -1)
+            pc = null;
+        else
+            pc = commentRepo.getById(request.parentCommentId());
 
         Comment c = Comment.builder().
                 content(request.content()).
                 post(p).
                 parent(pc).
                 goodCount(0).
+                user(user).
                 build();
         commentRepo.save(c);
 
@@ -38,7 +73,11 @@ public class CommentService {
     public GetCommentResponse getComment(Long CommentID) {
 
         Comment c = commentRepo.findById(CommentID).get();
-        CommentResult result = CommentResult.fromComment(c, c.getPost().getId(), c.getParent().getId());
+        CommentResult result = CommentResult.fromComment(c);
+
+        result.setPostId(c.getPost().getId());
+        result.setParentId(c.getParent().getId());
+        result.setDateDiff(DataDiff(c));
 
         GetCommentResponse res = GetCommentResponse.builder()
                 .result(result)
@@ -57,7 +96,10 @@ public class CommentService {
             List<CommentResult> commentReplyResList = new ArrayList<CommentResult>();
 
             for(Comment rc : replyList) {
-                CommentResult replyresult = CommentResult.fromComment(rc, post.getId(), c.getId());
+                CommentResult replyresult = CommentResult.fromComment(rc);
+                replyresult.setPostId(rc.getPost().getId());
+                replyresult.setParentId(rc.getParent().getId());
+                replyresult.setDateDiff(DataDiff(c));
                     commentReplyResList.add(replyresult);
             }
             GetCommentListResponse replyRes = GetCommentListResponse.builder()
@@ -67,7 +109,10 @@ public class CommentService {
             long i;
             i = c.getParent()==null ? 0 : c.getParent().getId();
 
-            CommentResult result = CommentResult.fromComment(c, c.getPost().getId(), i);
+            CommentResult result = CommentResult.fromComment(c);
+            result.setPostId(c.getPost().getId());
+            result.setParentId(i);
+            result.setDateDiff(DataDiff(c));
             result.setReply(replyRes);
             commentResList.add(result);
         }

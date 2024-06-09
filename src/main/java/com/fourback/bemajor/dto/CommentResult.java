@@ -9,6 +9,7 @@ import lombok.Setter;
 import com.fourback.bemajor.domain.Comment;
 import com.fourback.bemajor.domain.Post;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Builder
@@ -23,18 +24,17 @@ public class CommentResult {
     private LocalDateTime commentDate;
     private long postId;
     private long parentId;
+    private String dateDiff;
 
     private GetCommentListResponse reply;
 
-    public static CommentResult fromComment(Comment comment, long postId, long parentId) {
+    public static CommentResult fromComment(Comment comment) {
         return CommentResult.builder()
                 .id(comment.getId())
                 .userName(comment.getUser().getUserName())
                 .content(comment.getContent())
                 .goodCount(comment.getGoodCount())
                 .commentDate(comment.getCreatedDate())
-                .postId(postId)
-                .parentId(parentId)
                 .build();
     }
 }
