@@ -6,18 +6,32 @@ import com.fourback.bemajor.service.BoardService;
 import com.fourback.bemajor.service.FavoriteService;
 import com.fourback.bemajor.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(produces = "application/json;charset=UTF-8")
 public class CommunityController {
+    private static String UPLOAD_DIR = "uploads/";
 
     private final PostService postService;
     private final BoardService boardService;
@@ -26,9 +40,17 @@ public class CommunityController {
 
     @ResponseBody
     @PostMapping("/api/post")
-    public String postCreate(@RequestBody PostDto postDto,Principal principal){
+    public String postCreate(@RequestParam("title") String title,
+                              @RequestParam("content") String content,
+                              @RequestParam("boardId") Long boardId,
+                             Principal principal,
+                             @RequestParam(value = "images", required = false) MultipartFile[] images){
         String oauth2Id = principal.getName();
-        postService.create(postDto,oauth2Id);
+        PostDto postDto = new PostDto();
+        postDto.setTitle(title);
+        postDto.setContent(content);
+        postDto.setBoardId(boardId);
+        postService.create(postDto,oauth2Id,images);
         return "ok";
     }
 
@@ -71,6 +93,35 @@ public class CommunityController {
         String oauth2Id = principal.getName();
         favoriteService.add(favoriteDto,oauth2Id);
         return "ok";
+    }
+
+
+    @GetMapping("/images/{nane}")
+    public ResponseEntity<Resource> getImage(@PathVariable("nane") String filename) {
+        try {
+            String uploadDir = "uploads/";;
+
+            // 파일 경로 생성 및 정규화
+            Path filePath = Paths.get(uploadDir).resolve(filename).normalize();;
+            System.out.println("filePath = " + filePath);
+            // 파일 리소스 생성
+            Resource resource = new UrlResource(filePath.toUri());
+            System.out.println("resource = " + resource);
+
+            if (resource.exists() || resource.isReadable()) {
+                // 파일이 존재하고 읽을 수 있을 경우 파일을 응답 본문에 포함
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                        .body(resource);
+            } else {
+                // 파일이 존재하지 않거나 읽을 수 없을 경우 404 상태 코드 반환
+                return ResponseEntity.status(404).body(null);
+            }
+        } catch (MalformedURLException e) {
+            // URL 형식이 잘못된 경우 500 상태 코드 반환
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
 
