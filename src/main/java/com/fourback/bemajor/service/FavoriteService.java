@@ -1,18 +1,15 @@
 package com.fourback.bemajor.service;
 
-import com.fourback.bemajor.domain.User;
-import com.fourback.bemajor.dto.FavoriteDto;
-import com.fourback.bemajor.domain.Board;
-import com.fourback.bemajor.domain.FavoriteBoard;
+import com.fourback.bemajor.domain.*;
+import com.fourback.bemajor.dto.*;
 
-import com.fourback.bemajor.repository.BoardRepository;
-import com.fourback.bemajor.repository.FavoriteBoardRepository;
+import com.fourback.bemajor.repository.*;
 
-import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,6 +19,8 @@ public class FavoriteService {
     private final FavoriteBoardRepository favoriteBoardRepository;
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final FavoriteCommentRepository favoriteCommentRepository;
 
     @Transactional
     public void add(FavoriteDto favoriteDto, String oauth2Id) {
@@ -41,4 +40,49 @@ public class FavoriteService {
 
     }
 
+    public AddFavoriteCommentResponse addFavoriteComment(long commentId, String oauth2Id) {
+        Comment c = commentRepository.getById(commentId);
+        User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
+        FavoriteComment fc =  favoriteCommentRepository.findByCommentAndUser(c, user);
+
+        if(fc == null) {
+            fc = FavoriteComment.builder().
+                    comment(c).
+                    user(user).
+                    isFavorite(true).
+                    build();
+        } else {
+            fc.setFavorite(true);
+        }
+        favoriteCommentRepository.save(fc);
+
+        c.setGoodCount(favoriteCommentRepository.findFavoriteCommentListByComment(c).size());
+        commentRepository.save(c);
+
+
+        AddFavoriteCommentResponse res = AddFavoriteCommentResponse.builder().
+                id(fc.getId())
+                .build();
+
+        return res;
+    }
+
+    public DeleteFavoriteCommentResponse deleteFavoriteComment(long commentId, String oauth2Id) {
+        Comment c = commentRepository.getById(commentId);
+        User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
+        FavoriteComment fc = favoriteCommentRepository.findByCommentAndUser(c, user);
+
+        if(fc != null) {
+            fc.setFavorite(false);
+            favoriteCommentRepository.save(fc);
+        }
+
+        c.setGoodCount(favoriteCommentRepository.findFavoriteCommentListByComment(c).size());
+        commentRepository.save(c);
+
+        DeleteFavoriteCommentResponse res = DeleteFavoriteCommentResponse.builder().
+                id(fc.getId())
+                .build();
+        return res;
+    }
 }

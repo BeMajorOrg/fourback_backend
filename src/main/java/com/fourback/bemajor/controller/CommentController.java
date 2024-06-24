@@ -51,22 +51,25 @@ public class CommentController {
         return ResponseEntity.ok().body(res);
     }
 
-    @GetMapping("/api/comment/{commentID}")
-    public ResponseEntity<GetCommentResponse> getComment(@PathVariable("commentID") long commentID) {
+    @GetMapping("/api/comment")
+    public ResponseEntity<GetCommentResponse> getComment(
+            @RequestParam(value = "commentID") long commentID) {
         GetCommentResponse res = null;
         res = this.commentService.getComment(commentID);
         return ResponseEntity.ok().body(res);
     }
 
-    @PutMapping("/api/comment/{commentID}")
-    public ResponseEntity<PutCommentResponse> putComment(@PathVariable("commentID") long commentID, @RequestBody CommentRequest.Put request) {
+    @PutMapping("/api/comment")
+    public ResponseEntity<PutCommentResponse> putComment(
+            @RequestParam(value = "commentID") long commentID, @RequestBody CommentRequest.Put request) {
         PutCommentResponse res = null;
         res = this.commentService.putComment(commentID, request);
         return ResponseEntity.ok().body(res);
     }
 
-    @DeleteMapping("/api/comment/{commentID}")
-    public ResponseEntity<DeleteCommentResponse> deleteComment(@PathVariable("commentID") long commentID) {
+    @DeleteMapping("/api/comment")
+    public ResponseEntity<DeleteCommentResponse> deleteComment(
+            @RequestParam(value = "commentID") long commentID) {
         DeleteCommentResponse res = null;
         res = this.commentService.deleteComment(commentID);
         return ResponseEntity.ok().body(res);

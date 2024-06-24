@@ -1,7 +1,5 @@
 package com.fourback.bemajor.dto;
 
-import java.util.List;
-
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Builder;
@@ -13,6 +11,6 @@ import lombok.Setter;
 @Getter
 @Builder
 @Data
-public class DeleteCommentResponse {
-    private List<CommentResult> result;
+public class AddFavoriteCommentResponse {
+    private long id;
 }
