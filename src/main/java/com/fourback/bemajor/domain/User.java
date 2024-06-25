@@ -22,8 +22,7 @@ public class User {
     String userName;
     // 게시판 연동해줘야 함
     String email;
-    Integer userAge;
-    boolean isMale;
+    String birth;
     String oauth2Id;
     Role role;
 }
