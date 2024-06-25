@@ -1,6 +1,7 @@
 package com.fourback.bemajor.handler;
 
 import com.fourback.bemajor.dto.ExceptionResponse;
+import com.fourback.bemajor.exception.InvalidLoginTokenException;
 import com.fourback.bemajor.exception.NotFoundElementException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -24,6 +25,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ExceptionResponse> handleNotFoundElementException(IOException ex) {
         ExceptionResponse body = new ExceptionResponse(2, ex.getMessage());
         return this.handleExceptionInternal(body, HttpStatus.LOCKED);
+    }
+
+    @ExceptionHandler(InvalidLoginTokenException.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidLoginTokenException(InvalidLoginTokenException ex) {
+        ExceptionResponse body = new ExceptionResponse(ex.getCode(), ex.getMessage());
+        return this.handleExceptionInternal(body, ex.getStatusCode());
     }
 
     private ResponseEntity<ExceptionResponse> handleExceptionInternal(ExceptionResponse body, HttpStatusCode statusCode) {
