@@ -2,10 +2,13 @@ package com.fourback.bemajor.controller;
 
 import com.fourback.bemajor.dto.LoginUserDto;
 import com.fourback.bemajor.dto.TokenDto;
+import com.fourback.bemajor.dto.UserDto;
 import com.fourback.bemajor.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 
 @RequiredArgsConstructor
@@ -23,4 +26,10 @@ public class UserController {
                 .header("refresh", tokenDto.getRefreshToken()).build();
     }
 
+    @GetMapping
+    public ResponseEntity<?> getUserInfo(Principal principal) {
+        UserDto userDto = userService.get(principal.getName());
+        return ResponseEntity.ok()
+                .body(userDto);
+    }
 }

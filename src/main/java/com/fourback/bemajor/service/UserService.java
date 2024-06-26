@@ -3,6 +3,7 @@ package com.fourback.bemajor.service;
 import com.fourback.bemajor.domain.User;
 import com.fourback.bemajor.dto.LoginUserDto;
 import com.fourback.bemajor.dto.TokenDto;
+import com.fourback.bemajor.dto.UserDto;
 import com.fourback.bemajor.exception.NotFoundElementException;
 import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -42,5 +43,8 @@ public class UserService {
         return authService.newToken(user.getOauth2Id(), user.getRole());
     }
 
-
+    public UserDto get(String oauth2Id){
+        User user = findByOauth2Id(oauth2Id);
+        return user.toUserDto();
+    }
 }
