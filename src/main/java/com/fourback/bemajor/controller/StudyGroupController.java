@@ -19,7 +19,6 @@ import java.util.Objects;
 public class StudyGroupController {
     private final StudyGroupService studyGroupService;
 
-    //추후 카테고리로 필터링하는 기능 추가할 예정
     @GetMapping("/studygroup")
     public List<StudyGroupDto> getStudyGroup(@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "category", defaultValue = "") String category){
         return studyGroupService.getAllStudyGroup(page,category);
@@ -27,7 +26,6 @@ public class StudyGroupController {
 
     @PostMapping("/studygroup")
     public ResponseEntity<StudyGroupDto> createStudyGroup(@RequestBody StudyGroupDto studyGroupDto, Principal principal){
-        log.info("studygroup-post");
         studyGroupService.createStudyGroup(studyGroupDto, principal.getName());
         return ResponseEntity.ok(studyGroupDto);
     }
