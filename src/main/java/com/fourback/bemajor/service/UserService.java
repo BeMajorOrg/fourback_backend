@@ -1,11 +1,11 @@
 package com.fourback.bemajor.service;
 
 import com.fourback.bemajor.domain.User;
-import com.fourback.bemajor.dto.TokenDto;
+import com.fourback.bemajor.dto.LoginUserDto;
 import com.fourback.bemajor.dto.UserDto;
+import com.fourback.bemajor.dto.TokenDto;
 import com.fourback.bemajor.enums.Role;
 import com.fourback.bemajor.exception.NotFoundElementException;
-import com.fourback.bemajor.jwt.JWTUtil;
 import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,8 +17,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final RedisService redisService;
-    private final JWTUtil jwtUtil;
     private final AuthService authService;
 
     public User findByOauth2Id(String oauth2Id){
@@ -29,16 +27,13 @@ public class UserService {
         return ou.get();
     }
 
-    public TokenDto save(UserDto userDto){
-        String registrationId = userDto.getRegistrationId();
-        String oauth2Id = registrationId + userDto.getUserId();
+    public TokenDto save(LoginUserDto loginUserDto){
+        String registrationId = loginUserDto.getRegistrationId();
+        String oauth2Id = registrationId + loginUserDto.getUserId();
         Optional<User> ou = userRepository.findByOauth2Id(oauth2Id);
         User user;
         if (ou.isEmpty()) {
             user = User.builder()
-                    .birth(userDto.getBirth())
-                    .userName(userDto.getName())
-                    .email(userDto.getEmail())
                     .role(Role.USER)
                     .oauth2Id(oauth2Id)
                     .build();
@@ -46,6 +41,8 @@ public class UserService {
         } else {
             user = ou.get();
         }
-        return authService.newToken(oauth2Id, Role.USER);
+        return authService.newToken(user.getOauth2Id(), user.getRole());
     }
+
+
 }
