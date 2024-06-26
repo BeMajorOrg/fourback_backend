@@ -1,7 +1,6 @@
 package com.fourback.bemajor.service;
 
 import com.fourback.bemajor.dto.TokenDto;
-import com.fourback.bemajor.enums.Role;
 import com.fourback.bemajor.exception.InvalidLoginTokenException;
 import com.fourback.bemajor.jwt.JWTUtil;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -15,7 +14,7 @@ public class AuthService {
     private final RedisService redisService;
     private final JWTUtil jwtUtil;
 
-    public TokenDto newToken(String oauth2Id, Role role){
+    public TokenDto newToken(String oauth2Id, String role){
         String newAccess = jwtUtil.createToken("access",oauth2Id, role, 600000L);
         String newRefresh = jwtUtil.createToken("refresh",oauth2Id,role,86400000L);
         TokenDto tokenDto = new TokenDto(newAccess, newRefresh);
@@ -47,7 +46,7 @@ public class AuthService {
         }
 
         String oauth2Id = jwtUtil.getUsername(refresh);
-        Role role = jwtUtil.getRole(refresh);
+        String role = jwtUtil.getRole(refresh);
 
         //make new JWT
         return this.newToken(oauth2Id, role);

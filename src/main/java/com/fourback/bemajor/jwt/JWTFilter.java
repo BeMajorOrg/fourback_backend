@@ -2,7 +2,6 @@ package com.fourback.bemajor.jwt;
 
 import com.fourback.bemajor.domain.CustomUserDetails;
 import com.fourback.bemajor.dto.UserAuthDto;
-import com.fourback.bemajor.enums.Role;
 import com.fourback.bemajor.exception.InvalidLoginTokenException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -37,7 +36,7 @@ public class JWTFilter extends OncePerRequestFilter
         }
 
         String username = jwtUtil.getUsername(accessToken);
-        Role role = jwtUtil.getRole(accessToken);
+        String role = jwtUtil.getRole(accessToken);
         UserAuthDto userAuthDto = new UserAuthDto(username, role);
         CustomUserDetails customOAuth2User = new CustomUserDetails(userAuthDto);
         Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());

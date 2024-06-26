@@ -1,6 +1,5 @@
 package com.fourback.bemajor.jwt;
 
-import com.fourback.bemajor.enums.Role;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -22,9 +21,9 @@ public class JWTUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("username", String.class);
     }
 
-    public Role getRole(String token) {
+    public String getRole(String token) {
 
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", Role.class);
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
     }
 
     public Boolean isExpired(String token) {
@@ -32,7 +31,7 @@ public class JWTUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
     //payload에 넣을 정보 더 넣기
-    public String createToken(String category,String username, Role role, Long expiredMs) {
+    public String createToken(String category,String username, String role, Long expiredMs) {
         return Jwts.builder()
                 .claim("category", category)
                 .claim("username", username)

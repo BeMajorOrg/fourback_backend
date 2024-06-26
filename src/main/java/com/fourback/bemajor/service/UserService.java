@@ -2,9 +2,7 @@ package com.fourback.bemajor.service;
 
 import com.fourback.bemajor.domain.User;
 import com.fourback.bemajor.dto.LoginUserDto;
-import com.fourback.bemajor.dto.UserDto;
 import com.fourback.bemajor.dto.TokenDto;
-import com.fourback.bemajor.enums.Role;
 import com.fourback.bemajor.exception.NotFoundElementException;
 import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +32,7 @@ public class UserService {
         User user;
         if (ou.isEmpty()) {
             user = User.builder()
-                    .role(Role.USER)
+                    .role("ROLE_USER")
                     .oauth2Id(oauth2Id)
                     .build();
             userRepository.save(user);
