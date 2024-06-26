@@ -85,4 +85,12 @@ public class FavoriteService {
                 .build();
         return res;
     }
+
+    public Boolean getFavoriteComment(long commentId, String oauth2Id) {
+        Comment c = commentRepository.getById(commentId);
+        User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
+        FavoriteComment fc = favoriteCommentRepository.findByCommentAndUser(c, user);
+
+        return fc.isFavorite();
+    }
 }

@@ -30,8 +30,7 @@ public class FavoriteCommentController {
             @RequestParam(value = "commentID") long commentID,
             Principal principal) {
 
-//        String oauth2Id = principal.getName();
-        String oauth2Id = "KAKAO3510889926";
+        String oauth2Id = principal.getName();
         AddFavoriteCommentResponse res = favoriteService.addFavoriteComment(commentID, oauth2Id);
         return ResponseEntity.ok().body(res);
     }
@@ -43,10 +42,20 @@ public class FavoriteCommentController {
             @RequestParam(value = "commentID") long commentID,
             Principal principal) {
 
-//        String oauth2Id = principal.getName();
-        String oauth2Id = "KAKAO3510889926";
+        String oauth2Id = principal.getName();
         DeleteFavoriteCommentResponse res = favoriteService.deleteFavoriteComment(commentID, oauth2Id);
         return ResponseEntity.ok().body(res);
     }
 
+    @ResponseBody
+    @GetMapping("/api/comment/favorite")
+    public ResponseEntity<Boolean> getFavoriteComment(
+            @RequestParam(value = "commentID") long commentID,
+            Principal principal) {
+
+        String oauth2Id = principal.getName();
+        return ResponseEntity.ok().body(favoriteService.getFavoriteComment(commentID, oauth2Id));
+    }
 }
+
+
