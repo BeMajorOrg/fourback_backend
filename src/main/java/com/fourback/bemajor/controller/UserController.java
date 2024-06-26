@@ -1,14 +1,12 @@
 package com.fourback.bemajor.controller;
 
 import com.fourback.bemajor.dto.LoginUserDto;
-import com.fourback.bemajor.dto.UserDto;
 import com.fourback.bemajor.dto.TokenDto;
 import com.fourback.bemajor.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 
 @RequiredArgsConstructor
 @RestController
@@ -21,7 +19,8 @@ public class UserController {
     public ResponseEntity<?> saveUser(@RequestBody LoginUserDto loginUserDto) {
         TokenDto tokenDto = userService.save(loginUserDto);
         return ResponseEntity.ok()
-                .header(tokenDto.getAccessToken(), tokenDto.getRefreshToken()).build();
+                .header("access", tokenDto.getAccessToken())
+                .header("refresh", tokenDto.getRefreshToken()).build();
     }
 
 }
