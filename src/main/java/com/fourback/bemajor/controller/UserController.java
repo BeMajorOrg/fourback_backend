@@ -32,4 +32,10 @@ public class UserController {
         return ResponseEntity.ok()
                 .body(userDto);
     }
+
+    @PutMapping
+    public ResponseEntity<?> updateUserInfo(@RequestBody UserDto userDto, Principal principal) {
+        userService.update(userDto, principal.getName());
+        return ResponseEntity.ok().build();
+    }
 }

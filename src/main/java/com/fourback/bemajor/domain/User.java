@@ -45,4 +45,16 @@ public class User {
         userDto.setTechStack(this.techStack);
         return userDto;
     }
+
+    public void setUserDto(UserDto userDto) {
+        this.userName = userDto.getUserName();
+        this.email = userDto.getEmail();
+        this.birth = userDto.getBirth();
+        this.belong = userDto.getBelong();
+        this.department = userDto.getDepartment();
+        this.hobby = userDto.getHobby();
+        this.objective = userDto.getObjective();
+        this.address = userDto.getAddress();
+        this.techStack = userDto.getTechStack();
+    }
 }
