@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class StudyGroupDto {
     private Long id;
+    private String studyName;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Integer teamSize;
@@ -21,6 +22,7 @@ public class StudyGroupDto {
     public static StudyGroupDto toDto(StudyGroup studyGroup){
         return new StudyGroupDto(
                 studyGroup.getId(),
+                studyGroup.getStudyName(),
                 studyGroup.getStartDate(),
                 studyGroup.getEndDate(),
                 studyGroup.getTeamSize(),
@@ -32,6 +34,7 @@ public class StudyGroupDto {
 
     public StudyGroup toEntity(String ownerOauth2Id){
         return new StudyGroup(
+                studyName,
                 startDate,
                 endDate,
                 teamSize,

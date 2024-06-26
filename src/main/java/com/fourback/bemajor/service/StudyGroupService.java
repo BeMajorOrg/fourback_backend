@@ -25,9 +25,15 @@ import java.util.stream.Collectors;
 public class StudyGroupService {
     private final StudyGroupRepository studyGroupRepository;
 
-    public List<StudyGroupDto> getAllStudyGroup(int page){
+    public List<StudyGroupDto> getAllStudyGroup(int page, String category){
         PageRequest pageable = PageRequest.of(page, 10, Sort.by("startDate").descending());
-        Page<StudyGroup> studyGroups = studyGroupRepository.findAll(pageable);
+        Page<StudyGroup> studyGroups;
+        if (category.isEmpty()) {
+            studyGroups = studyGroupRepository.findAll(pageable);
+        }
+        else{
+            studyGroups = studyGroupRepository.findAllByCategory(category,pageable);
+        }
         List<StudyGroupDto> studyGroupDtoList = studyGroups.stream().map(StudyGroupDto::toDto).collect(Collectors.toList());
         return studyGroupDtoList;
     }
@@ -45,7 +51,7 @@ public class StudyGroupService {
             throw new NoSuchStudyGroupException(5,"no such study group. can't delete", HttpStatus.BAD_REQUEST);
         }
         StudyGroup studyGroup = studyGroupOp.get();
-        studyGroup.updateStudyGroup(studyGroupDto.getStartDate(),studyGroupDto.getEndDate(), studyGroupDto.getTeamSize(),studyGroupDto.getStudyLocation(), studyGroup.getCategory(), studyGroupDto.getStudyCycle(), studyGroup.getStudyRule());
+        studyGroup.updateStudyGroup(studyGroupDto.getStudyName(),studyGroupDto.getStartDate(),studyGroupDto.getEndDate(), studyGroupDto.getTeamSize(),studyGroupDto.getStudyLocation(), studyGroup.getCategory(), studyGroupDto.getStudyCycle(), studyGroup.getStudyRule());
     }
 
     @Transactional
