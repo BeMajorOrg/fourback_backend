@@ -1,9 +1,11 @@
 package com.fourback.bemajor.controller;
 
+import com.fourback.bemajor.domain.Post;
 import com.fourback.bemajor.dto.*;
 import com.fourback.bemajor.jwt.JWTUtil;
 import com.fourback.bemajor.service.BoardService;
 import com.fourback.bemajor.service.FavoriteService;
+import com.fourback.bemajor.service.ImageService;
 import com.fourback.bemajor.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -36,6 +38,7 @@ public class CommunityController {
     private final PostService postService;
     private final BoardService boardService;
     private final FavoriteService favoriteService;
+    private final ImageService imageService;
 
 
     @ResponseBody
@@ -58,14 +61,43 @@ public class CommunityController {
     @GetMapping("/api/post")
     public List<PostListDto> posts(
             @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "pageSize", defaultValue = "0") int pageSize,
-            @RequestParam(value = "boardId", defaultValue = "0") Long boardId
+            @RequestParam(value = "pageSize", defaultValue = "5") int pageSize,
+            @RequestParam(value = "boardId", defaultValue = "1") Long boardId
     ) {
 
         PageRequest pageRequest = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC,
                 "createdDate"));
 
         return postService.posts(pageRequest,boardId);
+    }
+
+    @GetMapping("/api/post/{id}")
+    public PostUpdateDto post(@PathVariable("id") Long postId) {
+
+
+
+        return postService.updatePostGet(postId);
+    }
+
+    @PatchMapping("/api/post/{id}")
+    public ResponseEntity<String> updatePost(@PathVariable("id") Long postId,
+                                             @RequestParam("title") String title,
+                                             @RequestParam("content") String content,
+                                             @RequestParam(value = "images", required = false) MultipartFile[] images) {
+        return postService.update(postId,title,content,images);
+
+    }
+
+    @DeleteMapping("/api/post/{id}")
+    public ResponseEntity<?> deletePost(@PathVariable("id") Long postId) {
+        try {
+            postService.delete(postId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete post");
+        }
+
     }
 
     @GetMapping("/api/post/search")
@@ -87,24 +119,26 @@ public class CommunityController {
     }
 
     @PostMapping("/api/board/favorite")
-    public String favorite(@RequestBody FavoriteDto favoriteDto,Principal principal) {
+    public String favoriteBoard(@RequestBody FavoriteDto favoriteDto,Principal principal) {
         String oauth2Id = principal.getName();
         favoriteService.add(favoriteDto,oauth2Id);
         return "ok";
     }
 
 
-    @GetMapping("/images/{nane}")
-    public ResponseEntity<Resource> getImage(@PathVariable("nane") String filename) {
+
+
+    @GetMapping("/images/{name}")
+    public ResponseEntity<Resource> getImage(@PathVariable("name") String filename) {
         try {
             String uploadDir = "uploads/";;
 
             // 파일 경로 생성 및 정규화
             Path filePath = Paths.get(uploadDir).resolve(filename).normalize();;
-            System.out.println("filePath = " + filePath);
+
             // 파일 리소스 생성
             Resource resource = new UrlResource(filePath.toUri());
-            System.out.println("resource = " + resource);
+
 
             if (resource.exists() || resource.isReadable()) {
                 // 파일이 존재하고 읽을 수 있을 경우 파일을 응답 본문에 포함
@@ -120,6 +154,12 @@ public class CommunityController {
             e.printStackTrace();
             return ResponseEntity.status(500).body(null);
         }
+    }
+
+    @DeleteMapping("/api/images")
+    public ResponseEntity<String> deleteImage(@RequestBody List<String> fileNames) {
+        return imageService.delete(fileNames);
+
     }
 
 

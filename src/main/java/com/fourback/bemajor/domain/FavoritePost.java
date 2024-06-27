@@ -7,18 +7,18 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Image {
+public class FavoritePost {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "image_id")
+    @Column(name = "favorite_board_id")
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
-
-    private String filePath;
-    private String fileName;
-
 }

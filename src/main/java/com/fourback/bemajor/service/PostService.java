@@ -1,18 +1,13 @@
 package com.fourback.bemajor.service;
 
 
-import com.fourback.bemajor.domain.Image;
-import com.fourback.bemajor.domain.User;
+import com.fourback.bemajor.domain.*;
 import com.fourback.bemajor.dto.PostDto;
 import com.fourback.bemajor.dto.PostListDto;
-import com.fourback.bemajor.domain.Board;
 
-import com.fourback.bemajor.domain.Post;
-import com.fourback.bemajor.repository.BoardRepository;
+import com.fourback.bemajor.dto.PostUpdateDto;
+import com.fourback.bemajor.repository.*;
 
-import com.fourback.bemajor.repository.ImageRepository;
-import com.fourback.bemajor.repository.PostRepository;
-import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,6 +37,7 @@ public class PostService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final ImageRepository imageRepository;
+    private final CommentRepository commentRepository;
     private static String UPLOAD_DIR = "uploads/";
 
     @Transactional
@@ -71,6 +67,7 @@ public class PostService {
                     Image image = new Image();
                     image.setPost(post);
                     image.setFilePath(filePath.toString());
+                    image.setFileName(uniqueFilename);
                     imageRepository.save(image);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -89,6 +86,8 @@ public class PostService {
         Page<Post> pagePost = postRepository.findAllWithPost(boardId,pageRequest);
         List<PostListDto> postListDtos = pagePost.stream()
                 .map(p -> {
+                    List<Image> imageList = imageRepository.findByPostId(p.getId());
+
                     String postDate;
                     LocalDateTime currentTime = LocalDateTime.now();
                     Duration duration = Duration.between(p.getCreatedDate(), currentTime);
@@ -106,7 +105,7 @@ public class PostService {
                             postDate = days + "일 전";
                         }
                     }
-                    return new PostListDto(p, postDate);
+                    return new PostListDto(p, postDate,imageList);
                 }).collect(Collectors.toList());
         return postListDtos;
     }
@@ -115,6 +114,8 @@ public class PostService {
         Page<Post> posts = postRepository.findAllSearchPost(keyword,pageRequest);
         List<PostListDto> postListDtos = posts.stream()
                 .map(p -> {
+                    List<Image> imageList = imageRepository.findByPostId(p.getId());
+
                     String postDate;
                     LocalDateTime currentTime = LocalDateTime.now();
                     Duration duration = Duration.between(p.getCreatedDate(), currentTime);
@@ -132,11 +133,99 @@ public class PostService {
                             postDate = days + "일 전";
                         }
                     }
-                    return new PostListDto(p, postDate);
+                    return new PostListDto(p, postDate,imageList);
                 }).collect(Collectors.toList());
         return postListDtos;
     }
 
+    @Transactional
+    public ResponseEntity<String> update(Long postId,String title, String content, MultipartFile[] images) {
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        Post post = optionalPost.get();
+        post.setTitle(title);
+        post.setContent(content);
+        if (images != null) {
+            for (MultipartFile imageFile : images) {
+                String originalFilename = imageFile.getOriginalFilename();
+                String extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
+                String uniqueFilename = UUID.randomUUID().toString() + extension;
+                Path filePath = Paths.get(UPLOAD_DIR, uniqueFilename);
+
+                try {
+                    if (!Files.exists(filePath.getParent())) {
+                        Files.createDirectories(filePath.getParent());
+                    }
+                    Files.write(filePath, imageFile.getBytes());
+
+                    Image image = new Image();
+                    image.setPost(post);
+                    image.setFilePath(filePath.toString());
+                    image.setFileName(uniqueFilename);
+                    imageRepository.save(image);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
 
+            }
+
+
+        }
+        return ResponseEntity.ok("post update");
+    }
+
+
+    public PostUpdateDto updatePostGet(Long postId) {
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        Post post = optionalPost.get();
+        String postDate;
+        LocalDateTime currentTime = LocalDateTime.now();
+        Duration duration = Duration.between(post.getUpdatedDate(), currentTime);
+        long minutes = duration.toMinutes();
+        if (minutes < 1) {
+            postDate = "방금 전";
+        } else if (minutes < 60) {
+            postDate = minutes + "분 전";
+        } else {
+            long hours = duration.toHours();
+            if (hours < 24) {
+                postDate = hours + "시간 전";
+            } else {
+                long days = duration.toDays();
+                postDate = days + "일 전";
+            }
+        }
+        List<Image> imageList = imageRepository.findByPostId(post.getId());
+        PostUpdateDto postUpdateDto = new PostUpdateDto(post,postDate,imageList);
+        return postUpdateDto;
+    }
+
+    @Transactional
+    public void delete(Long postId) {
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        Post post = optionalPost.get();
+        List<Comment> comments = commentRepository.findByPostId(postId);
+        for (Comment comment : comments) {
+            commentRepository.delete(comment);
+        }
+        List<Image> images = imageRepository.findByPostId(postId);
+        for (Image image : images) {
+            Path filePath = Paths.get(image.getFilePath());
+            try {
+
+                // 파일 시스템에서 파일 삭제
+                Files.deleteIfExists(filePath);
+
+                // 데이터베이스에서 이미지 기록 삭제
+                imageRepository.delete(image);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        postRepository.delete(post);
+
+
+    }
 }
