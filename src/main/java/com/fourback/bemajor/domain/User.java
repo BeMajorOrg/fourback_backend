@@ -1,14 +1,14 @@
 package com.fourback.bemajor.domain;
 
 import com.fourback.bemajor.dto.UserDto;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -31,6 +31,8 @@ public class User {
     String objective; //희망 분야
     String address;
     String techStack;
+    @OneToMany(mappedBy = "user")
+    List<StudyJoined> studyJoineds = new ArrayList<>();
 
     public UserDto toUserDto() {
         UserDto userDto = new UserDto();

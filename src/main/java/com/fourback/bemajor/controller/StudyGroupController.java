@@ -1,7 +1,9 @@
 package com.fourback.bemajor.controller;
 
 import com.fourback.bemajor.dto.StudyGroupDto;
+import com.fourback.bemajor.dto.UserDto;
 import com.fourback.bemajor.service.StudyGroupService;
+import com.fourback.bemajor.service.StudyJoinedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +20,7 @@ import java.util.Objects;
 @RestController
 public class StudyGroupController {
     private final StudyGroupService studyGroupService;
+    private final StudyJoinedService studyJoinedService;
 
     @GetMapping("/studygroup")
     public List<StudyGroupDto> getStudyGroup(@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "category", defaultValue = "") String category){
@@ -40,5 +43,23 @@ public class StudyGroupController {
     public ResponseEntity<Void> deleteStudyGroup(@PathVariable("studyGroupId") Long studyGroupId, Principal principal){
         studyGroupService.deleteStudyGroup(studyGroupId,principal.getName());
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/studygroup/joingroup/{studyGroupId}")
+    public ResponseEntity<Void> joinGroup(@PathVariable("studyGroupId") Long groupId, Principal principal){
+        studyJoinedService.joinStudyGroup(principal.getName(),groupId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/studygroup/exitgroup/{studyGroupId}")
+    public ResponseEntity<Void> exitGroup(@PathVariable("studyGroupId") Long groupId,Principal principal){
+        studyJoinedService.exitStudyGroup(groupId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/studygroup/members/{studyGroupID}")
+    public ResponseEntity<List<UserDto>> getGroupMembers(@PathVariable("studyGroupId") Long groupId,Principal principal){
+        List<UserDto> allStudyUser = studyJoinedService.getAllStudyUser(groupId);
+        return ResponseEntity.ok(allStudyUser);
     }
 }
