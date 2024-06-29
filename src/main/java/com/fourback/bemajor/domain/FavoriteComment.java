@@ -1,17 +1,18 @@
 package com.fourback.bemajor.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
-@Getter
-@Setter
-public class FavoritePost {
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class FavoriteComment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "favorite_post_id")
+    @Column(name = "favorite_comment_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -19,6 +20,10 @@ public class FavoritePost {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
-    private Post post;
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
+
+    @JoinColumn(name = "is_favorite")
+    private boolean isFavorite;
+
 }

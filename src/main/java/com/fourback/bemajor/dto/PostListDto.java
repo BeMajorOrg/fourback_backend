@@ -20,8 +20,11 @@ public class PostListDto {
     int viewCount;
     String boardName;
     List<String> imageName;
+    boolean postGood;
+    boolean userCheck;
 
-    public PostListDto(Post post, String postDate,List<Image> imageList) {
+
+    public PostListDto(Post post, String postDate,List<Image> imageList,boolean postGood, boolean userCheck) {
         id = post.getId();
         title = post.getTitle();
         content = post.getContent();
@@ -33,7 +36,8 @@ public class PostListDto {
         imageName = imageList.stream()
                 .map(image -> image.getFileName())
                 .collect(Collectors.toList());
-
+        this.postGood = postGood;
+        this.userCheck = userCheck;
     }
 
 }

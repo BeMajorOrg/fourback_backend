@@ -11,7 +11,6 @@ import com.fourback.bemajor.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +37,8 @@ public class PostService {
     private final UserRepository userRepository;
     private final ImageRepository imageRepository;
     private final CommentRepository commentRepository;
+    private final FavoritePostRepository favoritePostRepository;
+    private final FavoriteCommentRepository favoriteCommentRepository;
     private static String UPLOAD_DIR = "uploads/";
 
     @Transactional
@@ -82,10 +83,17 @@ public class PostService {
         return post.getId();
     }
 
-    public List<PostListDto> posts(PageRequest pageRequest, Long boardId) {
+    public List<PostListDto> posts(PageRequest pageRequest, Long boardId, String oauth2Id) {
+
         Page<Post> pagePost = postRepository.findAllWithPost(boardId,pageRequest);
+        Optional<User> byOauth2Id = userRepository.findByOauth2Id(oauth2Id);
+        User user = byOauth2Id.get();
         List<PostListDto> postListDtos = pagePost.stream()
                 .map(p -> {
+                    boolean userCheck = false;
+                    if(p.getUser().getUserId().equals(user.getUserId())) {
+                        userCheck = true;
+                    }
                     List<Image> imageList = imageRepository.findByPostId(p.getId());
 
                     String postDate;
@@ -105,15 +113,34 @@ public class PostService {
                             postDate = days + "일 전";
                         }
                     }
-                    return new PostListDto(p, postDate,imageList);
+                    Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(user, p);
+                    boolean postGood = false;
+                    if(optionalFavoritePost.isPresent()) {
+                        postGood = true;
+                    }
+                    return new PostListDto(p, postDate,imageList,postGood,userCheck);
                 }).collect(Collectors.toList());
         return postListDtos;
     }
 
-    public List<PostListDto> postSearch(PageRequest pageRequest, String keyword) {
-        Page<Post> posts = postRepository.findAllSearchPost(keyword,pageRequest);
-        List<PostListDto> postListDtos = posts.stream()
+    public List<PostListDto> posts2(PageRequest pageRequest, Long boardId, String oauth2Id) {
+        Optional<User> byOauth2Id = userRepository.findByOauth2Id(oauth2Id);
+        User user = byOauth2Id.get();
+        Page<Post> pagePost = null;
+
+        if(boardId == 1) {
+            pagePost = postRepository.findAllMyPost(user.getUserId(),pageRequest);
+        } else if(boardId == 3) {
+            pagePost = favoritePostRepository.findFavoritePosts(user.getUserId(), pageRequest);
+        }
+
+
+        List<PostListDto> postListDtos = pagePost.stream()
                 .map(p -> {
+                    boolean userCheck = false;
+                    if(p.getUser().getUserId().equals(user.getUserId())) {
+                        userCheck = true;
+                    }
                     List<Image> imageList = imageRepository.findByPostId(p.getId());
 
                     String postDate;
@@ -133,7 +160,51 @@ public class PostService {
                             postDate = days + "일 전";
                         }
                     }
-                    return new PostListDto(p, postDate,imageList);
+                    Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(user, p);
+                    boolean postGood = false;
+                    if(optionalFavoritePost.isPresent()) {
+                        postGood = true;
+                    }
+                    return new PostListDto(p, postDate,imageList,postGood,userCheck);
+                }).collect(Collectors.toList());
+        return postListDtos;
+    }
+
+    public List<PostListDto> postSearch(PageRequest pageRequest, String keyword, String oauth2Id) {
+        Page<Post> posts = postRepository.findAllSearchPost(keyword,pageRequest);
+        Optional<User> byOauth2Id = userRepository.findByOauth2Id(oauth2Id);
+        User user = byOauth2Id.get();
+        List<PostListDto> postListDtos = posts.stream()
+                .map(p -> {
+                    boolean userCheck = false;
+                    if(p.getUser().getUserId().equals(user.getUserId())) {
+                        userCheck = true;
+                    }
+                    List<Image> imageList = imageRepository.findByPostId(p.getId());
+
+                    String postDate;
+                    LocalDateTime currentTime = LocalDateTime.now();
+                    Duration duration = Duration.between(p.getCreatedDate(), currentTime);
+                    long minutes = duration.toMinutes();
+                    if (minutes < 1) {
+                        postDate = "방금 전";
+                    } else if (minutes < 60) {
+                        postDate = minutes + "분 전";
+                    } else {
+                        long hours = duration.toHours();
+                        if (hours < 24) {
+                            postDate = hours + "시간 전";
+                        } else {
+                            long days = duration.toDays();
+                            postDate = days + "일 전";
+                        }
+                    }
+                    Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(user, p);
+                    boolean postGood = false;
+                    if(optionalFavoritePost.isPresent()) {
+                        postGood = true;
+                    }
+                    return new PostListDto(p, postDate,imageList,postGood,userCheck);
                 }).collect(Collectors.toList());
         return postListDtos;
     }
@@ -204,10 +275,29 @@ public class PostService {
     public void delete(Long postId) {
         Optional<Post> optionalPost = postRepository.findById(postId);
         Post post = optionalPost.get();
+
+        favoritePostRepository.deleteByPostId(postId);
         List<Comment> comments = commentRepository.findByPostId(postId);
         for (Comment comment : comments) {
+            Optional<FavoriteComment> byCommentId = favoriteCommentRepository.findByCommentId(comment.getId());
+            if(byCommentId.isPresent()) {
+                FavoriteComment favoriteComment = byCommentId.get();
+                favoriteCommentRepository.delete(favoriteComment);
+            }
+
+            List<Comment> byParentId = commentRepository.findByParentId(comment.getId());
+            for (Comment comment1 : byParentId) {
+                Optional<FavoriteComment> byCommentId1 = favoriteCommentRepository.findByCommentId(comment1.getId());
+                if(byCommentId1.isPresent()) {
+                    FavoriteComment favoriteComment1 = byCommentId1.get();
+                    favoriteCommentRepository.delete(favoriteComment1);
+                }
+                commentRepository.delete(comment1);
+            }
+
             commentRepository.delete(comment);
         }
+
         List<Image> images = imageRepository.findByPostId(postId);
         for (Image image : images) {
             Path filePath = Paths.get(image.getFilePath());
@@ -226,6 +316,14 @@ public class PostService {
 
         postRepository.delete(post);
 
+
+    }
+
+    @Transactional
+    public ResponseEntity<String> viewCountUp(Long postId) {
+        Post post = postRepository.findById(postId).get();
+        post.setViewCount(post.getViewCount() + 1);
+        return ResponseEntity.ok("ok");
 
     }
 }

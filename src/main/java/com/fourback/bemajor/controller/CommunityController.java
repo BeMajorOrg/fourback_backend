@@ -62,19 +62,34 @@ public class CommunityController {
     public List<PostListDto> posts(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "pageSize", defaultValue = "5") int pageSize,
-            @RequestParam(value = "boardId", defaultValue = "1") Long boardId
+            @RequestParam(value = "boardId", defaultValue = "1") Long boardId,
+            Principal principal
     ) {
 
         PageRequest pageRequest = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC,
                 "createdDate"));
+        String oauth2Id = principal.getName();
 
-        return postService.posts(pageRequest,boardId);
+        return postService.posts(pageRequest,boardId,oauth2Id);
+    }
+
+    @GetMapping("/api/post2")
+    public List<PostListDto> posts2(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "pageSize", defaultValue = "5") int pageSize,
+            @RequestParam(value = "boardId", defaultValue = "1") Long boardId,
+            Principal principal
+    ) {
+
+        PageRequest pageRequest = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC,
+                "id"));
+        String oauth2Id = principal.getName();
+
+        return postService.posts2(pageRequest,boardId,oauth2Id);
     }
 
     @GetMapping("/api/post/{id}")
     public PostUpdateDto post(@PathVariable("id") Long postId) {
-
-
 
         return postService.updatePostGet(postId);
     }
@@ -85,6 +100,12 @@ public class CommunityController {
                                              @RequestParam("content") String content,
                                              @RequestParam(value = "images", required = false) MultipartFile[] images) {
         return postService.update(postId,title,content,images);
+
+    }
+
+    @PatchMapping("/api/post/{id}/view")
+    public ResponseEntity<String> viewCountUp(@PathVariable("id") Long postId)  {
+        return postService.viewCountUp(postId);
 
     }
 
@@ -104,11 +125,13 @@ public class CommunityController {
     public List<PostListDto> postSearch(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "pageSize", defaultValue = "0") int pageSize,
-            @RequestParam(value = "keyword") String keyword
+            @RequestParam(value = "keyword") String keyword,
+            Principal principal
     ) {
         PageRequest pageRequest = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC,
                 "createdDate"));
-        return postService.postSearch(pageRequest,keyword);
+        String oauth2Id = principal.getName();
+        return postService.postSearch(pageRequest,keyword,oauth2Id);
     }
 
     @GetMapping("/api/board")
@@ -122,6 +145,13 @@ public class CommunityController {
     public String favoriteBoard(@RequestBody FavoriteDto favoriteDto,Principal principal) {
         String oauth2Id = principal.getName();
         favoriteService.add(favoriteDto,oauth2Id);
+        return "ok";
+    }
+
+    @PostMapping("/api/post/{id}/favorite")
+    public String favoritePost(@PathVariable("id") Long postId,Principal principal) {
+        String oauth2Id = principal.getName();
+        favoriteService.post(postId,oauth2Id);
         return "ok";
     }
 
