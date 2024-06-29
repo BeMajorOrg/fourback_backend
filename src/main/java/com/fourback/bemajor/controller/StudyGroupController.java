@@ -57,9 +57,15 @@ public class StudyGroupController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/studygroup/members/{studyGroupID}")
-    public ResponseEntity<List<UserDto>> getGroupMembers(@PathVariable("studyGroupId") Long groupId,Principal principal){
-        List<UserDto> allStudyUser = studyJoinedService.getAllStudyUser(groupId);
+    @GetMapping("/studygroup/members/{studyGroupId}")
+    public ResponseEntity<List<UserDto>> getGroupMembers(@PathVariable("studyGroupId") Long studyGroupID,Principal principal){
+        List<UserDto> allStudyUser = studyJoinedService.getAllStudyUser(studyGroupID);
         return ResponseEntity.ok(allStudyUser);
+    }
+
+    @GetMapping("/studygroup/mygroups")
+    public ResponseEntity<List<StudyGroupDto>> myStudyGroupList(Principal principal){
+        List<StudyGroupDto> allMyGroups = studyJoinedService.getAllMyGroups(principal.getName());
+        return ResponseEntity.ok(allMyGroups);
     }
 }

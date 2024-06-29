@@ -3,12 +3,15 @@ package com.fourback.bemajor.service;
 import com.fourback.bemajor.domain.StudyGroup;
 import com.fourback.bemajor.domain.StudyJoined;
 import com.fourback.bemajor.domain.User;
+import com.fourback.bemajor.dto.StudyGroupDto;
 import com.fourback.bemajor.dto.UserDto;
 import com.fourback.bemajor.exception.NoSuchStudyGroupException;
+import com.fourback.bemajor.exception.NoSuchUserException;
 import com.fourback.bemajor.repository.StudyGroupRepository;
 import com.fourback.bemajor.repository.StudyJoinedRepository;
 import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,11 +29,10 @@ public class StudyJoinedService {
         Optional<StudyGroup> studyGroupOptional = studyGroupRepository.findById(studyGroupId);
         Optional<User> userOptional = userRepository.findByOauth2Id(userId);
         if (studyGroupOptional.isEmpty()){
-            //예외처리
-            //throw new NoSuchStudyGroupException()
+            throw new NoSuchStudyGroupException(5,"no such study group.", HttpStatus.BAD_REQUEST);
         }
         if (userOptional.isEmpty()){
-            //예외처리
+            throw new NoSuchUserException(6, "no such user.", HttpStatus.BAD_REQUEST);
         }
         studyJoinedRepository.save(new StudyJoined(studyGroupOptional.get(), userOptional.get()));
     }
@@ -42,8 +44,16 @@ public class StudyJoinedService {
     public List<UserDto> getAllStudyUser(Long studyGroupId){
         Optional<StudyGroup> studyGroupOptional = studyGroupRepository.findById(studyGroupId);
         if (studyGroupOptional.isEmpty()){
-            //예외처리
+            throw new NoSuchStudyGroupException(5,"no such study group.", HttpStatus.BAD_REQUEST);
         }
         return studyGroupOptional.get().getStudyJoineds().stream().map(StudyJoined::getUser).map(User::toUserDto).collect(Collectors.toList());
+    }
+
+    public List<StudyGroupDto> getAllMyGroups(String oauth2Id){
+        Optional<User> userOptional = userRepository.findByOauth2Id(oauth2Id);
+        if (userOptional.isEmpty()){
+            throw new NoSuchUserException(6, "no such user.", HttpStatus.BAD_REQUEST);
+        }
+        return userOptional.get().getStudyJoineds().stream().map(StudyJoined::getStudyGroup).map(StudyGroupDto::toDto).collect(Collectors.toList());
     }
 }

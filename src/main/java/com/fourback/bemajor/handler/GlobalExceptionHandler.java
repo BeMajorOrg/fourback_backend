@@ -2,6 +2,8 @@ package com.fourback.bemajor.handler;
 
 import com.fourback.bemajor.dto.ExceptionResponse;
 import com.fourback.bemajor.exception.InvalidLoginTokenException;
+import com.fourback.bemajor.exception.NoSuchStudyGroupException;
+import com.fourback.bemajor.exception.NoSuchUserException;
 import com.fourback.bemajor.exception.NotFoundElementException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -31,6 +33,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ExceptionResponse> handleInvalidLoginTokenException(InvalidLoginTokenException ex) {
         ExceptionResponse body = new ExceptionResponse(ex.getCode(), ex.getMessage());
         return this.handleExceptionInternal(body, ex.getStatusCode());
+    }
+
+    @ExceptionHandler(NoSuchUserException.class)
+    public ResponseEntity<ExceptionResponse> handleNoSuchUserException(NoSuchUserException ex){
+        ExceptionResponse body = new ExceptionResponse(ex.getCode(),ex.getMessage());
+        return this.handleExceptionInternal(body,ex.getStatusCode());
+    }
+
+    @ExceptionHandler(NoSuchStudyGroupException.class)
+    public ResponseEntity<ExceptionResponse> handleNoSuchStudyGroupException(NoSuchStudyGroupException ex){
+        ExceptionResponse body = new ExceptionResponse(ex.getCode(),ex.getMessage());
+        return this.handleExceptionInternal(body,ex.getStatusCode());
     }
 
     private ResponseEntity<ExceptionResponse> handleExceptionInternal(ExceptionResponse body, HttpStatusCode statusCode) {
