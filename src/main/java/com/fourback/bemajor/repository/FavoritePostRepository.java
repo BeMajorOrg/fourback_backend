@@ -18,6 +18,6 @@ public interface FavoritePostRepository extends JpaRepository<FavoritePost, Long
     Optional<FavoritePost> findByUserAndPost(User user, Post post);
     void deleteByPostId(Long postId);
 
-    @Query("SELECT fp.post FROM FavoritePost fp JOIN fp.post p WHERE fp.user.Id = :userId")
+    @Query("SELECT fp.post FROM FavoritePost fp WHERE fp.user.id = :userId")
     Page<Post> findFavoritePosts(@Param("userId") Long userId, PageRequest pageRequest);
 }

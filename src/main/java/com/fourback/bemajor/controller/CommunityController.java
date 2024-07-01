@@ -80,9 +80,20 @@ public class CommunityController {
             @RequestParam(value = "boardId", defaultValue = "1") Long boardId,
             Principal principal
     ) {
+        Sort sort = null;
 
-        PageRequest pageRequest = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC,
-                "id"));
+
+
+        if(boardId == 1) {
+            sort = Sort.by(Sort.Direction.DESC, "createdDate");
+        } else if(boardId == 2 || boardId == 3) {
+            sort = Sort.by(Sort.Direction.DESC, "post.createdDate");
+        } else if(boardId == 4) {
+            sort = Sort.by(Sort.Direction.DESC, "goodCount");
+        }
+
+        PageRequest pageRequest = PageRequest.of(page, pageSize,
+                sort);
         String oauth2Id = principal.getName();
 
         return postService.posts2(pageRequest,boardId,oauth2Id);

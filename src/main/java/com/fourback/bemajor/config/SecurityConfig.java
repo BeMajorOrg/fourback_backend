@@ -1,18 +1,22 @@
 package com.fourback.bemajor.config;
 
 
+import com.fourback.bemajor.jwt.CustomLogoutFilter;
 import com.fourback.bemajor.jwt.JWTFilter;
 import com.fourback.bemajor.jwt.JWTUtil;
+import com.fourback.bemajor.service.RedisService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -24,6 +28,7 @@ import java.util.Collections;
 public class SecurityConfig {
 
     private final JWTUtil jwtUtil;
+    private final RedisService redisService;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -51,10 +56,13 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http
                 .authorizeHttpRequests((auth)->auth
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/user").permitAll()
+                        .requestMatchers("/auth").permitAll()
                         .anyRequest().authenticated());
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+        http
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, redisService), LogoutFilter.class);
         return http.build();
     }
 }

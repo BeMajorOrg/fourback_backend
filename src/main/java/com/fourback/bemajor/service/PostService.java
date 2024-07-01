@@ -130,8 +130,14 @@ public class PostService {
 
         if(boardId == 1) {
             pagePost = postRepository.findAllMyPost(user.getUserId(),pageRequest);
+        } else if(boardId == 2) {
+            pagePost = commentRepository.findCommentPosts(user.getUserId(), pageRequest);
         } else if(boardId == 3) {
             pagePost = favoritePostRepository.findFavoritePosts(user.getUserId(), pageRequest);
+        } else if(boardId == 4) {
+            LocalDateTime startDate = LocalDateTime.now();
+            LocalDateTime endDate = startDate.minusWeeks(1);
+            pagePost = postRepository.findPopularPosts(startDate, endDate, pageRequest);
         }
 
 

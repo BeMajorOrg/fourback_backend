@@ -2,11 +2,12 @@ package com.fourback.bemajor.jwt;
 
 import com.fourback.bemajor.domain.CustomUserDetails;
 import com.fourback.bemajor.dto.UserAuthDto;
-import com.fourback.bemajor.enums.Role;
+import com.fourback.bemajor.exception.InvalidLoginTokenException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,23 +25,19 @@ public class JWTFilter extends OncePerRequestFilter
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authorization = request.getHeader("Authorization");
-        if(authorization == null || !authorization.startsWith("Bearer ")){
-            System.out.println("token null");
+        String accessToken = request.getHeader("access");
+        if(accessToken == null){
             filterChain.doFilter(request, response);
             return;
         }
-        String token = authorization.substring("Bearer ".length());
-        if (jwtUtil.isExpired(token)) {
-            // try-catch문으로 바꾸고 재생성하게 해줘야 함
-            System.out.println("token expired");
-            filterChain.doFilter(request, response);
-            return;
+        if (jwtUtil.isExpired(accessToken)) {
+            //response status code
+            throw new InvalidLoginTokenException(4, "This is Invalid Token. Try logging in again", HttpStatus.UNAUTHORIZED);
         }
 
-        String username = jwtUtil.getUsername(token);
-        String role = jwtUtil.getRole(token);
-        UserAuthDto userAuthDto = new UserAuthDto(username, Role.USER);
+        String username = jwtUtil.getUsername(accessToken);
+        String role = jwtUtil.getRole(accessToken);
+        UserAuthDto userAuthDto = new UserAuthDto(username, role);
         CustomUserDetails customOAuth2User = new CustomUserDetails(userAuthDto);
         Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authToken);

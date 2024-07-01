@@ -1,26 +1,24 @@
 package com.fourback.bemajor.controller;
 
-import com.fourback.bemajor.domain.User;
+import com.fourback.bemajor.dto.LoginUserDto;
+import com.fourback.bemajor.dto.TokenDto;
 import com.fourback.bemajor.dto.UserDto;
-import com.fourback.bemajor.enums.Role;
-import com.fourback.bemajor.jwt.JWTUtil;
 import com.fourback.bemajor.service.UserService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import java.security.Principal;
+
 
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/user")
 public class UserController {
 
-    private final UserService seniorUserService;
-    private final JWTUtil jwtUtil;
+    private final UserService userService;
 
+<<<<<<< HEAD
     @PostMapping("/login")
     public String login(@RequestBody UserDto userDto, HttpServletResponse response) {
         String registrationId = userDto.getRegistrationId();
@@ -43,5 +41,26 @@ public class UserController {
         }
         response.addHeader("Authorization", "Bearer "+jwtUtil.createToken(oauth2Id, seniorUser.getRole(), 600*600*600L));
         return registrationId+"Login success";
+=======
+    @PostMapping
+    public ResponseEntity<?> saveUser(@RequestBody LoginUserDto loginUserDto) {
+        TokenDto tokenDto = userService.save(loginUserDto);
+        return ResponseEntity.ok()
+                .header("access", tokenDto.getAccessToken())
+                .header("refresh", tokenDto.getRefreshToken()).build();
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getUserInfo(Principal principal) {
+        UserDto userDto = userService.get(principal.getName());
+        return ResponseEntity.ok()
+                .body(userDto);
+    }
+
+    @PutMapping
+    public ResponseEntity<?> updateUserInfo(@RequestBody UserDto userDto, Principal principal) {
+        userService.update(userDto, principal.getName());
+        return ResponseEntity.ok().build();
+>>>>>>> 438cd582e1d50981cc362b97b98164e59f3de3b0
     }
 }
