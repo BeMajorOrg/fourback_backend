@@ -2,6 +2,7 @@ package com.fourback.bemajor.jwt;
 
 import com.fourback.bemajor.domain.CustomUserDetails;
 import com.fourback.bemajor.dto.UserAuthDto;
+import com.fourback.bemajor.exception.AccessTokenExpiredException;
 import com.fourback.bemajor.exception.InvalidLoginTokenException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -32,7 +33,7 @@ public class JWTFilter extends OncePerRequestFilter
         }
         if (jwtUtil.isExpired(accessToken)) {
             //response status code
-            throw new InvalidLoginTokenException(6, "Access Token Expired", HttpStatus.UNAUTHORIZED);
+            throw new AccessTokenExpiredException(6, "Access Token Expired", HttpStatus.UNAUTHORIZED);
         }
 
         String username = jwtUtil.getUsername(accessToken);
