@@ -32,7 +32,7 @@ public class JWTFilter extends OncePerRequestFilter
         }
         if (jwtUtil.isExpired(accessToken)) {
             //response status code
-            throw new InvalidLoginTokenException(4, "This is Invalid Token. Try logging in again", HttpStatus.UNAUTHORIZED);
+            throw new InvalidLoginTokenException(6, "Access Token Expired", HttpStatus.UNAUTHORIZED);
         }
 
         String username = jwtUtil.getUsername(accessToken);
