@@ -19,6 +19,7 @@ public class AuthController {
     public ResponseEntity<?> reissue(@RequestHeader("refresh") String refresh) {
         TokenDto tokenDto = authService.checkToken(refresh);
         return ResponseEntity.ok()
-                .header(tokenDto.getAccessToken(), tokenDto.getRefreshToken()).build();
+                .header("access", tokenDto.getAccessToken())
+                .header("refresh", tokenDto.getRefreshToken()).build();
     }
 }
