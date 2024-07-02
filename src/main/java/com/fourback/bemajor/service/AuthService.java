@@ -15,7 +15,7 @@ public class AuthService {
     private final JWTUtil jwtUtil;
 
     public TokenDto newToken(String oauth2Id, String role){
-        String newAccess = jwtUtil.createToken("access",oauth2Id, role, 600000L);
+        String newAccess = jwtUtil.createToken("access",oauth2Id, role, 60000L);
         String newRefresh = jwtUtil.createToken("refresh",oauth2Id,role,86400000L);
         TokenDto tokenDto = new TokenDto(newAccess, newRefresh);
         redisService.setRefreshToken(oauth2Id,newRefresh,86400000L);
