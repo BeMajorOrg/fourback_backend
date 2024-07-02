@@ -1,13 +1,18 @@
 package com.fourback.bemajor.dto;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class UserDto {
-    private String userId;
-    private String registrationId;
-    private String gender;
-    private String birthYear;
-    private String email;
-    private String name;
+    String userName;
+    String email;
+    String birth;
+    String belong;
+    String department;
+    String hobby;
+    String objective;
+    String address;
+    String techStack;
 }

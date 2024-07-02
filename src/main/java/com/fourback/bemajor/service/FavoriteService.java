@@ -21,6 +21,8 @@ public class FavoriteService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final FavoriteCommentRepository favoriteCommentRepository;
+    private final PostRepository postRepository;
+    private final FavoritePostRepository favoritePostRepository;
 
     @Transactional
     public void add(FavoriteDto favoriteDto, String oauth2Id) {
@@ -92,5 +94,25 @@ public class FavoriteService {
         FavoriteComment fc = favoriteCommentRepository.findByCommentAndUser(c, user);
 
         return (fc != null) ? fc.isFavorite() : false;
+    }
+
+    @Transactional
+    public void post(Long postId, String oauth2Id) {
+        Post post = postRepository.findById(postId).orElse(null);
+        User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
+        Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(user, post);
+
+        if(optionalFavoritePost.isPresent()){
+            FavoritePost favoritePost = optionalFavoritePost.get();
+            favoritePostRepository.delete(favoritePost);
+            post.setGoodCount((post.getGoodCount() - 1));
+        } else {
+            FavoritePost favoritePost = new FavoritePost();
+            favoritePost.setPost(post);
+            favoritePost.setUser(user);
+            favoritePostRepository.save(favoritePost);
+            post.setGoodCount((post.getGoodCount() + 1));
+        }
+
     }
 }
