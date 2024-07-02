@@ -22,6 +22,7 @@ public class PostListDto {
         content = post.getContent();
         memberName = post.getUser().getUserName();
         goodCount = post.getGoodCount();
+        commentCount = post.getCommentCount();
         viewCount = post.getViewCount();
         this.postDate = postDate;
         boardName = post.getBoard().getBoardName();

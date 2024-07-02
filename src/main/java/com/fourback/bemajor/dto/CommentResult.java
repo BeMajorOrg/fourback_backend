@@ -25,6 +25,7 @@ public class CommentResult {
     private long postId;
     private long parentId;
     private String dateDiff;
+    private boolean isFavorite;
 
     private GetCommentListResponse reply;
 

@@ -42,20 +42,26 @@ public class CommentController {
 
     @GetMapping("/api/comment/list")
     public ResponseEntity<GetCommentListResponse> getCommentList(
-            @RequestParam(value = "postID", defaultValue = "0") long postID
-    ) {
+            @RequestParam(value = "postID", defaultValue = "0") long postID,
+            Principal principal) {
+
         Post post = postRepo.getById(postID);
 
-        GetCommentListResponse res = commentService.getCommentList(post);;
+        String oauth2Id = principal.getName();
+        GetCommentListResponse res = commentService.getCommentList(post, oauth2Id);;
 
         return ResponseEntity.ok().body(res);
     }
 
     @GetMapping("/api/comment")
     public ResponseEntity<GetCommentResponse> getComment(
-            @RequestParam(value = "commentID") long commentID) {
+            @RequestParam(value = "commentID") long commentID,
+            Principal principal) {
+
         GetCommentResponse res = null;
-        res = this.commentService.getComment(commentID);
+
+        String oauth2Id = principal.getName();
+        res = this.commentService.getComment(commentID, oauth2Id);
         return ResponseEntity.ok().body(res);
     }
 

@@ -91,6 +91,6 @@ public class FavoriteService {
         User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
         FavoriteComment fc = favoriteCommentRepository.findByCommentAndUser(c, user);
 
-        return fc.isFavorite();
+        return (fc != null) ? fc.isFavorite() : false;
     }
 }

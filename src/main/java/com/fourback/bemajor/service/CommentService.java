@@ -1,7 +1,9 @@
 package com.fourback.bemajor.service;
 
+import com.fourback.bemajor.domain.FavoriteComment;
 import com.fourback.bemajor.domain.User;
 import com.fourback.bemajor.dto.*;
+import com.fourback.bemajor.repository.FavoriteCommentRepository;
 import com.fourback.bemajor.repository.PostRepository;
 import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class CommentService {
 
     private final PostRepository postRepo;
     private final CommentRepository commentRepo;
+    private final FavoriteCommentRepository favoriteCommentRepo;
     private final UserRepository userRepo;
 
     private String DataDiff(Comment c) {
@@ -46,6 +49,21 @@ public class CommentService {
         return postDate;
     }
 
+    private boolean isFavorite(Comment c, User user) {
+        FavoriteComment fc = favoriteCommentRepo.findByCommentAndUser(c, user);
+        if(fc != null) {
+            return fc.isFavorite();
+        }
+        else {
+            return false;
+        }
+    }
+
+    private void refreshCommentCount(Post p) {
+        p.setCommentCount(commentRepo.countByPost(p));
+        postRepo.save(p);
+    }
+
     public AddCommentResponse addComment(CommentRequest.Add request, String oauth2Id) {
         Post p = postRepo.getById(request.postId());
         User user = userRepo.findByOauth2Id(oauth2Id).orElse(null);
@@ -64,20 +82,22 @@ public class CommentService {
                 user(user).
                 build();
         commentRepo.save(c);
-
+        refreshCommentCount(p);
         AddCommentResponse res = AddCommentResponse.builder().commentId(c.getId()).build();
 
         return res;
     }
 
-    public GetCommentResponse getComment(Long CommentID) {
+    public GetCommentResponse getComment(Long CommentID, String oauth2Id) {
 
+        User user = userRepo.findByOauth2Id(oauth2Id).orElse(null);
         Comment c = commentRepo.findById(CommentID).get();
         CommentResult result = CommentResult.fromComment(c);
 
         result.setPostId(c.getPost().getId());
         result.setParentId(c.getParent().getId());
         result.setDateDiff(DataDiff(c));
+        result.setFavorite(isFavorite(c, user));
 
         GetCommentResponse res = GetCommentResponse.builder()
                 .result(result)
@@ -86,10 +106,12 @@ public class CommentService {
         return res;
     }
 
-    public GetCommentListResponse getCommentList(Post post) {
+    public GetCommentListResponse getCommentList(Post post, String oauth2Id) {
 
         List<CommentResult> commentResList = new ArrayList<CommentResult>();
+        User user = userRepo.findByOauth2Id(oauth2Id).orElse(null);
         List<Comment> commentList = commentRepo.findCommentListOrderByIDAsc(post.getId());
+
 
         for(Comment c : commentList) {
             List<Comment> replyList = commentRepo.findCommentReplies(post.getId(), c.getId());
@@ -97,10 +119,12 @@ public class CommentService {
 
             for(Comment rc : replyList) {
                 CommentResult replyresult = CommentResult.fromComment(rc);
+
                 replyresult.setPostId(rc.getPost().getId());
                 replyresult.setParentId(rc.getParent().getId());
                 replyresult.setDateDiff(DataDiff(c));
-                    commentReplyResList.add(replyresult);
+                replyresult.setFavorite(isFavorite(rc, user));
+                commentReplyResList.add(replyresult);
             }
             GetCommentListResponse replyRes = GetCommentListResponse.builder()
                     .result(commentReplyResList)
@@ -114,6 +138,7 @@ public class CommentService {
             result.setParentId(i);
             result.setDateDiff(DataDiff(c));
             result.setReply(replyRes);
+            result.setFavorite(isFavorite(c, user));
             commentResList.add(result);
         }
 
@@ -121,7 +146,6 @@ public class CommentService {
                 .result(commentResList)
                 .size(commentResList.size())
                 .build();
-
 
         return res;
     }
