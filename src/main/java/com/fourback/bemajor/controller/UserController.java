@@ -38,4 +38,14 @@ public class UserController {
         userService.update(userDto, principal.getName());
         return ResponseEntity.ok().build();
     }
+
+
+
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteUser(Principal principal) {
+        userService.delete(principal.getName());
+        return ResponseEntity.ok().build();
+    }
 }
+

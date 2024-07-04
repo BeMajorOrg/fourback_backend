@@ -2,7 +2,9 @@ package com.fourback.bemajor.jwt;
 
 import com.fourback.bemajor.domain.CustomUserDetails;
 import com.fourback.bemajor.dto.UserAuthDto;
+import com.fourback.bemajor.exception.AccessTokenExpiredException;
 import com.fourback.bemajor.exception.InvalidLoginTokenException;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,14 +28,20 @@ public class JWTFilter extends OncePerRequestFilter
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String accessToken = request.getHeader("access");
+
         if(accessToken == null){
             filterChain.doFilter(request, response);
             return;
         }
-        if (jwtUtil.isExpired(accessToken)) {
-            //response status code
-            throw new InvalidLoginTokenException(4, "This is Invalid Token. Try logging in again", HttpStatus.UNAUTHORIZED);
+
+        try{
+            jwtUtil.isExpired(accessToken);
         }
+        catch(ExpiredJwtException e){
+            throw new AccessTokenExpiredException(6, "Access Token Expired", HttpStatus.UNAUTHORIZED);
+        }
+
+
 
         String username = jwtUtil.getUsername(accessToken);
         String role = jwtUtil.getRole(accessToken);
