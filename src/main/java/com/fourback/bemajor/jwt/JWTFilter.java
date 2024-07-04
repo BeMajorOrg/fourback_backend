@@ -29,7 +29,7 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String accessToken = request.getHeader("access");
-        String path = request.getContextPath();
+        String path = request.getServletPath();
         String method = request.getMethod();
         if (accessToken == null) {
             if (isNotPostAuth(path, method)) {
