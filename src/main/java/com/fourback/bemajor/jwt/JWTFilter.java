@@ -49,6 +49,7 @@ public class JWTFilter extends OncePerRequestFilter {
             else{
                 filterChain.doFilter(request, response);
             }
+            return;
         }
 
         String category = jwtUtil.getCategory(accessToken);
