@@ -1,10 +1,7 @@
 package com.fourback.bemajor.handler;
 
 import com.fourback.bemajor.dto.ExceptionResponse;
-import com.fourback.bemajor.exception.InvalidLoginTokenException;
-import com.fourback.bemajor.exception.NoSuchStudyGroupException;
-import com.fourback.bemajor.exception.NoSuchUserException;
-import com.fourback.bemajor.exception.NotFoundElementException;
+import com.fourback.bemajor.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -24,13 +21,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(IOException.class)
-    public ResponseEntity<ExceptionResponse> handleNotFoundElementException(IOException ex) {
+    public ResponseEntity<ExceptionResponse> handleIOException(IOException ex) {
         ExceptionResponse body = new ExceptionResponse(2, ex.getMessage());
         return this.handleExceptionInternal(body, HttpStatus.LOCKED);
     }
 
     @ExceptionHandler(InvalidLoginTokenException.class)
     public ResponseEntity<ExceptionResponse> handleInvalidLoginTokenException(InvalidLoginTokenException ex) {
+        ExceptionResponse body = new ExceptionResponse(ex.getCode(), ex.getMessage());
+        return this.handleExceptionInternal(body, ex.getStatusCode());
+    }
+
+    @ExceptionHandler(AccessTokenExpiredException.class)
+    public ResponseEntity<ExceptionResponse> handleAccessTokenExpiredException(AccessTokenExpiredException ex) {
+        ExceptionResponse body = new ExceptionResponse(ex.getCode(), ex.getMessage());
+        return this.handleExceptionInternal(body, ex.getStatusCode());
+    }
+
+    @ExceptionHandler(NotAuthorizedException.class)
+    public ResponseEntity<ExceptionResponse> handleNotAuthorizedException(NotAuthorizedException ex) {
         ExceptionResponse body = new ExceptionResponse(ex.getCode(), ex.getMessage());
         return this.handleExceptionInternal(body, ex.getStatusCode());
     }

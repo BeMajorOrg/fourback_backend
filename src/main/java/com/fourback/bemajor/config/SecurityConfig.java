@@ -2,6 +2,7 @@ package com.fourback.bemajor.config;
 
 
 import com.fourback.bemajor.jwt.CustomLogoutFilter;
+import com.fourback.bemajor.jwt.JWTExceptionFilter;
 import com.fourback.bemajor.jwt.JWTFilter;
 import com.fourback.bemajor.jwt.JWTUtil;
 import com.fourback.bemajor.service.RedisService;
@@ -62,7 +63,9 @@ public class SecurityConfig {
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         http
-                .addFilterBefore(new CustomLogoutFilter(jwtUtil, redisService), LogoutFilter.class);
+                .addFilterBefore(new CustomLogoutFilter(redisService), LogoutFilter.class);
+        http
+                .addFilterBefore(new JWTExceptionFilter(), JWTFilter.class);
         return http.build();
     }
 }

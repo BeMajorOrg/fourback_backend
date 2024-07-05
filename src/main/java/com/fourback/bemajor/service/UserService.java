@@ -58,4 +58,9 @@ public class UserService {
         user.setUserDto(userDto);
         userRepository.save(user);
     }
+
+    @Transactional
+    public void delete(String oauth2Id){
+        userRepository.deleteByOauth2Id(oauth2Id);
+    }
 }

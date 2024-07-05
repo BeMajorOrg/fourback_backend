@@ -7,5 +7,6 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User,Long> {
     Optional<User> findByOauth2Id(String oauthId);
+    void deleteByOauth2Id(String oauthId);
 
 }
