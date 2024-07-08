@@ -67,15 +67,17 @@ public class CommentController {
 
     @PutMapping("/api/comment")
     public ResponseEntity<PutCommentResponse> putComment(
-            @RequestParam(value = "commentID") long commentID, @RequestBody CommentRequest.Put request) {
+            @RequestBody CommentRequest.Put request) {
+
         PutCommentResponse res = null;
-        res = this.commentService.putComment(commentID, request);
+        res = this.commentService.putComment(request);
         return ResponseEntity.ok().body(res);
     }
 
     @DeleteMapping("/api/comment")
     public ResponseEntity<DeleteCommentResponse> deleteComment(
-            @RequestParam(value = "commentID") long commentID) {
+            @RequestParam(value = "commentID") long commentID,
+            Principal principal) {
         DeleteCommentResponse res = null;
         res = this.commentService.deleteComment(commentID);
         return ResponseEntity.ok().body(res);

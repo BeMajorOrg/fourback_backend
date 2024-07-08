@@ -1,15 +1,12 @@
 package com.fourback.bemajor.service;
 
-import com.fourback.bemajor.domain.FavoriteComment;
-import com.fourback.bemajor.domain.User;
+import com.fourback.bemajor.domain.*;
 import com.fourback.bemajor.dto.*;
 import com.fourback.bemajor.repository.FavoriteCommentRepository;
 import com.fourback.bemajor.repository.PostRepository;
 import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.fourback.bemajor.domain.Comment;
-import com.fourback.bemajor.domain.Post;
 import com.fourback.bemajor.repository.CommentRepository;
 
 import java.security.Principal;
@@ -150,22 +147,22 @@ public class CommentService {
         return res;
     }
 
-    public PutCommentResponse putComment(Long CommentID, CommentRequest.Put request) {
-        Comment c = commentRepo.findById(CommentID).get();
+    public PutCommentResponse putComment(CommentRequest.Put request) {
+        Comment c = commentRepo.findById(request.commentId()).get();
 
         c.setContent(request.content());
         commentRepo.save(c);
 
         PutCommentResponse res = PutCommentResponse.builder()
                 .build();
-
         return res;
     }
 
     public DeleteCommentResponse deleteComment(Long CommentID) {
         Comment c = commentRepo.findById(CommentID).get();
 
-        c.setContent(" "); // 일단 DB에서 완전히 삭제하지 않고 content 공백으로 변경
+        c.setContent("삭제된 댓글입니다."); // 일단 DB에서 완전히 삭제하지 않고 content 변경
+        c.setStatus(CommentType.DELETED);
         commentRepo.save(c);
 
         DeleteCommentResponse res = DeleteCommentResponse.builder()
