@@ -2,8 +2,7 @@ package com.fourback.bemajor.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
@@ -11,7 +10,10 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-public class Comment {
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Comment extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,8 +25,6 @@ public class Comment {
 
     @ColumnDefault("0")
     private int goodCount;
-
-    private LocalDateTime commentDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
