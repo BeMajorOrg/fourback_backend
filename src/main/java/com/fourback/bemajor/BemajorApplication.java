@@ -15,21 +15,9 @@ public class BemajorApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(BemajorApplication.class, args);
-    }
 
-        @Bean
-        public ApplicationRunner runner(BoardRepository boardRepo)
-            throws Exception {
-            return (args) -> {
-                if (args.containsOption("insertTestData")) {
-                    for(int i = 0; i<5; i++) {
-                        boardRepo.save(Board.builder()
-                        .boardName("테스트보드" + i)
-                                .build()
-                       );
-                    }
-                }
-            };
+
+
 
     }
 
