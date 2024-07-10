@@ -14,9 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 @Service
@@ -38,7 +35,10 @@ public class UserService {
     @Transactional
     public User findByOauth2IdWithImage(String oauth2Id) {
         Optional<User> ou = userRepository.findByOauth2IdWithImage(oauth2Id);
-        return ou.orElseGet(() -> this.findByOauth2Id(oauth2Id));
+        if (ou.isEmpty()) {
+            throw new NotFoundElementException(1, "That is not in DB", HttpStatus.NOT_FOUND);
+        }
+        return ou.get();
     }
 
     @Transactional
@@ -83,6 +83,7 @@ public class UserService {
         if (user.getUserImage() != null) {
             imageService.deleteImageFile(user.getUserImage().getFilePath());
         }
+
         userRepository.deleteByOauth2Id(oauth2Id);
     }
 }
