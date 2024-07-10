@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
+
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
     @InjectMocks
@@ -17,7 +19,7 @@ public class UserServiceTest {
     UserRepository userRepository;
 
     @Test
-    public void deleteTest(){
+    public void deleteTest() throws IOException {
         //given
         Mockito.doNothing().when(userRepository).deleteByOauth2Id("kakao123");
 

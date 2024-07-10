@@ -47,7 +47,7 @@ public class UserController {
     }
 
     @DeleteMapping
-    public ResponseEntity<?> deleteUser(Principal principal) {
+    public ResponseEntity<?> deleteUser(Principal principal) throws IOException {
         userService.delete(principal.getName());
         return ResponseEntity.ok().build();
     }

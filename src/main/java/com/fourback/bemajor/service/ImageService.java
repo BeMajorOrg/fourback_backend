@@ -67,4 +67,9 @@ public class ImageService {
             imageRepository.delete(image);
         }
     }
+
+    public void deleteImageFile(String filePath) throws IOException {
+        Path path = Paths.get(filePath);
+        Files.deleteIfExists(path);
+    }
 }

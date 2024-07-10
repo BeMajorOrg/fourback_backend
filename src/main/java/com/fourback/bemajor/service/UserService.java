@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 @Service
@@ -24,22 +27,22 @@ public class UserService {
     private final ImageService imageService;
 
     @Transactional
-    public User findByOauth2Id(String oauth2Id){
+    public User findByOauth2Id(String oauth2Id) {
         Optional<User> ou = userRepository.findByOauth2Id(oauth2Id);
-        if(ou.isEmpty()){
+        if (ou.isEmpty()) {
             throw new NotFoundElementException(1, "That is not in DB", HttpStatus.NOT_FOUND);
         }
         return ou.get();
     }
 
     @Transactional
-    public User findByOauth2IdWithImage(String oauth2Id){
+    public User findByOauth2IdWithImage(String oauth2Id) {
         Optional<User> ou = userRepository.findByOauth2IdWithImage(oauth2Id);
         return ou.orElseGet(() -> this.findByOauth2Id(oauth2Id));
     }
 
     @Transactional
-    public TokenDto save(LoginUserDto loginUserDto){
+    public TokenDto save(LoginUserDto loginUserDto) {
         String registrationId = loginUserDto.getRegistrationId();
         String oauth2Id = registrationId + loginUserDto.getUserId();
         Optional<User> ou = userRepository.findByOauth2Id(oauth2Id);
@@ -57,7 +60,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto get(String oauth2Id){
+    public UserDto get(String oauth2Id) {
         User user = findByOauth2IdWithImage(oauth2Id);
         return user.toUserWithImageDto();
     }
@@ -66,7 +69,7 @@ public class UserService {
     public void update(UserDto userDto, String oauth2Id, MultipartFile file) throws IOException {
         User user = findByOauth2IdWithImage(oauth2Id);
         user.setUserDto(userDto);
-        if(file != null){
+        if (file != null) {
             UserImage image = new UserImage();
             image.setUser(user);
             imageService.saveImage(image, file);
@@ -75,7 +78,11 @@ public class UserService {
     }
 
     @Transactional
-    public void delete(String oauth2Id){
+    public void delete(String oauth2Id) throws IOException {
+        User user = findByOauth2IdWithImage(oauth2Id);
+        if (user.getUserImage() != null) {
+            imageService.deleteImageFile(user.getUserImage().getFilePath());
+        }
         userRepository.deleteByOauth2Id(oauth2Id);
     }
 }

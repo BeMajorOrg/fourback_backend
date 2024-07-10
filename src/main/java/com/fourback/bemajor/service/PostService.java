@@ -238,7 +238,7 @@ public class PostService {
     }
 
     @Transactional
-    public void delete(Long postId) {
+    public void delete(Long postId) throws IOException {
         Optional<Post> optionalPost = postRepository.findById(postId);
         Post post = optionalPost.get();
 
@@ -266,23 +266,10 @@ public class PostService {
 
         List<PostImage> images = imageRepository.findByPostId(postId);
         for (PostImage image : images) {
-            Path filePath = Paths.get(image.getFilePath());
-            try {
-
-                // 파일 시스템에서 파일 삭제
-                Files.deleteIfExists(filePath);
-
-                // 데이터베이스에서 이미지 기록 삭제
-                imageRepository.delete(image);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            imageService.deleteImageFile(image.getFilePath());
+            imageRepository.delete(image);
         }
-
         postRepository.delete(post);
-
-
     }
 
     @Transactional
