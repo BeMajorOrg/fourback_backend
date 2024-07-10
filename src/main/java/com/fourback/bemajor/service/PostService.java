@@ -25,7 +25,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,14 +34,14 @@ public class PostService {
     private final PostRepository postRepository;
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
-    private final ImageRepository imageRepository;
-    private final CommentRepository commentRepository;
+    private final PostImageRepository imageRepository;
+    private final ImageService imageService;
     private final FavoritePostRepository favoritePostRepository;
     private final FavoriteCommentRepository favoriteCommentRepository;
-    private static String UPLOAD_DIR = "uploads/";
+    private final CommentRepository commentRepository;
 
     @Transactional
-    public Long create(PostDto postDto, String oauth2Id, MultipartFile[] imageFiles) {
+    public Long create(PostDto postDto, String oauth2Id, MultipartFile[] imageFiles) throws IOException {
         Post post = new Post();
         Optional<Board> optionalBoard = boardRepository.findById((postDto.getBoardId()));
         Board board = optionalBoard.orElse(new Board());
@@ -54,47 +53,26 @@ public class PostService {
         postRepository.save(post);
         if (imageFiles != null) {
             for (MultipartFile imageFile : imageFiles) {
-                String originalFilename = imageFile.getOriginalFilename();
-                String extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
-                String uniqueFilename = UUID.randomUUID().toString() + extension;
-                Path filePath = Paths.get(UPLOAD_DIR, uniqueFilename);
-
-                try {
-                    if (!Files.exists(filePath.getParent())) {
-                        Files.createDirectories(filePath.getParent());
-                    }
-                    Files.write(filePath, imageFile.getBytes());
-
-                    Image image = new Image();
-                    image.setPost(post);
-                    image.setFilePath(filePath.toString());
-                    image.setFileName(uniqueFilename);
-                    imageRepository.save(image);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-
+                PostImage image = new PostImage();
+                image.setPost(post);
+                imageService.saveImage(image, imageFile);
             }
-
-
         }
-
         return post.getId();
     }
 
     public List<PostListDto> posts(PageRequest pageRequest, Long boardId, String oauth2Id) {
 
-        Page<Post> pagePost = postRepository.findAllWithPost(boardId,pageRequest);
+        Page<Post> pagePost = postRepository.findAllWithPost(boardId, pageRequest);
         Optional<User> byOauth2Id = userRepository.findByOauth2Id(oauth2Id);
         User user = byOauth2Id.get();
         List<PostListDto> postListDtos = pagePost.stream()
                 .map(p -> {
                     boolean userCheck = false;
-                    if(p.getUser().getUserId().equals(user.getUserId())) {
+                    if (p.getUser().getUserId().equals(user.getUserId())) {
                         userCheck = true;
                     }
-                    List<Image> imageList = imageRepository.findByPostId(p.getId());
+                    List<PostImage> imageList = imageRepository.findByPostId(p.getId());
 
                     String postDate;
                     LocalDateTime currentTime = LocalDateTime.now();
@@ -115,10 +93,10 @@ public class PostService {
                     }
                     Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(user, p);
                     boolean postGood = false;
-                    if(optionalFavoritePost.isPresent()) {
+                    if (optionalFavoritePost.isPresent()) {
                         postGood = true;
                     }
-                    return new PostListDto(p, postDate,imageList,postGood,userCheck);
+                    return new PostListDto(p, postDate, imageList, postGood, userCheck);
                 }).collect(Collectors.toList());
         return postListDtos;
     }
@@ -128,13 +106,13 @@ public class PostService {
         User user = byOauth2Id.get();
         Page<Post> pagePost = null;
 
-        if(boardId == 1) {
-            pagePost = postRepository.findAllMyPost(user.getUserId(),pageRequest);
-        } else if(boardId == 2) {
+        if (boardId == 1) {
+            pagePost = postRepository.findAllMyPost(user.getUserId(), pageRequest);
+        } else if (boardId == 2) {
             pagePost = commentRepository.findCommentPosts(user.getUserId(), pageRequest);
-        } else if(boardId == 3) {
+        } else if (boardId == 3) {
             pagePost = favoritePostRepository.findFavoritePosts(user.getUserId(), pageRequest);
-        } else if(boardId == 4) {
+        } else if (boardId == 4) {
             LocalDateTime startDate = LocalDateTime.now();
             LocalDateTime endDate = startDate.minusWeeks(1);
             pagePost = postRepository.findPopularPosts(startDate, endDate, pageRequest);
@@ -144,10 +122,10 @@ public class PostService {
         List<PostListDto> postListDtos = pagePost.stream()
                 .map(p -> {
                     boolean userCheck = false;
-                    if(p.getUser().getUserId().equals(user.getUserId())) {
+                    if (p.getUser().getUserId().equals(user.getUserId())) {
                         userCheck = true;
                     }
-                    List<Image> imageList = imageRepository.findByPostId(p.getId());
+                    List<PostImage> imageList = imageRepository.findByPostId(p.getId());
 
                     String postDate;
                     LocalDateTime currentTime = LocalDateTime.now();
@@ -168,25 +146,25 @@ public class PostService {
                     }
                     Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(user, p);
                     boolean postGood = false;
-                    if(optionalFavoritePost.isPresent()) {
+                    if (optionalFavoritePost.isPresent()) {
                         postGood = true;
                     }
-                    return new PostListDto(p, postDate,imageList,postGood,userCheck);
+                    return new PostListDto(p, postDate, imageList, postGood, userCheck);
                 }).collect(Collectors.toList());
         return postListDtos;
     }
 
     public List<PostListDto> postSearch(PageRequest pageRequest, String keyword, String oauth2Id) {
-        Page<Post> posts = postRepository.findAllSearchPost(keyword,pageRequest);
+        Page<Post> posts = postRepository.findAllSearchPost(keyword, pageRequest);
         Optional<User> byOauth2Id = userRepository.findByOauth2Id(oauth2Id);
         User user = byOauth2Id.get();
         List<PostListDto> postListDtos = posts.stream()
                 .map(p -> {
                     boolean userCheck = false;
-                    if(p.getUser().getUserId().equals(user.getUserId())) {
+                    if (p.getUser().getUserId().equals(user.getUserId())) {
                         userCheck = true;
                     }
-                    List<Image> imageList = imageRepository.findByPostId(p.getId());
+                    List<PostImage> imageList = imageRepository.findByPostId(p.getId());
 
                     String postDate;
                     LocalDateTime currentTime = LocalDateTime.now();
@@ -207,43 +185,25 @@ public class PostService {
                     }
                     Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(user, p);
                     boolean postGood = false;
-                    if(optionalFavoritePost.isPresent()) {
+                    if (optionalFavoritePost.isPresent()) {
                         postGood = true;
                     }
-                    return new PostListDto(p, postDate,imageList,postGood,userCheck);
+                    return new PostListDto(p, postDate, imageList, postGood, userCheck);
                 }).collect(Collectors.toList());
         return postListDtos;
     }
 
     @Transactional
-    public ResponseEntity<String> update(Long postId,String title, String content, MultipartFile[] images) {
+    public ResponseEntity<String> update(Long postId, String title, String content, MultipartFile[] images) throws IOException {
         Optional<Post> optionalPost = postRepository.findById(postId);
         Post post = optionalPost.get();
         post.setTitle(title);
         post.setContent(content);
         if (images != null) {
             for (MultipartFile imageFile : images) {
-                String originalFilename = imageFile.getOriginalFilename();
-                String extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
-                String uniqueFilename = UUID.randomUUID().toString() + extension;
-                Path filePath = Paths.get(UPLOAD_DIR, uniqueFilename);
-
-                try {
-                    if (!Files.exists(filePath.getParent())) {
-                        Files.createDirectories(filePath.getParent());
-                    }
-                    Files.write(filePath, imageFile.getBytes());
-
-                    Image image = new Image();
-                    image.setPost(post);
-                    image.setFilePath(filePath.toString());
-                    image.setFileName(uniqueFilename);
-                    imageRepository.save(image);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-
+                PostImage image = new PostImage();
+                image.setPost(post);
+                imageService.saveImage(image, imageFile);
             }
 
 
@@ -272,8 +232,8 @@ public class PostService {
                 postDate = days + "일 전";
             }
         }
-        List<Image> imageList = imageRepository.findByPostId(post.getId());
-        PostUpdateDto postUpdateDto = new PostUpdateDto(post,postDate,imageList);
+        List<PostImage> imageList = imageRepository.findByPostId(post.getId());
+        PostUpdateDto postUpdateDto = new PostUpdateDto(post, postDate, imageList);
         return postUpdateDto;
     }
 
@@ -286,7 +246,7 @@ public class PostService {
         List<Comment> comments = commentRepository.findByPostId(postId);
         for (Comment comment : comments) {
             Optional<FavoriteComment> byCommentId = favoriteCommentRepository.findByCommentId(comment.getId());
-            if(byCommentId.isPresent()) {
+            if (byCommentId.isPresent()) {
                 FavoriteComment favoriteComment = byCommentId.get();
                 favoriteCommentRepository.delete(favoriteComment);
             }
@@ -294,7 +254,7 @@ public class PostService {
             List<Comment> byParentId = commentRepository.findByParentId(comment.getId());
             for (Comment comment1 : byParentId) {
                 Optional<FavoriteComment> byCommentId1 = favoriteCommentRepository.findByCommentId(comment1.getId());
-                if(byCommentId1.isPresent()) {
+                if (byCommentId1.isPresent()) {
                     FavoriteComment favoriteComment1 = byCommentId1.get();
                     favoriteCommentRepository.delete(favoriteComment1);
                 }
@@ -304,8 +264,8 @@ public class PostService {
             commentRepository.delete(comment);
         }
 
-        List<Image> images = imageRepository.findByPostId(postId);
-        for (Image image : images) {
+        List<PostImage> images = imageRepository.findByPostId(postId);
+        for (PostImage image : images) {
             Path filePath = Paths.get(image.getFilePath());
             try {
 

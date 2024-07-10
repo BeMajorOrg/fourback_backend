@@ -1,11 +1,9 @@
 package com.fourback.bemajor.domain;
 
 import com.fourback.bemajor.dto.UserDto;
+import com.fourback.bemajor.dto.UserWithImageDto;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,18 +32,29 @@ public class User {
     @OneToMany(mappedBy = "user")
     List<StudyJoined> studyJoineds = new ArrayList<>();
 
+    @Setter
+    @OneToOne(mappedBy = "user",cascade = CascadeType.REMOVE, orphanRemoval = true)
+    UserImage userImage;
+
+    public UserWithImageDto toUserWithImageDto() {
+        UserWithImageDto userWithImageDto = new UserWithImageDto();
+        userWithImageDto.setUserName(this.userName);
+        userWithImageDto.setEmail(this.email);
+        userWithImageDto.setBirth(this.birth);
+        userWithImageDto.setBelong(this.belong);
+        userWithImageDto.setDepartment(this.department);
+        userWithImageDto.setHobby(this.hobby);
+        userWithImageDto.setObjective(this.objective);
+        userWithImageDto.setAddress(this.address);
+        userWithImageDto.setTechStack(this.techStack);
+        if(userImage!=null)
+            userWithImageDto.setImageName(userImage.getFileName());
+        return userWithImageDto;
+    }
+
     public UserDto toUserDto() {
-        UserDto userDto = new UserDto();
-        userDto.setUserName(this.userName);
-        userDto.setEmail(this.email);
-        userDto.setBirth(this.birth);
-        userDto.setBelong(this.belong);
-        userDto.setDepartment(this.department);
-        userDto.setHobby(this.hobby);
-        userDto.setObjective(this.objective);
-        userDto.setAddress(this.address);
-        userDto.setTechStack(this.techStack);
-        return userDto;
+        return new UserDto(this.userName
+                , this.email, this.birth, this.belong, this.department, this.hobby, this.objective, this.address, this.techStack);
     }
 
     public void setUserDto(UserDto userDto) {

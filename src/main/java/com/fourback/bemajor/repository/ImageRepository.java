@@ -8,8 +8,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ImageRepository extends JpaRepository<Image,Long> {
-
-    List<Image> findByPostId(Long id);
     Optional<Image> findByFileName(String fileName);
-
 }

@@ -1,7 +1,7 @@
 package com.fourback.bemajor.dto;
 
-import com.fourback.bemajor.domain.Image;
 import com.fourback.bemajor.domain.Post;
+import com.fourback.bemajor.domain.PostImage;
 import lombok.Data;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public class PostListDto {
     boolean userCheck;
 
 
-    public PostListDto(Post post, String postDate,List<Image> imageList,boolean postGood, boolean userCheck) {
+    public PostListDto(Post post, String postDate, List<PostImage> imageList, boolean postGood, boolean userCheck) {
         id = post.getId();
         title = post.getTitle();
         content = post.getContent();
