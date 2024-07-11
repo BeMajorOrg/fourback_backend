@@ -14,6 +14,7 @@ public class CommentRequest {
         }
 
     public record Put(
+            Long commentId,
             String content) {
     }
     }

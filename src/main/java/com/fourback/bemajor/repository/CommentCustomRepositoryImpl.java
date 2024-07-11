@@ -31,5 +31,4 @@ import static com.fourback.bemajor.domain.QComment.comment;
                 .orderBy(comment.id.asc())
                 .fetch();
     }
-
 }
