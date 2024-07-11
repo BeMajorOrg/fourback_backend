@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @EnableJpaAuditing
 @SpringBootApplication
 public class BemajorApplication {
+
     public static void main(String[] args) {
         SpringApplication.run(BemajorApplication.class, args);
 
