@@ -56,6 +56,15 @@ public class CommentService {
         }
     }
 
+    private boolean userCheck(String userName, String authId) {
+        if(authId.equals(userName)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
     private void refreshCommentCount(Post p) {
         p.setCommentCount(commentRepo.countByPost(p));
         postRepo.save(p);
@@ -121,6 +130,7 @@ public class CommentService {
                 replyresult.setParentId(rc.getParent().getId());
                 replyresult.setDateDiff(DataDiff(c));
                 replyresult.setFavorite(isFavorite(rc, user));
+                replyresult.setUserCheck(userCheck(rc.getUser().getOauth2Id(), user.getOauth2Id()));
                 commentReplyResList.add(replyresult);
             }
             GetCommentListResponse replyRes = GetCommentListResponse.builder()
@@ -136,6 +146,7 @@ public class CommentService {
             result.setDateDiff(DataDiff(c));
             result.setReply(replyRes);
             result.setFavorite(isFavorite(c, user));
+            result.setUserCheck(userCheck(c.getUser().getOauth2Id(), user.getOauth2Id()));
             commentResList.add(result);
         }
 
