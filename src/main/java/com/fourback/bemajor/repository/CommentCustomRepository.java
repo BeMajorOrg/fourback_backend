@@ -11,4 +11,5 @@ import java.util.List;
 public interface CommentCustomRepository {
     List<Comment> findCommentListOrderByIDAsc(Long postID);
     List<Comment> findCommentReplies(Long postID, Long CommentId);
+
 }

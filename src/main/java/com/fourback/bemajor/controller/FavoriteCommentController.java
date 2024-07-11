@@ -47,15 +47,15 @@ public class FavoriteCommentController {
         return ResponseEntity.ok().body(res);
     }
 
-//    @ResponseBody
-//    @GetMapping("/api/comment/favorite")
-//    public ResponseEntity<Boolean> getFavoriteComment(
-//            @RequestParam(value = "commentID") long commentID,
-//            Principal principal) {
-//
-//        String oauth2Id = principal.getName();
-//        return ResponseEntity.ok().body(favoriteService.getFavoriteComment(commentID, oauth2Id));
-//    }
+    @ResponseBody
+    @GetMapping("/api/comment/favorite")
+    public ResponseEntity<Boolean> getFavoriteComment(
+            @RequestParam(value = "commentID") long commentID,
+            Principal principal) {
+
+        String oauth2Id = principal.getName();
+        return ResponseEntity.ok().body(favoriteService.getFavoriteComment(commentID, oauth2Id));
+    }
 }
 
 

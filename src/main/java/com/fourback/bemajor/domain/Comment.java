@@ -38,4 +38,8 @@ public class Comment extends BaseTimeEntity {
     @JoinColumn(name = "parent_id")
     private Comment parent;
 
+    @Column(name = "status", nullable = false)
+    @Builder.Default
+    private CommentType status = CommentType.DEFAULT; // 댓글 상태 (0: 공개, 1: 삭제됨)
+
 }
