@@ -19,4 +19,5 @@ public class UserDto {
     String objective;
     String address;
     String techStack;
+    boolean isDeleted;
 }

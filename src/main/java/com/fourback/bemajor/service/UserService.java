@@ -84,6 +84,6 @@ public class UserService {
             imageService.deleteImageFile(user.getUserImage().getFilePath());
         }
 
-        userRepository.deleteByOauth2Id(oauth2Id);
+        userRepository.delete(user);
     }
 }

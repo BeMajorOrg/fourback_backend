@@ -41,7 +41,7 @@ public class UserController {
             @RequestParam String belong, @RequestParam String department, @RequestParam String hobby,
             @RequestParam String objective, @RequestParam String address, @RequestParam String techStack,
             Principal principal, @RequestParam(required = false) MultipartFile file) throws IOException {
-        userService.update(new UserDto(userName, email, birth, belong, department, hobby, objective, address, techStack),
+        userService.update(new UserDto(userName, email, birth, belong, department, hobby, objective, address, techStack,false),
                 principal.getName(), file);
         return ResponseEntity.ok().build();
     }
