@@ -4,6 +4,7 @@ import com.fourback.bemajor.dto.UserDto;
 import com.fourback.bemajor.dto.UserWithImageDto;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,13 +13,13 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLDelete(sql = "update user set is_deleted=true, user_name='<알 수 없음>' where user_id = ?")
 @Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long userId;
     String userName;
-    // 게시판 연동해줘야 함
     String email;
     String birth;
     String oauth2Id;
@@ -29,6 +30,8 @@ public class User {
     String objective; //희망 분야
     String address;
     String techStack;
+    @Setter
+    boolean isDeleted;
     @OneToMany(mappedBy = "user")
     List<StudyJoined> studyJoineds = new ArrayList<>();
 
@@ -49,6 +52,7 @@ public class User {
         userWithImageDto.setTechStack(this.techStack);
         if(userImage!=null)
             userWithImageDto.setImageName(userImage.getFileName());
+        userWithImageDto.setDeleted(this.isDeleted);
         return userWithImageDto;
     }
 

@@ -7,8 +7,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 
 
@@ -29,6 +31,12 @@ public class ImageController {
     @DeleteMapping
     public ResponseEntity<?> deleteImage(@RequestBody List<String> fileNames) throws IOException {
         imageService.delete(fileNames);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping
+    public ResponseEntity<?> saveImage(Principal principal, @RequestParam("file") MultipartFile file) throws IOException {
+        imageService.save(principal.getName(),file);
         return ResponseEntity.ok().build();
     }
 }
