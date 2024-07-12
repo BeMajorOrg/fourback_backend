@@ -35,14 +35,13 @@ public class UserController {
                 .body(userDto);
     }
 
-    @PutMapping
+    @PatchMapping
     public ResponseEntity<?> updateUserInfo(
             @RequestParam String userName, @RequestParam String email, @RequestParam String birth,
             @RequestParam String belong, @RequestParam String department, @RequestParam String hobby,
-            @RequestParam String objective, @RequestParam String address, @RequestParam String techStack,
-            Principal principal, @RequestParam(required = false) MultipartFile file) throws IOException {
-        userService.update(new UserDto(userName, email, birth, belong, department, hobby, objective, address, techStack,false),
-                principal.getName(), file);
+            @RequestParam String objective, @RequestParam String address, @RequestParam String techStack, Principal principal) {
+        userService.update(new UserDto(userName, email, birth, belong, department, hobby, objective, address, techStack),
+                principal.getName());
         return ResponseEntity.ok().build();
     }
 

@@ -58,7 +58,7 @@ public class User {
 
     public UserDto toUserDto() {
         return new UserDto(this.userName
-                , this.email, this.birth, this.belong, this.department, this.hobby, this.objective, this.address, this.techStack, this.isDeleted);
+                , this.email, this.birth, this.belong, this.department, this.hobby, this.objective, this.address, this.techStack);
     }
 
     public void setUserDto(UserDto userDto) {
@@ -71,6 +71,5 @@ public class User {
         this.objective = userDto.getObjective();
         this.address = userDto.getAddress();
         this.techStack = userDto.getTechStack();
-        this.isDeleted=userDto.isDeleted();
     }
 }

@@ -1,6 +1,8 @@
 package com.fourback.bemajor.service;
 
 import com.fourback.bemajor.domain.Image;
+import com.fourback.bemajor.domain.User;
+import com.fourback.bemajor.domain.UserImage;
 import com.fourback.bemajor.exception.NotFoundElementException;
 import com.fourback.bemajor.repository.ImageRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,8 @@ import java.util.UUID;
 public class ImageService {
     private final ImageRepository imageRepository;
     private static final String UPLOAD_DIR = "uploads/";
+    private final UserService userService;
+    private final ImageFileService imageFileService;
 
     public Image findByFileName(String fileName) {
         Optional<Image> oi = imageRepository.findByFileName(fileName);
@@ -46,12 +50,7 @@ public class ImageService {
             String extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
             String uniqueFilename = UUID.randomUUID().toString() + extension;
             Path filePath = Paths.get(UPLOAD_DIR, uniqueFilename);
-
-            if (!Files.exists(filePath.getParent())) {
-                Files.createDirectories(filePath.getParent());
-            }
-            Files.write(filePath, file.getBytes());
-
+            imageFileService.saveImageFile(filePath,file);
             image.setFilePath(filePath.toString());
             image.setFileName(uniqueFilename);
         }
@@ -62,14 +61,19 @@ public class ImageService {
     public void delete(List<String> fileNames) throws IOException {
         for (String fileName : fileNames) {
             Image image = findByFileName(fileName);
-            Path filePath = Paths.get(image.getFilePath());
-            Files.deleteIfExists(filePath);
+            imageFileService.deleteImageFile(image.getFilePath());
             imageRepository.delete(image);
         }
     }
 
-    public void deleteImageFile(String filePath) throws IOException {
-        Path path = Paths.get(filePath);
-        Files.deleteIfExists(path);
+    @Transactional
+    public void save(String oauth2Id, MultipartFile file) throws IOException {
+        if (file != null) {
+            User user = userService.findByOauth2Id(oauth2Id);
+            UserImage image = new UserImage();
+            user.setUserImage(image);
+            image.setUser(user);
+            this.saveImage(image, file);
+        }
     }
 }

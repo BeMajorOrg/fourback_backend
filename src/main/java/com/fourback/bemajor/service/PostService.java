@@ -39,6 +39,7 @@ public class PostService {
     private final FavoritePostRepository favoritePostRepository;
     private final FavoriteCommentRepository favoriteCommentRepository;
     private final CommentRepository commentRepository;
+    private final ImageFileService imageFileService;
 
     @Transactional
     public Long create(PostDto postDto, String oauth2Id, MultipartFile[] imageFiles) throws IOException {
@@ -266,7 +267,7 @@ public class PostService {
 
         List<PostImage> images = imageRepository.findByPostId(postId);
         for (PostImage image : images) {
-            imageService.deleteImageFile(image.getFilePath());
+            imageFileService.deleteImageFile(image.getFilePath());
             imageRepository.delete(image);
         }
         postRepository.delete(post);

@@ -7,4 +7,5 @@ import lombok.Setter;
 @Setter
 public class UserWithImageDto extends UserDto{
     private String imageName;
+    private boolean isDeleted;
 }
