@@ -2,6 +2,7 @@ package com.fourback.bemajor.domain;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToOne;
 import lombok.Setter;
 
@@ -9,6 +10,6 @@ import lombok.Setter;
 @DiscriminatorValue("USER")
 @Setter
 public class UserImage  extends Image{
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     private User user;
 }
