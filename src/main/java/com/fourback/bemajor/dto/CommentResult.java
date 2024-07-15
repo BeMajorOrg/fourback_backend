@@ -3,6 +3,7 @@ package com.fourback.bemajor.dto;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fourback.bemajor.domain.CommentType;
+import com.fourback.bemajor.domain.User;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
 @Data
 public class CommentResult {
     private Long id;
-    private String userName;
+    private User user;
     private String content;
     private int goodCount;
     private LocalDateTime commentDate;
@@ -41,7 +42,7 @@ public class CommentResult {
         }
         return CommentResult.builder()
                 .id(comment.getId())
-                .userName(comment.getUser().getUserName())
+                .user(comment.getUser())
                 .goodCount(comment.getGoodCount())
                 .content(commentContent)
                 .commentDate(comment.getCreatedDate())
