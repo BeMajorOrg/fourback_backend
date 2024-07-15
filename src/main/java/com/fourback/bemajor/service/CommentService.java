@@ -130,6 +130,7 @@ public class CommentService {
                 replyresult.setParentId(rc.getParent().getId());
                 replyresult.setDateDiff(DataDiff(c));
                 replyresult.setFavorite(isFavorite(rc, user));
+                replyresult.setStatus(rc.getStatus().getValue());
                 replyresult.setUserCheck(userCheck(rc.getUser().getOauth2Id(), user.getOauth2Id()));
                 commentReplyResList.add(replyresult);
             }
@@ -146,6 +147,7 @@ public class CommentService {
             result.setDateDiff(DataDiff(c));
             result.setReply(replyRes);
             result.setFavorite(isFavorite(c, user));
+            result.setStatus(c.getStatus().getValue());
             result.setUserCheck(userCheck(c.getUser().getOauth2Id(), user.getOauth2Id()));
             commentResList.add(result);
         }
@@ -172,7 +174,6 @@ public class CommentService {
     public DeleteCommentResponse deleteComment(Long CommentID) {
         Comment c = commentRepo.findById(CommentID).get();
 
-        c.setContent("삭제된 댓글입니다."); // 일단 DB에서 완전히 삭제하지 않고 content 변경
         c.setStatus(CommentType.DELETED);
         commentRepo.save(c);
 
