@@ -24,9 +24,4 @@ public class WebsocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(websocketHandler, "/websocket").setAllowedOrigins("*");
     }
-
-    @Bean
-    public Map<Long, Set<WebSocketSession>> websocketSessionsMap() {
-        return new ConcurrentHashMap<>();
-    }
 }

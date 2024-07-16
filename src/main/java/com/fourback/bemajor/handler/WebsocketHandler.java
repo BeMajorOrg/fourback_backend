@@ -5,7 +5,6 @@ import com.fourback.bemajor.dto.MessageDto;
 import com.fourback.bemajor.service.MessageService;
 import com.fourback.bemajor.service.RedisService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -66,8 +65,4 @@ public class WebsocketHandler extends TextWebSocketHandler {
         messageService.deleteMessagesByOauth2Id(oauth2Id);
     }
 
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
 }
