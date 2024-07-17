@@ -2,8 +2,9 @@ package com.fourback.bemajor.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourback.bemajor.domain.StudyGroup;
-import com.fourback.bemajor.dto.MessageDto;
+import com.fourback.bemajor.dto.ChatMessageDto;
 import com.fourback.bemajor.repository.StudyGroupRepository;
+import com.fourback.bemajor.service.FcmService;
 import com.fourback.bemajor.service.MessageService;
 import com.fourback.bemajor.service.RedisService;
 import jakarta.annotation.PostConstruct;
@@ -27,43 +28,48 @@ public class WebsocketHandler extends TextWebSocketHandler {
     private final RedisService redisService;
     private final MessageService messageService;
     private final ObjectMapper objectMapper;
+    private final FcmService fcmService;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws IOException {
-        long studyGroupId = Long.parseLong(Objects.requireNonNull(session.getUri()).getQuery().split("&")[0].split("=")[1]);
-        String oauth2Id = Objects.requireNonNull(session.getUri()).getQuery().split("&")[1].split("=")[1];
+        String[] querys = Objects.requireNonNull(session.getUri()).getQuery().split("&");
+        long studyGroupId = Long.parseLong(querys[0].split("=")[1]);
+        String oauth2Id = querys[1].split("=")[1];
         redisService.deleteDisConnectUser(Long.toString(studyGroupId), oauth2Id);
         websocketSessionsMap.get(studyGroupId).add(session);
-        List<MessageDto> messageDtos = messageService.getMessages(oauth2Id);
-        for (MessageDto messageDto : messageDtos) {
-            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(messageDto)));
+        List<ChatMessageDto> chatMessageDtos = messageService.getMessages(oauth2Id);
+        for (ChatMessageDto chatMessageDto : chatMessageDtos) {
+            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatMessageDto)));
         }
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        long studyGroupId = Long.parseLong(Objects.requireNonNull(session.getUri()).getQuery().split("&")[0].split("=")[1]);
-        String senderName = Objects.requireNonNull(session.getUri()).getQuery().split("&")[2].split("=")[1];
+        String[] querys = Objects.requireNonNull(session.getUri()).getQuery().split("&");
+        long studyGroupId = Long.parseLong(querys[0].split("=")[1]);
+        String senderName = querys[2].split("=")[1];
+        String studyGroupName = querys[3].split("=")[1];
         String msg = message.getPayload();
         Set<WebSocketSession> sessions = websocketSessionsMap.get(studyGroupId);
-        MessageDto messageDto = new MessageDto(msg, senderName, LocalDateTime.now());
+        ChatMessageDto chatMessageDto = new ChatMessageDto(msg, senderName, LocalDateTime.now());
         for (WebSocketSession webSocketSession : sessions) {
-            webSocketSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(messageDto)));
+            webSocketSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatMessageDto)));
         }
         Map<String, String> disconnectedUser = redisService.getDisConnectUser(Long.toString(studyGroupId));
         disconnectedUser.forEach((oauth2Id, fcmToken) -> {
-            messageService.saveMessageByOauth2Id(oauth2Id,messageDto);
-            //fcm토큰으로 알림 전송하기
+            messageService.saveMessageByOauth2Id(oauth2Id, chatMessageDto);
+            fcmService.sendalarm(chatMessageDto, oauth2Id, studyGroupName);
         });
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        long studyGroupId = Long.parseLong(Objects.requireNonNull(session.getUri()).getQuery().split("&")[0].split("=")[1]);
-        String oauth2Id = Objects.requireNonNull(session.getUri()).getQuery().split("&")[1].split("=")[1];
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        String[] querys = Objects.requireNonNull(session.getUri()).getQuery().split("&");
+        long studyGroupId = Long.parseLong(querys[0].split("=")[1]);
+        String oauth2Id = querys[1].split("=")[1];
         websocketSessionsMap.get(studyGroupId).remove(session);
-        //fcm 토큰 가져오기
-        redisService.putDisConnectUser(Long.toString(studyGroupId), oauth2Id, "fcm토큰 넣어야함");
+        String fcmToken = redisService.getFcmToken(oauth2Id);
+        redisService.putDisConnectUser(Long.toString(studyGroupId), oauth2Id, fcmToken);
         messageService.deleteMessagesByOauth2Id(oauth2Id);
     }
 

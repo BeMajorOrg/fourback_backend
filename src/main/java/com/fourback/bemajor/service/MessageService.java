@@ -1,7 +1,7 @@
 package com.fourback.bemajor.service;
 
-import com.fourback.bemajor.domain.Message;
-import com.fourback.bemajor.dto.MessageDto;
+import com.fourback.bemajor.domain.ChatMessage;
+import com.fourback.bemajor.dto.ChatMessageDto;
 import com.fourback.bemajor.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,9 +16,9 @@ public class MessageService {
     private final MessageRepository messageRepository;
 
     @Transactional
-    public List<MessageDto> getMessages(String oauth2Id) {
-        List<Message> messages = messageRepository.getMessagesByOauth2Id(oauth2Id);
-        return messages.stream().map(Message::toMessageDto).collect(Collectors.toList());
+    public List<ChatMessageDto> getMessages(String oauth2Id) {
+        List<ChatMessage> chatMessages = messageRepository.getMessagesByOauth2Id(oauth2Id);
+        return chatMessages.stream().map(ChatMessage::toMessageDto).collect(Collectors.toList());
     }
 
     @Transactional
@@ -27,7 +27,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void saveMessageByOauth2Id(String oauth2Id, MessageDto messageDto) {
-        messageRepository.save(messageDto.toMessageEntity(oauth2Id));
+    public void saveMessageByOauth2Id(String oauth2Id, ChatMessageDto chatMessageDto) {
+        messageRepository.save(chatMessageDto.toMessageEntity(oauth2Id));
     }
 }

@@ -7,7 +7,6 @@ import com.fourback.bemajor.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -19,10 +18,9 @@ import java.security.Principal;
 public class UserController {
 
     private final UserService userService;
-
     @PostMapping
-    public ResponseEntity<?> saveUser(@RequestBody LoginUserDto loginUserDto) {
-        TokenDto tokenDto = userService.save(loginUserDto);
+    public ResponseEntity<?> saveUser(@RequestBody LoginUserDto loginUserDto, @RequestHeader("fcm") String fcmToken) {
+        TokenDto tokenDto = userService.save(loginUserDto, fcmToken);
         return ResponseEntity.ok()
                 .header("access", tokenDto.getAccessToken())
                 .header("refresh", tokenDto.getRefreshToken()).build();

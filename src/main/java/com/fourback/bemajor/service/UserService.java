@@ -20,7 +20,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final AuthService authService;
     private final ImageFileService imageFileService;
-
+    private final RedisService redisService;
     @Transactional
     public User findByOauth2Id(String oauth2Id) {
         Optional<User> ou = userRepository.findByOauth2Id(oauth2Id);
@@ -40,7 +40,7 @@ public class UserService {
     }
 
     @Transactional
-    public TokenDto save(LoginUserDto loginUserDto) {
+    public TokenDto save(LoginUserDto loginUserDto, String fcmToken) {
         String registrationId = loginUserDto.getRegistrationId();
         String oauth2Id = registrationId + loginUserDto.getUserId();
         Optional<User> ou = userRepository.findByOauth2Id(oauth2Id);
@@ -58,6 +58,7 @@ public class UserService {
                 userRepository.save(user);
             }
         }
+        redisService.putFcmToken(oauth2Id, fcmToken);
         return authService.newToken(user.getOauth2Id(), user.getRole());
     }
 

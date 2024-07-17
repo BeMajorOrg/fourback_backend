@@ -1,6 +1,6 @@
 package com.fourback.bemajor.domain;
 
-import com.fourback.bemajor.dto.MessageDto;
+import com.fourback.bemajor.dto.ChatMessageDto;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Message {
+public class ChatMessage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
@@ -26,7 +26,7 @@ public class Message {
     private LocalDateTime sendTime;
     private String sender;
 
-    public MessageDto toMessageDto(){
-        return new MessageDto(this.message,this.sender,this.sendTime);
+    public ChatMessageDto toMessageDto(){
+        return new ChatMessageDto(this.message,this.sender,this.sendTime);
     }
 }
