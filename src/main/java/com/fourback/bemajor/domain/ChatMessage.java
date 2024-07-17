@@ -22,6 +22,7 @@ public class ChatMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     private String oauth2Id;
+    private Long StudyGroupId;
     private String message;
     private LocalDateTime sendTime;
     private String sender;

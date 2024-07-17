@@ -15,12 +15,13 @@ public class ChatMessageDto {
     private String sender;
     private LocalDateTime sendTime;
 
-    public ChatMessage toMessageEntity(String oauth2Id){
+    public ChatMessage toMessageEntity(String oauth2Id,long studyGroupId){
         return ChatMessage.builder()
                 .message(this.message)
                 .sender(this.sender)
                 .sendTime(this.sendTime)
                 .oauth2Id(oauth2Id)
+                .StudyGroupId(studyGroupId)
                 .build();
     }
 }

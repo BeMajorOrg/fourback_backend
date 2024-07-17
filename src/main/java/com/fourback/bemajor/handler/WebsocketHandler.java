@@ -5,7 +5,7 @@ import com.fourback.bemajor.domain.StudyGroup;
 import com.fourback.bemajor.dto.ChatMessageDto;
 import com.fourback.bemajor.repository.StudyGroupRepository;
 import com.fourback.bemajor.service.FcmService;
-import com.fourback.bemajor.service.MessageService;
+import com.fourback.bemajor.service.ChatMessageService;
 import com.fourback.bemajor.service.RedisService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class WebsocketHandler extends TextWebSocketHandler {
     private final StudyGroupRepository studyGroupRepository;
     private final Map<Long, Set<WebSocketSession>> websocketSessionsMap;
     private final RedisService redisService;
-    private final MessageService messageService;
+    private final ChatMessageService chatMessageService;
     private final ObjectMapper objectMapper;
     private final FcmService fcmService;
 
@@ -37,7 +37,7 @@ public class WebsocketHandler extends TextWebSocketHandler {
         String oauth2Id = querys[1].split("=")[1];
         redisService.deleteDisConnectUser(Long.toString(studyGroupId), oauth2Id);
         websocketSessionsMap.get(studyGroupId).add(session);
-        List<ChatMessageDto> chatMessageDtos = messageService.getMessages(oauth2Id);
+        List<ChatMessageDto> chatMessageDtos = chatMessageService.getMessages(oauth2Id, studyGroupId);
         for (ChatMessageDto chatMessageDto : chatMessageDtos) {
             session.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatMessageDto)));
         }
@@ -57,7 +57,7 @@ public class WebsocketHandler extends TextWebSocketHandler {
         }
         Map<String, String> disconnectedUser = redisService.getDisConnectUser(Long.toString(studyGroupId));
         disconnectedUser.forEach((oauth2Id, fcmToken) -> {
-            messageService.saveMessageByOauth2Id(oauth2Id, chatMessageDto);
+            chatMessageService.saveMessageByOauth2Id(oauth2Id, chatMessageDto, studyGroupId);
             fcmService.sendalarm(chatMessageDto, oauth2Id, studyGroupName);
         });
     }
@@ -70,7 +70,7 @@ public class WebsocketHandler extends TextWebSocketHandler {
         websocketSessionsMap.get(studyGroupId).remove(session);
         String fcmToken = redisService.getFcmToken(oauth2Id);
         redisService.putDisConnectUser(Long.toString(studyGroupId), oauth2Id, fcmToken);
-        messageService.deleteMessagesByOauth2Id(oauth2Id);
+        chatMessageService.deleteMessagesByOauth2Id(oauth2Id,studyGroupId);
     }
 
 
