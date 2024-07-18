@@ -27,6 +27,11 @@ public class ChatMessageService {
     }
 
     @Transactional
+    public void deleteMessages(String oauth2Id) {
+        chatMessageRepository.deleteMessagesByOauth2Id(oauth2Id);
+    }
+
+    @Transactional
     public void saveMessage(String oauth2Id, ChatMessageDto chatMessageDto, long studyGroupId) {
         chatMessageRepository.save(chatMessageDto.toMessageEntity(oauth2Id,studyGroupId));
     }

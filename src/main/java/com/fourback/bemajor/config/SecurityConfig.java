@@ -64,7 +64,7 @@ public class SecurityConfig {
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         http
-                .addFilterBefore(new CustomLogoutFilter(redisService), LogoutFilter.class);
+                .addFilterBefore(new CustomLogoutFilter(redisService,jwtUtil), LogoutFilter.class);
         http
                 .addFilterBefore(new JWTExceptionFilter(), JWTFilter.class);
         return http.build();

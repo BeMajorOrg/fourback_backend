@@ -40,10 +40,14 @@ public class RedisService {
     }
 
     public void putFcmToken(String oauth2Id, String fcmToken) {
-        redisTemplate.opsForValue().set(oauth2Id, fcmToken);
+        redisTemplate.opsForValue().set("fcm"+oauth2Id, fcmToken);
     }
 
     public String getFcmToken(String oauth2Id) {
-        return redisTemplate.opsForValue().get(oauth2Id);
+        return redisTemplate.opsForValue().get("fcm"+oauth2Id);
+    }
+
+    public void deleteFcmToken(String oauth2Id) {
+        redisTemplate.delete("fcm"+oauth2Id);
     }
 }

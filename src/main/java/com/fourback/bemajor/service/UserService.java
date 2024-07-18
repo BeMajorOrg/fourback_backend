@@ -1,10 +1,13 @@
 package com.fourback.bemajor.service;
 
+import com.fourback.bemajor.domain.StudyGroup;
 import com.fourback.bemajor.domain.User;
 import com.fourback.bemajor.dto.LoginUserDto;
 import com.fourback.bemajor.dto.TokenDto;
 import com.fourback.bemajor.dto.UserDto;
 import com.fourback.bemajor.exception.NotFoundElementException;
+import com.fourback.bemajor.repository.ChatMessageRepository;
+import com.fourback.bemajor.repository.StudyGroupRepository;
 import com.fourback.bemajor.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -21,6 +25,9 @@ public class UserService {
     private final AuthService authService;
     private final ImageFileService imageFileService;
     private final RedisService redisService;
+    private final StudyGroupRepository studyGroupRepository;
+    private final ChatMessageService chatMessageService;
+
     @Transactional
     public User findByOauth2Id(String oauth2Id) {
         Optional<User> ou = userRepository.findByOauth2Id(oauth2Id);
@@ -81,6 +88,13 @@ public class UserService {
         if (user.getUserImage() != null) {
             imageFileService.deleteImageFile(user.getUserImage().getFilePath());
         }
+        List<StudyGroup> studyGroupList = studyGroupRepository.findAll();
+        studyGroupList.forEach((studyGroup) -> {
+            redisService.deleteDisConnectUser(Long.toString(studyGroup.getId()),oauth2Id);
+        });
+        chatMessageService.deleteMessages(oauth2Id);
         userRepository.delete(user);
+        redisService.deleteRefreshToken(oauth2Id);
+        redisService.deleteFcmToken(oauth2Id);
     }
 }
