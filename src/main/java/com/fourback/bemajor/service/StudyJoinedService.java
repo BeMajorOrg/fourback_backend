@@ -13,7 +13,9 @@ import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,6 +26,8 @@ public class StudyJoinedService {
     private final StudyJoinedRepository studyJoinedRepository;
     private final UserRepository userRepository;
     private final StudyGroupRepository studyGroupRepository;
+    private final RedisService redisService;
+    private final ChatMessageService chatMessageService;
 
     public void joinStudyGroup(String userId, Long studyGroupId){
         Optional<StudyGroup> studyGroupOptional = studyGroupRepository.findById(studyGroupId);
@@ -37,8 +41,12 @@ public class StudyJoinedService {
         studyJoinedRepository.save(new StudyJoined(studyGroupOptional.get(), userOptional.get()));
     }
 
-    public void exitStudyGroup(Long studyJoinedId){
-        studyJoinedRepository.deleteById(studyJoinedId);
+    @Transactional
+    public void exitStudyGroup(Long studyGroupId, String oauth2Id){
+        List<Long> idsByStudyGroupIdAndOauth2Id = studyJoinedRepository.findIdsByStudyGroupIdAndOauth2Id(studyGroupId, oauth2Id);
+        studyJoinedRepository.deleteByIds(idsByStudyGroupIdAndOauth2Id);
+        redisService.deleteDisConnectUser(Long.toString(studyGroupId), oauth2Id);
+        chatMessageService.deleteMessages(oauth2Id,studyGroupId);
     }
 
     public List<UserDto> getAllStudyUser(Long studyGroupId){

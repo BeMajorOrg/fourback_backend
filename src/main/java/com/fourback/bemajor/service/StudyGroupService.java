@@ -1,10 +1,15 @@
 package com.fourback.bemajor.service;
 
 import com.fourback.bemajor.domain.StudyGroup;
+import com.fourback.bemajor.domain.StudyJoined;
+import com.fourback.bemajor.domain.User;
 import com.fourback.bemajor.dto.StudyGroupDto;
 import com.fourback.bemajor.exception.NoSuchStudyGroupException;
+import com.fourback.bemajor.exception.NoSuchUserException;
 import com.fourback.bemajor.exception.NotAuthorizedException;
 import com.fourback.bemajor.repository.StudyGroupRepository;
+import com.fourback.bemajor.repository.StudyJoinedRepository;
+import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +28,8 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class StudyGroupService {
     private final StudyGroupRepository studyGroupRepository;
+    private final UserRepository userRepository;
+    private final StudyJoinedRepository studyJoinedRepository;
     private final Map<Long, Set<WebSocketSession>> websocketSessionsMap;
 
     public List<StudyGroupDto> getAllStudyGroup(int page, String category){
@@ -41,6 +48,12 @@ public class StudyGroupService {
     @Transactional
     public void createStudyGroup(StudyGroupDto studyGroupDto, String oauth2Id){
         StudyGroup studyGroup = studyGroupDto.toEntity(oauth2Id);
+        StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
+        Optional<User> byOauth2Id = userRepository.findByOauth2Id(oauth2Id);
+        if (byOauth2Id.isEmpty()) throw new NoSuchUserException(6,"no such user",HttpStatus.BAD_REQUEST);
+        User user = byOauth2Id.get();
+        StudyJoined studyJoined = new StudyJoined(savedGroup, user);
+        studyJoinedRepository.save(studyJoined);
         studyGroupRepository.save(studyGroup);
         websocketSessionsMap.put(studyGroup.getId(), Collections.newSetFromMap(new ConcurrentHashMap<>()));
     }

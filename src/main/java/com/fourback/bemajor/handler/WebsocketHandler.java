@@ -57,7 +57,7 @@ public class WebsocketHandler extends TextWebSocketHandler {
         }
         Map<String, String> disconnectedUser = redisService.getDisConnectUser(Long.toString(studyGroupId));
         disconnectedUser.forEach((oauth2Id, fcmToken) -> {
-            chatMessageService.saveMessageByOauth2Id(oauth2Id, chatMessageDto, studyGroupId);
+            chatMessageService.saveMessage(oauth2Id, chatMessageDto, studyGroupId);
             fcmService.sendalarm(chatMessageDto, oauth2Id, studyGroupName);
         });
     }
@@ -70,7 +70,7 @@ public class WebsocketHandler extends TextWebSocketHandler {
         websocketSessionsMap.get(studyGroupId).remove(session);
         String fcmToken = redisService.getFcmToken(oauth2Id);
         redisService.putDisConnectUser(Long.toString(studyGroupId), oauth2Id, fcmToken);
-        chatMessageService.deleteMessagesByOauth2Id(oauth2Id,studyGroupId);
+        chatMessageService.deleteMessages(oauth2Id,studyGroupId);
     }
 
 

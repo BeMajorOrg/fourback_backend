@@ -36,7 +36,7 @@ public class User {
     List<StudyJoined> studyJoineds = new ArrayList<>();
 
     @Setter
-    @OneToOne(mappedBy = "user",cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToOne(mappedBy = "user",cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
     UserImage userImage;
 
     public UserWithImageDto toUserWithImageDto() {
