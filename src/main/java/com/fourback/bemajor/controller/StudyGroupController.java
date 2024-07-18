@@ -53,7 +53,7 @@ public class StudyGroupController {
 
     @PostMapping("/studygroup/exitgroup/{studyGroupId}")
     public ResponseEntity<Void> exitGroup(@PathVariable("studyGroupId") Long groupId,Principal principal){
-        studyJoinedService.exitStudyGroup(groupId);
+        studyJoinedService.exitStudyGroup(groupId,principal.getName());
         return ResponseEntity.ok().build();
     }
 

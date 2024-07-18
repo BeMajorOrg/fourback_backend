@@ -1,6 +1,7 @@
 package com.fourback.bemajor.dto;
 
 import com.fourback.bemajor.domain.StudyGroup;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;

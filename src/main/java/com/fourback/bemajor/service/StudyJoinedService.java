@@ -13,7 +13,9 @@ import com.fourback.bemajor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,8 +39,10 @@ public class StudyJoinedService {
         studyJoinedRepository.save(new StudyJoined(studyGroupOptional.get(), userOptional.get()));
     }
 
-    public void exitStudyGroup(Long studyJoinedId){
-        studyJoinedRepository.deleteById(studyJoinedId);
+    @Transactional
+    public void exitStudyGroup(Long studyGroupId, String oauth2Id){
+        List<Long> idsByStudyGroupIdAndOauth2Id = studyJoinedRepository.findIdsByStudyGroupIdAndOauth2Id(studyGroupId, oauth2Id);
+        studyJoinedRepository.deleteByIds(idsByStudyGroupIdAndOauth2Id);
     }
 
     public List<UserDto> getAllStudyUser(Long studyGroupId){
