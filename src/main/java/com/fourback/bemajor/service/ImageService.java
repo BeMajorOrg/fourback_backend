@@ -50,7 +50,7 @@ public class ImageService {
             String extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
             String uniqueFilename = UUID.randomUUID().toString() + extension;
             Path filePath = Paths.get(UPLOAD_DIR, uniqueFilename);
-            imageFileService.saveImageFile(filePath,file);
+            imageFileService.saveImageFile(filePath, file);
             image.setFilePath(filePath.toString());
             image.setFileName(uniqueFilename);
         }
@@ -67,13 +67,12 @@ public class ImageService {
     }
 
     @Transactional
-    public void save(String oauth2Id, MultipartFile file) throws IOException {
-        if (file != null) {
-            User user = userService.findByOauth2Id(oauth2Id);
-            UserImage image = new UserImage();
-            user.setUserImage(image);
-            image.setUser(user);
-            this.saveImage(image, file);
-        }
+    public String save(String oauth2Id, MultipartFile file) throws IOException {
+        User user = userService.findByOauth2Id(oauth2Id);
+        UserImage image = new UserImage();
+        user.setUserImage(image);
+        image.setUser(user);
+        this.saveImage(image, file);
+        return image.getFileName();
     }
 }

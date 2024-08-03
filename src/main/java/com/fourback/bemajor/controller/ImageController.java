@@ -36,7 +36,7 @@ public class ImageController {
 
     @PostMapping
     public ResponseEntity<?> saveImage(Principal principal, @RequestParam("file") MultipartFile file) throws IOException {
-        imageService.save(principal.getName(),file);
-        return ResponseEntity.ok().build();
+        String filename = imageService.save(principal.getName(),file);
+        return ResponseEntity.ok().body(filename);
     }
 }
