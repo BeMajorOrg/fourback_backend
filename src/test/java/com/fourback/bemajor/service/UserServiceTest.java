@@ -1,6 +1,7 @@
 package com.fourback.bemajor.service;
 
-import com.fourback.bemajor.repository.UserRepository;
+import com.fourback.bemajor.domain.user.service.UserService;
+import com.fourback.bemajor.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

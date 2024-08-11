@@ -1,6 +1,6 @@
 package com.fourback.bemajor.domain;
 
-import com.fourback.bemajor.dto.UserAuthDto;
+import com.fourback.bemajor.domain.user.dto.UserAuthDto;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

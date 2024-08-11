@@ -1,6 +1,7 @@
 package com.fourback.bemajor.repository;
 
-import com.fourback.bemajor.domain.User;
+import com.fourback.bemajor.domain.user.entity.User;
+import com.fourback.bemajor.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
