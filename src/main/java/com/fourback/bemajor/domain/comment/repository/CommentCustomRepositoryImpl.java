@@ -4,7 +4,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.stereotype.Repository;
 import com.fourback.bemajor.domain.comment.entity.Comment;
 import java.util.List;
-import static com.fourback.bemajor.domain.QComment.comment;
+
+import static com.fourback.bemajor.domain.comment.entity.QComment.comment;
 
 @Repository
     public class CommentCustomRepositoryImpl implements CommentCustomRepository {

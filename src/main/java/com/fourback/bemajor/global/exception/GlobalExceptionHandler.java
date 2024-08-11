@@ -1,7 +1,6 @@
 package com.fourback.bemajor.global.exception;
 
 import com.fourback.bemajor.global.exception.kind.*;
-import com.fourback.bemajor.kind.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;

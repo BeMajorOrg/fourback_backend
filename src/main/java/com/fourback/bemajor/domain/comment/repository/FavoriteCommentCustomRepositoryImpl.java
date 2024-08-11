@@ -8,7 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.fourback.bemajor.domain.QFavoriteComment.favoriteComment;
+import static com.fourback.bemajor.domain.comment.entity.QFavoriteComment.favoriteComment;
+
 
 @Repository
     public class FavoriteCommentCustomRepositoryImpl implements FavoriteCommentCustomRepository {
