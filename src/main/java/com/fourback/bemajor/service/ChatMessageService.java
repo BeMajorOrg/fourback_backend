@@ -1,8 +1,8 @@
 package com.fourback.bemajor.service;
 
 import com.fourback.bemajor.domain.ChatMessage;
+import com.fourback.bemajor.domain.comment.repository.ChatMessageRepository;
 import com.fourback.bemajor.dto.ChatMessageDto;
-import com.fourback.bemajor.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

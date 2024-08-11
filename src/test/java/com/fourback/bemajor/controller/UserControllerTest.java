@@ -1,6 +1,7 @@
 package com.fourback.bemajor.controller;
 
-import com.fourback.bemajor.service.UserService;
+import com.fourback.bemajor.domain.user.controller.UserController;
+import com.fourback.bemajor.domain.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
