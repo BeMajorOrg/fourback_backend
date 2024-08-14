@@ -11,8 +11,8 @@ import com.fourback.bemajor.domain.community.entity.Post;
 import com.fourback.bemajor.domain.community.repository.BoardRepository;
 import com.fourback.bemajor.domain.community.repository.FavoritePostRepository;
 import com.fourback.bemajor.domain.community.repository.PostRepository;
-import com.fourback.bemajor.domain.image.entity.PostImage;
-import com.fourback.bemajor.domain.image.repository.PostImageRepository;
+import com.fourback.bemajor.domain.image.entity.ImageEntity;
+import com.fourback.bemajor.domain.image.repository.ImageRepository;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
 import com.fourback.bemajor.domain.community.dto.PostDto;
@@ -20,7 +20,7 @@ import com.fourback.bemajor.domain.community.dto.PostListDto;
 
 import com.fourback.bemajor.domain.community.dto.PostUpdateDto;
 
-import com.fourback.bemajor.domain.image.service.ImageFileService;
+import com.fourback.bemajor.global.common.service.ImageFileService;
 import com.fourback.bemajor.domain.image.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -45,8 +45,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
-    private final PostImageRepository imageRepository;
     private final ImageService imageService;
+    private final ImageRepository imageRepository;
     private final FavoritePostRepository favoritePostRepository;
     private final FavoriteCommentRepository favoriteCommentRepository;
     private final CommentRepository commentRepository;
@@ -65,9 +65,9 @@ public class PostService {
         postRepository.save(post);
         if (imageFiles != null) {
             for (MultipartFile imageFile : imageFiles) {
-                PostImage image = new PostImage();
+                ImageEntity image = new ImageEntity();
                 image.setPost(post);
-                imageService.saveImage(image, imageFile);
+                imageService.save(image, imageFile);
             }
         }
         return post.getId();
@@ -84,8 +84,7 @@ public class PostService {
                     if (p.getUser().getUserId().equals(userEntity.getUserId())) {
                         userCheck = true;
                     }
-                    List<PostImage> imageList = imageRepository.findByPostId(p.getId());
-
+                    List<ImageEntity> imageList = imageRepository.findByPostId(p.getId());
                     String postDate;
                     LocalDateTime currentTime = LocalDateTime.now();
                     Duration duration = Duration.between(p.getCreatedDate(), currentTime);
@@ -137,7 +136,7 @@ public class PostService {
                     if (p.getUser().getUserId().equals(userEntity.getUserId())) {
                         userCheck = true;
                     }
-                    List<PostImage> imageList = imageRepository.findByPostId(p.getId());
+                    List<ImageEntity> imageList = imageRepository.findByPostId(p.getId());
 
                     String postDate;
                     LocalDateTime currentTime = LocalDateTime.now();
@@ -176,7 +175,7 @@ public class PostService {
                     if (p.getUser().getUserId().equals(userEntity.getUserId())) {
                         userCheck = true;
                     }
-                    List<PostImage> imageList = imageRepository.findByPostId(p.getId());
+                    List<ImageEntity> imageList = imageRepository.findByPostId(p.getId());
 
                     String postDate;
                     LocalDateTime currentTime = LocalDateTime.now();
@@ -213,9 +212,9 @@ public class PostService {
         post.setContent(content);
         if (images != null) {
             for (MultipartFile imageFile : images) {
-                PostImage image = new PostImage();
+                ImageEntity image = new ImageEntity();
                 image.setPost(post);
-                imageService.saveImage(image, imageFile);
+                imageService.save(image, imageFile);
             }
 
 
@@ -244,7 +243,7 @@ public class PostService {
                 postDate = days + "일 전";
             }
         }
-        List<PostImage> imageList = imageRepository.findByPostId(post.getId());
+        List<ImageEntity> imageList = imageRepository.findByPostId(post.getId());
         PostUpdateDto postUpdateDto = new PostUpdateDto(post, postDate, imageList);
         return postUpdateDto;
     }
@@ -276,8 +275,8 @@ public class PostService {
             commentRepository.delete(comment);
         }
 
-        List<PostImage> images = imageRepository.findByPostId(postId);
-        for (PostImage image : images) {
+        List<ImageEntity> images = imageRepository.findByPostId(postId);
+        for (ImageEntity image : images) {
             imageFileService.deleteImageFile(image.getFilePath());
             imageRepository.delete(image);
         }

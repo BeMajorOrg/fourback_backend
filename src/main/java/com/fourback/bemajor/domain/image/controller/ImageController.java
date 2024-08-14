@@ -2,6 +2,7 @@ package com.fourback.bemajor.domain.image.controller;
 
 
 import com.fourback.bemajor.domain.image.service.ImageService;
+import com.fourback.bemajor.global.common.response.Response;
 import com.fourback.bemajor.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -33,12 +34,6 @@ public class ImageController {
     @DeleteMapping
     public ResponseEntity<?> deleteImage(@RequestBody List<String> fileNames) throws IOException {
         imageService.delete(fileNames);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping
-    public ResponseEntity<?> saveImage(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam("file") MultipartFile file) throws IOException {
-        String filename = imageService.save(customUserDetails.getUserId(),file);
-        return ResponseEntity.ok().body(filename);
+        return Response.onSuccess();
     }
 }

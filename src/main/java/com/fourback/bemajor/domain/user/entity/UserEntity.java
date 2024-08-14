@@ -1,10 +1,8 @@
 package com.fourback.bemajor.domain.user.entity;
 
-import com.fourback.bemajor.domain.image.entity.UserImage;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
 import com.fourback.bemajor.domain.user.dto.request.UserRequestDto;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
-import com.fourback.bemajor.domain.user.dto.response.UserWithImageResponseDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -16,7 +14,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "update user set is_deleted=true, name='<알 수 없음>' where user_id = ?")
+@SQLDelete(sql = "update user set is_deleted=true where user_id = ?")
 @Builder
 @Table(name = "user")
 public class UserEntity {
@@ -62,27 +60,27 @@ public class UserEntity {
     @Column(name = "is_deleted")
     boolean isDeleted;
 
+    @Setter
+    @Column(name = "user_image")
+    String fileName;
+
     @OneToMany(mappedBy = "user")
     List<StudyJoined> studyJoineds = new ArrayList<>();
 
-    @Setter
-    @OneToOne(mappedBy = "user",cascade = CascadeType.REMOVE,
-            orphanRemoval = true, fetch = FetchType.LAZY)
-    UserImage userImage;
-
-    public UserWithImageResponseDto toUserWithImageDto() {
-        UserWithImageResponseDto userWithImageResponseDto = new UserWithImageResponseDto(
-                this.userName, this.email, this.birth, this.belong, this.department,
-                this.hobby, this.objective, this.address, this.techStack, this.isDeleted);
-        if (userImage != null)
-            userWithImageResponseDto.setImageName(userImage.getFileName());
-        return userWithImageResponseDto;
-    }
-
     public UserResponseDto toUserResponseDto() {
-        return new UserResponseDto(this.userName, this.email, this.birth,
-                this.belong, this.department, this.hobby, this.objective,
-                this.address, this.techStack, this.isDeleted);
+        return UserResponseDto.builder()
+                .userName(this.userName)
+                .address(this.address)
+                .department(this.department)
+                .fileName(this.fileName)
+                .email(this.email)
+                .hobby(this.hobby)
+                .birth(this.birth)
+                .belong(this.belong)
+                .objective(this.objective)
+                .techStack(this.techStack)
+                .isDeleted(this.isDeleted)
+                .build();
     }
 
     public void setUserEntity(UserRequestDto userRequestDto) {
