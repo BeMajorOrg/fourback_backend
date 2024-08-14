@@ -1,14 +1,17 @@
 package com.fourback.bemajor.domain.user.service;
 
-import com.fourback.bemajor.domain.user.entity.User;
-import com.fourback.bemajor.domain.user.dto.LoginUserDto;
-import com.fourback.bemajor.domain.user.dto.TokenDto;
-import com.fourback.bemajor.domain.user.dto.UserDto;
-import com.fourback.bemajor.global.exception.kind.NotFoundElementException;
-import com.fourback.bemajor.domain.user.repository.UserRepository;
 import com.fourback.bemajor.domain.image.service.ImageFileService;
+import com.fourback.bemajor.domain.user.dto.request.UserLoginRequestDto;
+import com.fourback.bemajor.domain.user.dto.request.UserRequestDto;
+import com.fourback.bemajor.domain.user.dto.response.UserWithImageResponseDto;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
+import com.fourback.bemajor.domain.user.repository.UserRepository;
+import com.fourback.bemajor.global.exception.ExceptionEnum;
+import com.fourback.bemajor.global.exception.kind.NotFoundElementException;
+import com.fourback.bemajor.global.security.JWTUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -19,37 +22,20 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final AuthService authService;
+    private final JWTUtil jwtUtil;
     private final ImageFileService imageFileService;
 
     @Transactional
-    public User findByOauth2Id(String oauth2Id) {
-        Optional<User> ou = userRepository.findByOauth2Id(oauth2Id);
+    public HttpHeaders save(UserLoginRequestDto userLoginRequestDto) {
+        String registrationId = userLoginRequestDto.getRegistrationId();
+        String oauth2Id = registrationId + userLoginRequestDto.getUserId();
+        Optional<UserEntity> ou = userRepository.findByOauth2Id(oauth2Id);
+        UserEntity user;
         if (ou.isEmpty()) {
-            throw new NotFoundElementException(1, "That is not in DB", HttpStatus.NOT_FOUND);
-        }
-        return ou.get();
-    }
-
-    @Transactional
-    public User findByOauth2IdWithImage(String oauth2Id) {
-        Optional<User> ou = userRepository.findByOauth2IdWithImage(oauth2Id);
-        if (ou.isEmpty()) {
-            throw new NotFoundElementException(1, "That is not in DB", HttpStatus.NOT_FOUND);
-        }
-        return ou.get();
-    }
-
-    @Transactional
-    public TokenDto save(LoginUserDto loginUserDto) {
-        String registrationId = loginUserDto.getRegistrationId();
-        String oauth2Id = registrationId + loginUserDto.getUserId();
-        Optional<User> ou = userRepository.findByOauth2Id(oauth2Id);
-        User user;
-        if (ou.isEmpty()) {
-            user = User.builder()
+            user = UserEntity.builder()
                     .role("ROLE_USER")
                     .oauth2Id(oauth2Id)
+                    .isDeleted(false)
                     .build();
             userRepository.save(user);
         } else {
@@ -59,28 +45,35 @@ public class UserService {
                 userRepository.save(user);
             }
         }
-        return authService.newToken(user.getOauth2Id(), user.getRole());
+        return jwtUtil.createTokens(user.getUserId(), user.getRole());
+    }
+
+    public UserWithImageResponseDto get(Long userId) {
+        UserEntity userEntity = findByIdWithImage(userId);
+        return userEntity.toUserWithImageDto();
     }
 
     @Transactional
-    public UserDto get(String oauth2Id) {
-        User user = findByOauth2IdWithImage(oauth2Id);
-        return user.toUserWithImageDto();
+    public void update(UserRequestDto userDto, Long userId) {
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(()
+                -> new NotFoundElementException(ExceptionEnum.NOTFOUNDELEMENT.ordinal(),
+                "This is not in DB", HttpStatus.LOCKED));
+        userEntity.setUserEntity(userDto);
+        userRepository.save(userEntity);
     }
 
     @Transactional
-    public void update(UserDto userDto, String oauth2Id) {
-        User user = findByOauth2Id(oauth2Id);
-        user.setUserDto(userDto);
-        userRepository.save(user);
-    }
-
-    @Transactional
-    public void delete(String oauth2Id) throws IOException {
-        User user = findByOauth2IdWithImage(oauth2Id);
-        if (user.getUserImage() != null) {
-            imageFileService.deleteImageFile(user.getUserImage().getFilePath());
+    public void delete(Long userId) throws IOException {
+        UserEntity userEntity = findByIdWithImage(userId);
+        if (userEntity.getUserImage() != null) {
+            imageFileService.deleteImageFile(userEntity.getUserImage().getFilePath());
         }
-        userRepository.delete(user);
+        userRepository.delete(userEntity);
+    }
+
+    private UserEntity findByIdWithImage(Long userId){
+        return userRepository.findByIdWithImage(userId).orElseThrow(()
+                -> new NotFoundElementException(ExceptionEnum.NOTFOUNDELEMENT.ordinal(),
+                "This is not in DB", HttpStatus.LOCKED));
     }
 }

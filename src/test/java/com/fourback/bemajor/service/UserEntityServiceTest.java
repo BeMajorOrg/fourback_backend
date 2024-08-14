@@ -12,7 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.IOException;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+public class UserEntityServiceTest {
     @InjectMocks
     UserService userService;
 
@@ -22,12 +22,12 @@ public class UserServiceTest {
     @Test
     public void deleteTest() throws IOException {
         //given
-        Mockito.doNothing().when(userRepository).deleteByOauth2Id("kakao123");
+        Mockito.doNothing().when(userRepository).deleteById(1L);
 
         //when
-        userService.delete("kakao123");
+        userService.delete(1L);
 
         //then
-        Mockito.verify(userRepository, Mockito.times(1)).deleteByOauth2Id("kakao123");
+        Mockito.verify(userRepository, Mockito.times(1)).deleteById(1L);
     }
 }

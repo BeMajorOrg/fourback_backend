@@ -1,11 +1,12 @@
 package com.fourback.bemajor.domain.image.service;
 
 import com.fourback.bemajor.domain.image.entity.Image;
-import com.fourback.bemajor.domain.user.entity.User;
 import com.fourback.bemajor.domain.image.entity.UserImage;
-import com.fourback.bemajor.domain.user.service.UserService;
-import com.fourback.bemajor.global.exception.kind.NotFoundElementException;
 import com.fourback.bemajor.domain.image.repository.ImageRepository;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
+import com.fourback.bemajor.domain.user.repository.UserRepository;
+import com.fourback.bemajor.global.exception.ExceptionEnum;
+import com.fourback.bemajor.global.exception.kind.NotFoundElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -26,8 +27,9 @@ import java.util.UUID;
 public class ImageService {
     private final ImageRepository imageRepository;
     private static final String UPLOAD_DIR = "uploads/";
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final ImageFileService imageFileService;
+
 
     public Image findByFileName(String fileName) {
         Optional<Image> oi = imageRepository.findByFileName(fileName);
@@ -67,11 +69,13 @@ public class ImageService {
     }
 
     @Transactional
-    public String save(String oauth2Id, MultipartFile file) throws IOException {
-        User user = userService.findByOauth2Id(oauth2Id);
+    public String save(Long userId, MultipartFile file) throws IOException {
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(()
+                -> new NotFoundElementException(ExceptionEnum.NOTFOUNDELEMENT.ordinal(),
+                "This is not in DB", HttpStatus.LOCKED));
         UserImage image = new UserImage();
-        user.setUserImage(image);
-        image.setUser(user);
+        userEntity.setUserImage(image);
+        image.setUser(userEntity);
         this.saveImage(image, file);
         return image.getFileName();
     }

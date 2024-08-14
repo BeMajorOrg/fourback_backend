@@ -1,6 +1,6 @@
 package com.fourback.bemajor.domain.aws.entity;
 
-import com.fourback.bemajor.domain.user.entity.User;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,7 +25,7 @@ public class UserCloudImage {
   private String imagePath;
   @OneToOne(fetch = FetchType.LAZY)
   @Setter
-  private User user;
+  private UserEntity user;
 
   public UserCloudImage(Long imageId, String imagePath) {
     this.id = imageId;

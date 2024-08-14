@@ -1,10 +1,7 @@
 package com.fourback.bemajor.global.config;
 
 
-import com.fourback.bemajor.global.security.CustomLogoutFilter;
-import com.fourback.bemajor.global.security.JWTExceptionFilter;
-import com.fourback.bemajor.global.security.JWTFilter;
-import com.fourback.bemajor.global.security.JWTUtil;
+import com.fourback.bemajor.global.security.*;
 import com.fourback.bemajor.global.common.service.RedisService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +63,8 @@ public class SecurityConfig {
                 .addFilterBefore(new CustomLogoutFilter(redisService), LogoutFilter.class);
         http
                 .addFilterBefore(new JWTExceptionFilter(), JWTFilter.class);
+        http
+                .addFilterAfter(new ReissueTokenFilter(jwtUtil), JWTFilter.class);
         return http.build();
     }
 }

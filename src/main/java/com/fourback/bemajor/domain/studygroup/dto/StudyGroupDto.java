@@ -32,7 +32,7 @@ public class StudyGroupDto {
                 studyGroup.getStudyRule());
     }
 
-    public StudyGroup toEntity(String ownerOauth2Id){
+    public StudyGroup toEntity(Long ownerUserId){
         return new StudyGroup(
                 studyName,
                 startDate,
@@ -42,6 +42,6 @@ public class StudyGroupDto {
                 category,
                 studyCycle,
                 studyRule,
-                ownerOauth2Id);
+                ownerUserId);
     }
 }

@@ -37,13 +37,9 @@ public class CustomLogoutFilter extends GenericFilterBean {
             return;
         }
 
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        //DB에 저장되어 있는지 확인
-        String refreshToken = redisService.getRefreshToken(username);
-        if (refreshToken != null) {
-            //response status code
-            redisService.deleteRefreshToken(username);
-        }
+        CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        redisService.deleteRefreshToken(customUserDetails.getUserId());
         SecurityContextHolder.clearContext();
         response.setHeader("refresh", null);
         response.setHeader("access",null);

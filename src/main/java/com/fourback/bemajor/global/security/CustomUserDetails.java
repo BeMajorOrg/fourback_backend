@@ -1,6 +1,6 @@
-package com.fourback.bemajor.domain;
+package com.fourback.bemajor.global.security;
 
-import com.fourback.bemajor.domain.user.dto.UserAuthDto;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,17 +9,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class CustomUserDetails implements UserDetails {
+    @Getter
+    private final Long userId;
+    private final String role;
 
-    private final UserAuthDto userAuthDto;
-
-    public CustomUserDetails(UserAuthDto userAuthDto) {
-        this.userAuthDto = userAuthDto;
+    public CustomUserDetails(Long userId, String role) {
+        this.userId = userId;
+        this.role = role;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(userAuthDto.getRole().toString()));
+        authorities.add(new SimpleGrantedAuthority(role));
         return authorities;
     }
 
@@ -30,7 +32,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return userAuthDto.getOauth2Id();
+        return "";
     }
 
     @Override

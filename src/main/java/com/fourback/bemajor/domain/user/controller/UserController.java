@@ -1,11 +1,15 @@
 package com.fourback.bemajor.domain.user.controller;
 
-import com.fourback.bemajor.domain.user.dto.LoginUserDto;
-import com.fourback.bemajor.domain.user.dto.TokenDto;
-import com.fourback.bemajor.domain.user.dto.UserDto;
+import com.fourback.bemajor.domain.user.dto.request.UserLoginRequestDto;
+import com.fourback.bemajor.domain.user.dto.request.UserRequestDto;
+import com.fourback.bemajor.domain.user.dto.response.UserWithImageResponseDto;
 import com.fourback.bemajor.domain.user.service.UserService;
+import com.fourback.bemajor.global.common.response.Response;
+import com.fourback.bemajor.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -20,34 +24,29 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<?> saveUser(@RequestBody LoginUserDto loginUserDto) {
-        TokenDto tokenDto = userService.save(loginUserDto);
-        return ResponseEntity.ok()
-                .header("access", tokenDto.getAccessToken())
-                .header("refresh", tokenDto.getRefreshToken()).build();
+    public ResponseEntity<?> saveUser(@RequestBody UserLoginRequestDto userLoginRequestDto) {
+        HttpHeaders tokens = userService.save(userLoginRequestDto);
+        return Response.onSuccess(tokens);
+
     }
 
     @GetMapping
-    public ResponseEntity<?> getUserInfo(Principal principal) {
-        UserDto userDto = userService.get(principal.getName());
-        return ResponseEntity.ok()
-                .body(userDto);
+    public ResponseEntity<?> getUserInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        UserWithImageResponseDto userWithImageResponseDto = userService.get(customUserDetails.getUserId());
+        return Response.onSuccess(userWithImageResponseDto);
     }
 
     @PatchMapping
-    public ResponseEntity<?> updateUserInfo(
-            @RequestParam String userName, @RequestParam String email, @RequestParam String birth,
-            @RequestParam String belong, @RequestParam String department, @RequestParam String hobby,
-            @RequestParam String objective, @RequestParam String address, @RequestParam String techStack, Principal principal) {
-        userService.update(new UserDto(userName, email, birth, belong, department, hobby, objective, address, techStack),
-                principal.getName());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> updateUserInfo(@RequestBody UserRequestDto userRequestDto,
+                                            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        userService.update(userRequestDto, customUserDetails.getUserId());
+        return Response.onSuccess();
     }
 
     @DeleteMapping
-    public ResponseEntity<?> deleteUser(Principal principal) throws IOException {
-        userService.delete(principal.getName());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
+        userService.delete(customUserDetails.getUserId());
+        return Response.onSuccess();
     }
 }
 

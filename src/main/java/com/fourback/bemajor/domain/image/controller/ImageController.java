@@ -2,10 +2,12 @@ package com.fourback.bemajor.domain.image.controller;
 
 
 import com.fourback.bemajor.domain.image.service.ImageService;
+import com.fourback.bemajor.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,8 +37,8 @@ public class ImageController {
     }
 
     @PostMapping
-    public ResponseEntity<?> saveImage(Principal principal, @RequestParam("file") MultipartFile file) throws IOException {
-        String filename = imageService.save(principal.getName(),file);
+    public ResponseEntity<?> saveImage(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam("file") MultipartFile file) throws IOException {
+        String filename = imageService.save(customUserDetails.getUserId(),file);
         return ResponseEntity.ok().body(filename);
     }
 }
