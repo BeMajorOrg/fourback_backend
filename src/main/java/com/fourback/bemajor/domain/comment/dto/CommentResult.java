@@ -1,5 +1,6 @@
 package com.fourback.bemajor.domain.comment.dto;
 
+import com.fourback.bemajor.domain.comment.dto.GetCommentListResponse;
 import com.fourback.bemajor.domain.comment.entity.CommentType;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import lombok.Builder;
@@ -7,8 +8,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import com.fourback.bemajor.domain.comment.entity.Comment;
-
-import java.time.LocalDateTime;
 
 @Builder
 @Getter
@@ -19,13 +18,21 @@ public class CommentResult {
     private UserEntity userEntity;
     private String content;
     private int goodCount;
-    private LocalDateTime commentDate;
+    private String commentDate;
     private long postId;
     private long parentId;
     private String dateDiff;
     private boolean isFavorite;
     private boolean userCheck;
     private int status;
+
+    private String userName;
+    private String email;
+    private String birth;
+    private String oauth2Id;
+    private String role;
+    private String belong;
+    private String department;
 
     private GetCommentListResponse reply;
 
@@ -41,7 +48,14 @@ public class CommentResult {
                 .userEntity(comment.getUser())
                 .goodCount(comment.getGoodCount())
                 .content(commentContent)
-                .commentDate(comment.getCreatedDate())
+                .commentDate(comment.getCreatedDate().toString())
+                .userName(comment.getUser().getUserName())
+                .email(comment.getUser().getEmail())
+                .birth(comment.getUser().getBirth())
+                .oauth2Id(comment.getUser().getOauth2Id())
+                .role(comment.getUser().getRole())
+                .belong(comment.getUser().getBelong())
+                .department(comment.getUser().getDepartment())
                 .build();
     }
 }
