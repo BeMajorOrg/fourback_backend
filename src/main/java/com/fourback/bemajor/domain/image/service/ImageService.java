@@ -2,7 +2,6 @@ package com.fourback.bemajor.domain.image.service;
 
 import com.fourback.bemajor.domain.image.entity.ImageEntity;
 import com.fourback.bemajor.domain.image.repository.ImageRepository;
-import com.fourback.bemajor.domain.user.repository.UserRepository;
 import com.fourback.bemajor.global.common.service.ImageFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -21,8 +20,9 @@ import java.util.Optional;
 @Service
 public class ImageService {
     private final ImageRepository imageRepository;
-    private static final String UPLOAD_DIR = "uploads/";
     private final ImageFileService imageFileService;
+
+    private static final String UPLOAD_DIR = "uploads/";
 
     public Resource get(String fileName) throws IOException {
         Path filePath = Paths.get(UPLOAD_DIR).resolve(fileName).normalize();
@@ -31,12 +31,10 @@ public class ImageService {
 
     @Transactional
     public void save(ImageEntity image, MultipartFile file) throws IOException {
-        if (file != null) {
-            String uniqueFilename = imageFileService.saveImageFile(file);
-            String filePath = UPLOAD_DIR+uniqueFilename;
-            image.setFilePath(filePath);
-            image.setFileName(uniqueFilename);
-        }
+        String uniqueFilename = imageFileService.saveImageFile(file);
+        String filePath = UPLOAD_DIR + uniqueFilename;
+        image.setFilePath(filePath);
+        image.setFileName(uniqueFilename);
         imageRepository.save(image);
     }
 
@@ -44,7 +42,7 @@ public class ImageService {
     public void delete(List<String> fileNames) throws IOException {
         for (String fileName : fileNames) {
             Optional<ImageEntity> oi = imageRepository.findByFileName(fileName);
-            if(oi.isEmpty()) continue;
+            if (oi.isEmpty()) continue;
             ImageEntity image = oi.get();
             imageFileService.deleteImageFile(image.getFilePath());
             imageRepository.delete(image);
