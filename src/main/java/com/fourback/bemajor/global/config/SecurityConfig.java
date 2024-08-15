@@ -54,13 +54,12 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http
                 .authorizeHttpRequests((auth)->auth
-                        .requestMatchers(HttpMethod.POST,"/user").permitAll()
-                        .requestMatchers("/auth").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/users").permitAll()
                         .anyRequest().authenticated());
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         http
-                .addFilterBefore(new CustomLogoutFilter(redisService), LogoutFilter.class);
+                .addFilterBefore(new CustomLogoutFilter(redisService,jwtUtil), LogoutFilter.class);
         http
                 .addFilterBefore(new JWTExceptionFilter(), JWTFilter.class);
         http

@@ -16,6 +16,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class CustomLogoutFilter extends GenericFilterBean {
     private final RedisService redisService;
+    private final JWTUtil jwtUtil;
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -37,9 +38,9 @@ public class CustomLogoutFilter extends GenericFilterBean {
             return;
         }
 
-        CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
-        redisService.deleteRefreshToken(customUserDetails.getUserId());
+        String refreshToken = request.getHeader("refresh");
+        Long userId = jwtUtil.getUserId(refreshToken);
+        redisService.deleteRefreshToken(userId);
         SecurityContextHolder.clearContext();
         response.setHeader("refresh", null);
         response.setHeader("access",null);
