@@ -277,7 +277,7 @@ public class PostService {
 
         List<ImageEntity> images = imageRepository.findByPostId(postId);
         for (ImageEntity image : images) {
-            imageFileService.deleteImageFile(image.getFilePath());
+            imageFileService.deleteImageFile(image.getFileName());
             imageRepository.delete(image);
         }
         postRepository.delete(post);

@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -40,12 +39,10 @@ public class ImageService {
 
     @Transactional
     public void delete(List<String> fileNames) throws IOException {
-        for (String fileName : fileNames) {
-            Optional<ImageEntity> oi = imageRepository.findByFileName(fileName);
-            if (oi.isEmpty()) continue;
-            ImageEntity image = oi.get();
-            imageFileService.deleteImageFile(image.getFilePath());
-            imageRepository.delete(image);
+        List<ImageEntity> images = imageRepository.findByFileNames(fileNames);
+        for (ImageEntity image : images) {
+            imageFileService.deleteImageFile(image.getFileName());
         }
+        imageRepository.deleteAllInBatch(images);
     }
 }
