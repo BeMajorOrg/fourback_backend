@@ -1,7 +1,6 @@
 package com.fourback.bemajor.domain.studygroup.controller;
 
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
-import com.fourback.bemajor.domain.user.dto.request.UserRequestDto;
 import com.fourback.bemajor.domain.studygroup.service.StudyGroupService;
 import com.fourback.bemajor.domain.studygroup.service.StudyJoinedService;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
@@ -12,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 
 @RequiredArgsConstructor

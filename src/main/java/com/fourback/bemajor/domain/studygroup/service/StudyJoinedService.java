@@ -5,7 +5,6 @@ import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
-import com.fourback.bemajor.domain.user.dto.request.UserRequestDto;
 import com.fourback.bemajor.global.exception.kind.NoSuchStudyGroupException;
 import com.fourback.bemajor.global.exception.kind.NoSuchUserException;
 import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;

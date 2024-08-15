@@ -39,7 +39,7 @@ public class JWTFilter extends OncePerRequestFilter {
         } catch (ExpiredJwtException e) {
             String path = request.getServletPath();
             String method = request.getMethod();
-            if (path.equals("/auth") && method.equals("POST")) {
+            if (path.equals("/reissue") && method.equals("POST")) {
                 request.setAttribute("reissue", true);
                 filterChain.doFilter(request, response);
             }

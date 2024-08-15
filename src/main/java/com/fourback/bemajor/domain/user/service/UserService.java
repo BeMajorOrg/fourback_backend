@@ -2,7 +2,7 @@ package com.fourback.bemajor.domain.user.service;
 
 import com.fourback.bemajor.global.common.service.ImageFileService;
 import com.fourback.bemajor.domain.user.dto.request.UserLoginRequestDto;
-import com.fourback.bemajor.domain.user.dto.request.UserRequestDto;
+import com.fourback.bemajor.domain.user.dto.request.UserUpdateRequestDto;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Service
@@ -28,15 +29,13 @@ public class UserService {
 
     @Transactional
     public HttpHeaders save(UserLoginRequestDto userLoginRequestDto) {
-        String registrationId = userLoginRequestDto.getRegistrationId();
-        String oauth2Id = registrationId + userLoginRequestDto.getUserId();
+        String oauth2Id = userLoginRequestDto.getRegistrationId() + userLoginRequestDto.getUserId();
         Optional<UserEntity> ou = userRepository.findByOauth2Id(oauth2Id);
         UserEntity user;
         if (ou.isEmpty()) {
             user = UserEntity.builder()
-                    .role("ROLE_USER")
-                    .oauth2Id(oauth2Id)
-                    .isDeleted(false)
+                    .role("ROLE_USER").oauth2Id(oauth2Id)
+                    .isDeleted(false).studyJoineds(new ArrayList<>())
                     .build();
             userRepository.save(user);
         } else {
@@ -50,41 +49,46 @@ public class UserService {
     }
 
     public UserResponseDto get(Long userId) {
-        UserEntity userEntity = findById(userId);
-        return userEntity.toUserResponseDto();
+        UserEntity user = this.findById(userId);
+        return user.toUserResponseDto();
     }
 
     @Transactional
-    public void update(UserRequestDto userDto, Long userId) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(()
-                -> new NotFoundElementException(ExceptionEnum.NOTFOUNDELEMENT.ordinal(),
-                "This is not in DB", HttpStatus.LOCKED));
-        userEntity.setUserEntity(userDto);
-        userRepository.save(userEntity);
+    public void update(UserUpdateRequestDto userUpdateRequestDto, Long userId) {
+        UserEntity user = this.findById(userId);
+        user.update(userUpdateRequestDto);
+        userRepository.save(user);
     }
 
     @Transactional
     public void delete(Long userId) throws IOException {
-        UserEntity userEntity = findById(userId);
-        String fileName = userEntity.getFileName();
+        UserEntity user = this.findById(userId);
+        String fileName = user.getFileName();
         if (fileName != null) {
             imageFileService.deleteImageFile(fileName);
         }
-        userRepository.delete(userEntity);
-    }
-
-    public UserEntity findById(Long userId) {
-        return userRepository.findById(userId).orElseThrow(()
-                -> new NotFoundElementException(ExceptionEnum.NOTFOUNDELEMENT.ordinal(),
-                "This is not in DB", HttpStatus.LOCKED));
+        userRepository.delete(user);
     }
 
     @Transactional
-    public String updateImage(Long userId, MultipartFile file) throws IOException {
+    public String saveImage(Long userId, MultipartFile file) throws IOException {
         UserEntity user = this.findById(userId);
         String uniqueFileName = imageFileService.saveImageFile(file);
         user.setFileName(uniqueFileName);
         userRepository.save(user);
         return uniqueFileName;
+    }
+
+    public void deleteImage(Long userId) throws IOException {
+        UserEntity user = this.findById(userId);
+        imageFileService.deleteImageFile(user.getFileName());
+        user.setFileName(null);
+        userRepository.save(user);
+    }
+
+    private UserEntity findById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(()
+                -> new NotFoundElementException(ExceptionEnum.NOTFOUNDELEMENT.ordinal(),
+                "This is not in DB", HttpStatus.LOCKED));
     }
 }

@@ -1,6 +1,5 @@
 package com.fourback.bemajor.domain.user.dto.response;
 
-import com.fourback.bemajor.domain.user.dto.request.UserRequestDto;
 import lombok.*;
 
 @Getter

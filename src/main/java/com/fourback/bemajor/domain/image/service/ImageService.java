@@ -22,7 +22,6 @@ import java.util.Optional;
 public class ImageService {
     private final ImageRepository imageRepository;
     private static final String UPLOAD_DIR = "uploads/";
-    private final UserRepository userRepository;
     private final ImageFileService imageFileService;
 
     public Resource get(String fileName) throws IOException {
@@ -50,9 +49,5 @@ public class ImageService {
             imageFileService.deleteImageFile(image.getFilePath());
             imageRepository.delete(image);
         }
-    }
-
-    public List<ImageEntity> getImagesById(Long postId){
-        return imageRepository.findByPostId(postId);
     }
 }

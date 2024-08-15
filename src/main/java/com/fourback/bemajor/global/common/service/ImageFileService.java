@@ -14,8 +14,8 @@ import java.util.UUID;
 public class ImageFileService {
     private static final String UPLOAD_DIR = "uploads/";
 
-    public void deleteImageFile(String filePath) throws IOException {
-        Path path = Paths.get(UPLOAD_DIR+filePath);
+    public void deleteImageFile(String fileName) throws IOException {
+        Path path = Paths.get(UPLOAD_DIR+ fileName);
         Files.deleteIfExists(path);
     }
 

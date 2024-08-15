@@ -1,13 +1,12 @@
 package com.fourback.bemajor.domain.user.entity;
 
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
-import com.fourback.bemajor.domain.user.dto.request.UserRequestDto;
+import com.fourback.bemajor.domain.user.dto.request.UserUpdateRequestDto;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -65,33 +64,27 @@ public class UserEntity {
     String fileName;
 
     @OneToMany(mappedBy = "user")
-    List<StudyJoined> studyJoineds = new ArrayList<>();
+    List<StudyJoined> studyJoineds;
 
     public UserResponseDto toUserResponseDto() {
         return UserResponseDto.builder()
-                .userName(this.userName)
-                .address(this.address)
-                .department(this.department)
-                .fileName(this.fileName)
-                .email(this.email)
-                .hobby(this.hobby)
-                .birth(this.birth)
-                .belong(this.belong)
-                .objective(this.objective)
-                .techStack(this.techStack)
-                .isDeleted(this.isDeleted)
+                .userName(this.userName).address(this.address)
+                .department(this.department).fileName(this.fileName)
+                .email(this.email).hobby(this.hobby).birth(this.birth)
+                .belong(this.belong).objective(this.objective)
+                .techStack(this.techStack).isDeleted(this.isDeleted)
                 .build();
     }
 
-    public void setUserEntity(UserRequestDto userRequestDto) {
-        this.userName = userRequestDto.getUserName();
-        this.email = userRequestDto.getEmail();
-        this.birth = userRequestDto.getBirth();
-        this.belong = userRequestDto.getBelong();
-        this.department = userRequestDto.getDepartment();
-        this.hobby = userRequestDto.getHobby();
-        this.objective = userRequestDto.getObjective();
-        this.address = userRequestDto.getAddress();
-        this.techStack = userRequestDto.getTechStack();
+    public void update(UserUpdateRequestDto userUpdateRequestDto) {
+        this.userName = userUpdateRequestDto.getUserName();
+        this.email = userUpdateRequestDto.getEmail();
+        this.birth = userUpdateRequestDto.getBirth();
+        this.belong = userUpdateRequestDto.getBelong();
+        this.department = userUpdateRequestDto.getDepartment();
+        this.hobby = userUpdateRequestDto.getHobby();
+        this.objective = userUpdateRequestDto.getObjective();
+        this.address = userUpdateRequestDto.getAddress();
+        this.techStack = userUpdateRequestDto.getTechStack();
     }
 }

@@ -30,7 +30,6 @@ public class UserEntityRepositoryTest {
         userRepository.save(userEntity);
 
         //when
-        userRepository.deleteByOauth2Id(userEntity.getOauth2Id());
 
         //then
         Optional<UserEntity> ou = userRepository.findByOauth2Id(userEntity.getOauth2Id());
