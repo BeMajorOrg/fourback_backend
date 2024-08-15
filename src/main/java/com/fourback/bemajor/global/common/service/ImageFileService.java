@@ -23,8 +23,11 @@ public class ImageFileService {
         String originalFilename = file.getOriginalFilename();
         String extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
         String uniqueFileName = UUID.randomUUID() + extension;
-        Files.createDirectories(Path.of(UPLOAD_DIR));
-        file.transferTo(new File(UPLOAD_DIR+uniqueFileName));
+        Path filePath = Paths.get(UPLOAD_DIR, uniqueFileName);
+        if (!Files.exists(filePath.getParent())) {
+            Files.createDirectories(filePath.getParent());
+        }
+        Files.write(filePath, file.getBytes());
         return uniqueFileName;
     }
 }
