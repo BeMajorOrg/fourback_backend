@@ -8,11 +8,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 public class ReissueTokenFilter extends OncePerRequestFilter {
@@ -50,11 +52,10 @@ public class ReissueTokenFilter extends OncePerRequestFilter {
             Long userId = jwtUtil.getUserId(refresh);
             String role = jwtUtil.getRole(refresh);
 
-            HttpHeaders httpHeaders = jwtUtil.createTokens(userId, role);
-            String accessTokenName = "access";
-            String refreshTokenName = "refresh";
-            response.setHeader(accessTokenName, httpHeaders.getFirst(accessTokenName));
-            response.setHeader(refreshTokenName, httpHeaders.getFirst(refreshTokenName));
+            List<Pair<String, String>> pairs = jwtUtil.createTokens(userId, role);
+            for (Pair<String, String> pair : pairs) {
+                response.setHeader(pair.getLeft(), pair.getRight());
+            }
             response.setStatus(HttpServletResponse.SC_OK);
         } else {
             filterChain.doFilter(request, response);

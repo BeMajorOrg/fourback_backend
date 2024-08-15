@@ -2,6 +2,7 @@ package com.fourback.bemajor.global.security;
 
 import com.fourback.bemajor.global.common.service.RedisService;
 import io.jsonwebtoken.Jwts;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -52,13 +53,13 @@ public class JWTUtil {
                 .compact();
     }
 
-    public HttpHeaders createTokens(Long userId, String role){
+    public List<Pair<String, String>> createTokens(Long userId, String role){
         String access = "access";
         String refresh = "refresh";
-        HttpHeaders tokens = new HttpHeaders();
-        tokens.add(access, this.createToken(access, userId, role, 600000L));
+        List<Pair<String, String>> tokens = new ArrayList<>(2);
+        tokens.add(Pair.of(access, this.createToken(access, userId, role, 600000L)));
         String refreshToken = this.createToken(refresh, userId, role, 86400000L);
-        tokens.add(refresh, refreshToken);
+        tokens.add(Pair.of(refresh, refreshToken));
         redisService.setRefreshToken(userId, refreshToken, 86400000L);
         return tokens;
     }

@@ -28,6 +28,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    implementation 'org.apache.commons:commons-lang3:3.16.0'
 
 // Querydsl 추가
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'

@@ -11,6 +11,7 @@ import com.fourback.bemajor.global.exception.kind.NotFoundElementException;
 import com.fourback.bemajor.global.security.JWTUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,7 +30,7 @@ public class UserService {
     private final ImageFileService imageFileService;
 
     @Transactional
-    public HttpHeaders save(UserLoginRequestDto userLoginRequestDto) {
+    public List<Pair<String, String>> save(UserLoginRequestDto userLoginRequestDto) {
         String oauth2Id = userLoginRequestDto.getRegistrationId() + userLoginRequestDto.getUserId();
         Optional<UserEntity> ou = userRepository.findByOauth2Id(oauth2Id);
         UserEntity user;
