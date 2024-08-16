@@ -25,20 +25,21 @@ public class Response {
         return ResponseEntity.ok(body);
     }
 
-    public static ResponseEntity<ExceptionBody> onFailed(HttpStatusCode httpStatusCode,
-                                                         ExceptionBody body) {
+    public static ResponseEntity<ExceptionBody> onFailed(
+            HttpStatusCode httpStatusCode, ExceptionBody body) {
         return ResponseEntity.status(httpStatusCode).body(body);
     }
 
     public static HttpHeaders createContentDispositionHeader(String filename) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
+        headers.set(HttpHeaders.CONTENT_DISPOSITION
+                , "inline; filename=\"" + filename + "\"");
         return headers;
     }
 
-    public static HttpHeaders createHeaders(List<Pair<String, String>> pairs){
+    public static HttpHeaders createHeaders(List<Pair<String, String>> pairs) {
         HttpHeaders headers = new HttpHeaders();
-        for(Pair<String, String> pair : pairs){
+        for (Pair<String, String> pair : pairs) {
             headers.add(pair.getLeft(), pair.getRight());
         }
         return headers;

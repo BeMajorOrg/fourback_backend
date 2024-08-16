@@ -42,8 +42,7 @@ public class JWTFilter extends OncePerRequestFilter {
             if (path.equals("/reissue") && method.equals("POST")) {
                 request.setAttribute("reissue", true);
                 filterChain.doFilter(request, response);
-            }
-            else{
+            } else {
                 throw new AccessTokenExpiredException(ExceptionEnum.ACCESSTOKENEXPIRED.ordinal(),
                         "Access token expired", HttpStatus.UNAUTHORIZED);
             }
@@ -53,8 +52,8 @@ public class JWTFilter extends OncePerRequestFilter {
         String category = jwtUtil.getCategory(accessToken);
         if (!category.equals("access")) {
             log.debug("invalid access token");
-            throw new InvalidLoginTokenException(4, "This is Invalid Token. Try logging in again",
-                    HttpStatus.UNAUTHORIZED);
+            throw new InvalidLoginTokenException(ExceptionEnum.INVALIDTOKEN.ordinal(),
+                    "This is Invalid Token. Try logging in again", HttpStatus.UNAUTHORIZED);
         }
 
         Long userId = jwtUtil.getUserId(accessToken);

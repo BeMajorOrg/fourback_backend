@@ -31,7 +31,8 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
+                .cors(corsCustomizer
+                        -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration configuration = new CorsConfiguration();
@@ -42,7 +43,8 @@ public class SecurityConfig {
                         configuration.setMaxAge(3600L);
                         configuration.setExposedHeaders(Collections.singletonList("Authorization"));
                         return configuration;
-                    }}));
+                    }
+                }));
         http
                 .csrf(AbstractHttpConfigurer::disable);
         http
@@ -50,16 +52,16 @@ public class SecurityConfig {
         http
                 .httpBasic(AbstractHttpConfigurer::disable);
         http
-                .sessionManagement((session)->session
+                .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http
-                .authorizeHttpRequests((auth)->auth
-                        .requestMatchers(HttpMethod.POST,"/api/users").permitAll()
+                .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .anyRequest().authenticated());
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         http
-                .addFilterBefore(new CustomLogoutFilter(redisService,jwtUtil), LogoutFilter.class);
+                .addFilterBefore(new CustomLogoutFilter(redisService, jwtUtil), LogoutFilter.class);
         http
                 .addFilterBefore(new JWTExceptionFilter(), JWTFilter.class);
         http

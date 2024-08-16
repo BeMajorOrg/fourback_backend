@@ -46,18 +46,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(NoSuchUserException.class)
-    public ResponseEntity<ExceptionBody> handleNoSuchUserException(NoSuchUserException ex){
-        ExceptionBody body = new ExceptionBody(ex.getCode(),ex.getMessage());
-        return this.handleExceptionInternal(body,ex.getStatusCode());
+    public ResponseEntity<ExceptionBody> handleNoSuchUserException(NoSuchUserException ex) {
+        ExceptionBody body = new ExceptionBody(ex.getCode(), ex.getMessage());
+        return this.handleExceptionInternal(body, ex.getStatusCode());
     }
 
     @ExceptionHandler(NoSuchStudyGroupException.class)
-    public ResponseEntity<ExceptionBody> handleNoSuchStudyGroupException(NoSuchStudyGroupException ex){
-        ExceptionBody body = new ExceptionBody(ex.getCode(),ex.getMessage());
-        return this.handleExceptionInternal(body,ex.getStatusCode());
+    public ResponseEntity<ExceptionBody> handleNoSuchStudyGroupException(NoSuchStudyGroupException ex) {
+        ExceptionBody body = new ExceptionBody(ex.getCode(), ex.getMessage());
+        return this.handleExceptionInternal(body, ex.getStatusCode());
     }
 
-    private ResponseEntity<ExceptionBody> handleExceptionInternal(ExceptionBody body, HttpStatusCode statusCode) {
-        return Response.onFailed(statusCode,body);
+    private ResponseEntity<ExceptionBody> handleExceptionInternal(ExceptionBody body,
+                                                                  HttpStatusCode statusCode) {
+        return Response.onFailed(statusCode, body);
     }
 }

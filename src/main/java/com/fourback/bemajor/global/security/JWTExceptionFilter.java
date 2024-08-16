@@ -9,13 +9,15 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
 public class JWTExceptionFilter extends OncePerRequestFilter {
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         try {
             filterChain.doFilter(request, response);
         } catch (AccessTokenExpiredException | InvalidLoginTokenException exception) {
@@ -23,7 +25,8 @@ public class JWTExceptionFilter extends OncePerRequestFilter {
         }
     }
 
-    private void setExceptionResponse(HttpServletResponse response, CustomException exception) throws IOException {
+    private void setExceptionResponse(HttpServletResponse response, CustomException exception)
+            throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         response.setStatus(exception.getStatusCode().value());
         response.setContentType("application/json");

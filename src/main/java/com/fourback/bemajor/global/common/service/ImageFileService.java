@@ -15,13 +15,14 @@ public class ImageFileService {
     private static final String UPLOAD_DIR = "uploads/";
 
     public void deleteImageFile(String fileName) throws IOException {
-        Path path = Paths.get(UPLOAD_DIR+ fileName);
+        Path path = Paths.get(UPLOAD_DIR + fileName);
         Files.deleteIfExists(path);
     }
 
     public String saveImageFile(MultipartFile file) throws IOException {
         String originalFilename = file.getOriginalFilename();
-        String extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
+        String extension = originalFilename.substring(
+                originalFilename.lastIndexOf('.'));
         String uniqueFileName = UUID.randomUUID() + extension;
         Path filePath = Paths.get(UPLOAD_DIR, uniqueFileName);
         if (!Files.exists(filePath.getParent())) {
