@@ -5,7 +5,7 @@ import com.fourback.bemajor.domain.comment.entity.Comment;
 import com.fourback.bemajor.domain.comment.entity.CommentType;
 import com.fourback.bemajor.domain.comment.entity.FavoriteComment;
 import com.fourback.bemajor.domain.community.entity.Post;
-import com.fourback.bemajor.domain.user.entity.User;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.comment.repository.FavoriteCommentRepository;
 import com.fourback.bemajor.domain.community.repository.PostRepository;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
@@ -49,8 +49,8 @@ public class CommentService {
         return postDate;
     }
 
-    private boolean isFavorite(Comment c, User user) {
-        FavoriteComment fc = favoriteCommentRepo.findByCommentAndUser(c, user);
+    private boolean isFavorite(Comment c, UserEntity userEntity) {
+        FavoriteComment fc = favoriteCommentRepo.findByCommentAndUser(c, userEntity);
         if(fc != null) {
             return fc.isFavorite();
         }
@@ -73,9 +73,9 @@ public class CommentService {
         postRepo.save(p);
     }
 
-    public AddCommentResponse addComment(CommentRequest.Add request, String oauth2Id) {
+    public AddCommentResponse addComment(CommentRequest.Add request, Long userId) {
         Post p = postRepo.getById(request.postId());
-        User user = userRepo.findByOauth2Id(oauth2Id).orElse(null);
+        UserEntity userEntity = userRepo.findById(userId).orElse(null);
         Comment pc;
 
         if(request.parentCommentId() == (long) -1)
@@ -88,7 +88,7 @@ public class CommentService {
                 post(p).
                 parent(pc).
                 goodCount(0).
-                user(user).
+                user(userEntity).
                 build();
         commentRepo.save(c);
         refreshCommentCount(p);
@@ -97,16 +97,16 @@ public class CommentService {
         return res;
     }
 
-    public GetCommentResponse getComment(Long CommentID, String oauth2Id) {
+    public GetCommentResponse getComment(Long CommentID, Long userId) {
 
-        User user = userRepo.findByOauth2Id(oauth2Id).orElse(null);
+        UserEntity userEntity = userRepo.findById(userId).orElse(null);
         Comment c = commentRepo.findById(CommentID).get();
         CommentResult result = CommentResult.fromComment(c);
 
         result.setPostId(c.getPost().getId());
         result.setParentId(c.getParent().getId());
         result.setDateDiff(DataDiff(c));
-        result.setFavorite(isFavorite(c, user));
+        result.setFavorite(isFavorite(c, userEntity));
 
         GetCommentResponse res = GetCommentResponse.builder()
                 .result(result)
@@ -115,10 +115,10 @@ public class CommentService {
         return res;
     }
 
-    public GetCommentListResponse getCommentList(Post post, String oauth2Id) {
+    public GetCommentListResponse getCommentList(Post post, Long userId) {
 
         List<CommentResult> commentResList = new ArrayList<CommentResult>();
-        User user = userRepo.findByOauth2Id(oauth2Id).orElse(null);
+        UserEntity userEntity = userRepo.findById(userId).orElse(null);
         List<Comment> commentList = commentRepo.findCommentListOrderByIDAsc(post.getId());
 
 
@@ -132,9 +132,9 @@ public class CommentService {
                 replyresult.setPostId(rc.getPost().getId());
                 replyresult.setParentId(rc.getParent().getId());
                 replyresult.setDateDiff(DataDiff(c));
-                replyresult.setFavorite(isFavorite(rc, user));
+                replyresult.setFavorite(isFavorite(rc, userEntity));
                 replyresult.setStatus(rc.getStatus().getValue());
-                replyresult.setUserCheck(userCheck(rc.getUser().getOauth2Id(), user.getOauth2Id()));
+                replyresult.setUserCheck(userCheck(rc.getUser().getOauth2Id(), userEntity.getOauth2Id()));
                 commentReplyResList.add(replyresult);
             }
             GetCommentListResponse replyRes = GetCommentListResponse.builder()
@@ -149,9 +149,9 @@ public class CommentService {
             result.setParentId(i);
             result.setDateDiff(DataDiff(c));
             result.setReply(replyRes);
-            result.setFavorite(isFavorite(c, user));
+            result.setFavorite(isFavorite(c, userEntity));
             result.setStatus(c.getStatus().getValue());
-            result.setUserCheck(userCheck(c.getUser().getOauth2Id(), user.getOauth2Id()));
+            result.setUserCheck(userCheck(c.getUser().getOauth2Id(), userEntity.getOauth2Id()));
             commentResList.add(result);
         }
 

@@ -9,8 +9,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface StudyJoinedRepository extends JpaRepository<StudyJoined, Long> {
-    @Query("SELECT a.id FROM StudyJoined a JOIN a.studyGroup b JOIN a.user c WHERE b.id = :studyGroupID AND c.oauth2Id = :oauth2Id")
-    List<Long> findIdsByStudyGroupIdAndOauth2Id(@Param("studyGroupID") Long studyGroupID, @Param("oauth2Id") String oauth2Id);
+    @Query("SELECT a.id FROM StudyJoined a JOIN a.studyGroup b JOIN a.user c WHERE b.id = :studyGroupID AND c.userId = :userId")
+    List<Long> findIdsByStudyGroupIdAndOauth2Id(@Param("studyGroupID") Long studyGroupID, @Param("userId") Long userId);
 
     @Modifying
     @Query("DELETE FROM StudyJoined a WHERE a.id IN :ids")

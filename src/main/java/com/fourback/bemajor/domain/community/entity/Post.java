@@ -1,7 +1,7 @@
 package com.fourback.bemajor.domain.community.entity;
 
-import com.fourback.bemajor.domain.user.entity.User;
-import com.fourback.bemajor.domain.global.common.entity.BaseTimeEntity;
+import com.fourback.bemajor.global.common.entity.BaseTimeEntity;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
@@ -36,7 +36,7 @@ public class Post extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")

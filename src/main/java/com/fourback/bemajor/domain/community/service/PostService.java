@@ -11,16 +11,16 @@ import com.fourback.bemajor.domain.community.entity.Post;
 import com.fourback.bemajor.domain.community.repository.BoardRepository;
 import com.fourback.bemajor.domain.community.repository.FavoritePostRepository;
 import com.fourback.bemajor.domain.community.repository.PostRepository;
-import com.fourback.bemajor.domain.image.entity.PostImage;
-import com.fourback.bemajor.domain.image.repository.PostImageRepository;
-import com.fourback.bemajor.domain.user.entity.User;
+import com.fourback.bemajor.domain.image.entity.ImageEntity;
+import com.fourback.bemajor.domain.image.repository.ImageRepository;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
 import com.fourback.bemajor.domain.community.dto.PostDto;
 import com.fourback.bemajor.domain.community.dto.PostListDto;
 
 import com.fourback.bemajor.domain.community.dto.PostUpdateDto;
 
-import com.fourback.bemajor.domain.image.service.ImageFileService;
+import com.fourback.bemajor.global.common.service.ImageFileService;
 import com.fourback.bemajor.domain.image.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -45,47 +45,46 @@ public class PostService {
     private final PostRepository postRepository;
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
-    private final PostImageRepository imageRepository;
     private final ImageService imageService;
+    private final ImageRepository imageRepository;
     private final FavoritePostRepository favoritePostRepository;
     private final FavoriteCommentRepository favoriteCommentRepository;
     private final CommentRepository commentRepository;
     private final ImageFileService imageFileService;
 
     @Transactional
-    public Long create(PostDto postDto, String oauth2Id, MultipartFile[] imageFiles) throws IOException {
+    public Long create(PostDto postDto, Long userId, MultipartFile[] imageFiles) throws IOException {
         Post post = new Post();
         Optional<Board> optionalBoard = boardRepository.findById((postDto.getBoardId()));
         Board board = optionalBoard.orElse(new Board());
-        User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
+        UserEntity userEntity = userRepository.findById(userId).orElse(null);
         post.setTitle(postDto.getTitle());
         post.setContent(postDto.getContent());
         post.setBoard(board);
-        post.setUser(user);
+        post.setUser(userEntity);
         postRepository.save(post);
         if (imageFiles != null) {
             for (MultipartFile imageFile : imageFiles) {
-                PostImage image = new PostImage();
+                ImageEntity image = new ImageEntity();
                 image.setPost(post);
-                imageService.saveImage(image, imageFile);
+                imageService.save(image, imageFile);
             }
         }
         return post.getId();
     }
 
-    public List<PostListDto> posts(PageRequest pageRequest, Long boardId, String oauth2Id) {
+    public List<PostListDto> posts(PageRequest pageRequest, Long boardId, Long userId) {
 
         Page<Post> pagePost = postRepository.findAllWithPost(boardId, pageRequest);
-        Optional<User> byOauth2Id = userRepository.findByOauth2Id(oauth2Id);
-        User user = byOauth2Id.get();
+        Optional<UserEntity> byOauth2Id = userRepository.findById(userId);
+        UserEntity userEntity = byOauth2Id.get();
         List<PostListDto> postListDtos = pagePost.stream()
                 .map(p -> {
                     boolean userCheck = false;
-                    if (p.getUser().getUserId().equals(user.getUserId())) {
+                    if (p.getUser().getUserId().equals(userEntity.getUserId())) {
                         userCheck = true;
                     }
-                    List<PostImage> imageList = imageRepository.findByPostId(p.getId());
-
+                    List<ImageEntity> imageList = imageRepository.findByPostId(p.getId());
                     String postDate;
                     LocalDateTime currentTime = LocalDateTime.now();
                     Duration duration = Duration.between(p.getCreatedDate(), currentTime);
@@ -103,7 +102,7 @@ public class PostService {
                             postDate = days + "일 전";
                         }
                     }
-                    Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(user, p);
+                    Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(userEntity, p);
                     boolean postGood = false;
                     if (optionalFavoritePost.isPresent()) {
                         postGood = true;
@@ -113,17 +112,17 @@ public class PostService {
         return postListDtos;
     }
 
-    public List<PostListDto> posts2(PageRequest pageRequest, Long boardId, String oauth2Id) {
-        Optional<User> byOauth2Id = userRepository.findByOauth2Id(oauth2Id);
-        User user = byOauth2Id.get();
+    public List<PostListDto> posts2(PageRequest pageRequest, Long boardId, Long userId) {
+        Optional<UserEntity> byOauth2Id = userRepository.findById(userId);
+        UserEntity userEntity = byOauth2Id.get();
         Page<Post> pagePost = null;
 
         if (boardId == 1) {
-            pagePost = postRepository.findAllMyPost(user.getUserId(), pageRequest);
+            pagePost = postRepository.findAllMyPost(userEntity.getUserId(), pageRequest);
         } else if (boardId == 2) {
-            pagePost = commentRepository.findCommentPosts(user.getUserId(), pageRequest);
+            pagePost = commentRepository.findCommentPosts(userEntity.getUserId(), pageRequest);
         } else if (boardId == 3) {
-            pagePost = favoritePostRepository.findFavoritePosts(user.getUserId(), pageRequest);
+            pagePost = favoritePostRepository.findFavoritePosts(userEntity.getUserId(), pageRequest);
         } else if (boardId == 4) {
             LocalDateTime startDate = LocalDateTime.now();
             LocalDateTime endDate = startDate.minusWeeks(1);
@@ -134,10 +133,10 @@ public class PostService {
         List<PostListDto> postListDtos = pagePost.stream()
                 .map(p -> {
                     boolean userCheck = false;
-                    if (p.getUser().getUserId().equals(user.getUserId())) {
+                    if (p.getUser().getUserId().equals(userEntity.getUserId())) {
                         userCheck = true;
                     }
-                    List<PostImage> imageList = imageRepository.findByPostId(p.getId());
+                    List<ImageEntity> imageList = imageRepository.findByPostId(p.getId());
 
                     String postDate;
                     LocalDateTime currentTime = LocalDateTime.now();
@@ -156,7 +155,7 @@ public class PostService {
                             postDate = days + "일 전";
                         }
                     }
-                    Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(user, p);
+                    Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(userEntity, p);
                     boolean postGood = false;
                     if (optionalFavoritePost.isPresent()) {
                         postGood = true;
@@ -166,17 +165,17 @@ public class PostService {
         return postListDtos;
     }
 
-    public List<PostListDto> postSearch(PageRequest pageRequest, String keyword, String oauth2Id) {
+    public List<PostListDto> postSearch(PageRequest pageRequest, String keyword, Long userId) {
         Page<Post> posts = postRepository.findAllSearchPost(keyword, pageRequest);
-        Optional<User> byOauth2Id = userRepository.findByOauth2Id(oauth2Id);
-        User user = byOauth2Id.get();
+        Optional<UserEntity> byOauth2Id = userRepository.findById(userId);
+        UserEntity userEntity = byOauth2Id.get();
         List<PostListDto> postListDtos = posts.stream()
                 .map(p -> {
                     boolean userCheck = false;
-                    if (p.getUser().getUserId().equals(user.getUserId())) {
+                    if (p.getUser().getUserId().equals(userEntity.getUserId())) {
                         userCheck = true;
                     }
-                    List<PostImage> imageList = imageRepository.findByPostId(p.getId());
+                    List<ImageEntity> imageList = imageRepository.findByPostId(p.getId());
 
                     String postDate;
                     LocalDateTime currentTime = LocalDateTime.now();
@@ -195,7 +194,7 @@ public class PostService {
                             postDate = days + "일 전";
                         }
                     }
-                    Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(user, p);
+                    Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(userEntity, p);
                     boolean postGood = false;
                     if (optionalFavoritePost.isPresent()) {
                         postGood = true;
@@ -213,9 +212,9 @@ public class PostService {
         post.setContent(content);
         if (images != null) {
             for (MultipartFile imageFile : images) {
-                PostImage image = new PostImage();
+                ImageEntity image = new ImageEntity();
                 image.setPost(post);
-                imageService.saveImage(image, imageFile);
+                imageService.save(image, imageFile);
             }
 
 
@@ -244,7 +243,7 @@ public class PostService {
                 postDate = days + "일 전";
             }
         }
-        List<PostImage> imageList = imageRepository.findByPostId(post.getId());
+        List<ImageEntity> imageList = imageRepository.findByPostId(post.getId());
         PostUpdateDto postUpdateDto = new PostUpdateDto(post, postDate, imageList);
         return postUpdateDto;
     }
@@ -276,9 +275,9 @@ public class PostService {
             commentRepository.delete(comment);
         }
 
-        List<PostImage> images = imageRepository.findByPostId(postId);
-        for (PostImage image : images) {
-            imageFileService.deleteImageFile(image.getFilePath());
+        List<ImageEntity> images = imageRepository.findByPostId(postId);
+        for (ImageEntity image : images) {
+            imageFileService.deleteImageFile(image.getFileName());
             imageRepository.delete(image);
         }
         postRepository.delete(post);

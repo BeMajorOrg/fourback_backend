@@ -2,7 +2,7 @@ package com.fourback.bemajor.domain.community.repository;
 
 import com.fourback.bemajor.domain.community.entity.FavoritePost;
 import com.fourback.bemajor.domain.community.entity.Post;
-import com.fourback.bemajor.domain.user.entity.User;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,7 +16,7 @@ public interface FavoritePostRepository extends JpaRepository<FavoritePost, Long
 
     List<FavoritePost> findByPostId(Long id);
 
-    Optional<FavoritePost> findByUserAndPost(User user, Post post);
+    Optional<FavoritePost> findByUserAndPost(UserEntity userEntity, Post post);
     void deleteByPostId(Long postId);
 
     @Query("SELECT fp.post FROM FavoritePost fp WHERE fp.user.id = :userId")

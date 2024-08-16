@@ -2,7 +2,7 @@ package com.fourback.bemajor.domain.aws.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.fourback.bemajor.domain.global.exception.kind.FilenameInvalidException;
+import com.fourback.bemajor.global.exception.kind.FilenameInvalidException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

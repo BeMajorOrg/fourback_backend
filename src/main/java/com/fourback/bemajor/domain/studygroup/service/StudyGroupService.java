@@ -2,11 +2,11 @@ package com.fourback.bemajor.domain.studygroup.service;
 
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
-import com.fourback.bemajor.domain.user.entity.User;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
-import com.fourback.bemajor.domain.global.exception.kind.NoSuchStudyGroupException;
-import com.fourback.bemajor.domain.global.exception.kind.NoSuchUserException;
-import com.fourback.bemajor.domain.global.exception.kind.NotAuthorizedException;
+import com.fourback.bemajor.global.exception.kind.NoSuchStudyGroupException;
+import com.fourback.bemajor.global.exception.kind.NoSuchUserException;
+import com.fourback.bemajor.global.exception.kind.NotAuthorizedException;
 import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
@@ -48,20 +48,20 @@ public class StudyGroupService {
     }
 
     @Transactional
-    public void createStudyGroup(StudyGroupDto studyGroupDto, String oauth2Id){
-        StudyGroup studyGroup = studyGroupDto.toEntity(oauth2Id);
+    public void createStudyGroup(StudyGroupDto studyGroupDto, Long userId){
+        StudyGroup studyGroup = studyGroupDto.toEntity(userId);
         StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
-        Optional<User> byOauth2Id = userRepository.findByOauth2Id(oauth2Id);
+        Optional<UserEntity> byOauth2Id = userRepository.findById(userId);
         if (byOauth2Id.isEmpty()) throw new NoSuchUserException(6,"no such user",HttpStatus.BAD_REQUEST);
-        User user = byOauth2Id.get();
-        StudyJoined studyJoined = new StudyJoined(savedGroup, user);
+        UserEntity userEntity = byOauth2Id.get();
+        StudyJoined studyJoined = new StudyJoined(savedGroup, userEntity);
         studyJoinedRepository.save(studyJoined);
         studyGroupRepository.save(studyGroup);
         websocketSessionsMap.put(studyGroup.getId(), Collections.newSetFromMap(new ConcurrentHashMap<>()));
     }
 
     @Transactional
-    public void updateStudyGroup(Long studyGroupId, StudyGroupDto studyGroupDto, String oauth2Id){
+    public void updateStudyGroup(Long studyGroupId, StudyGroupDto studyGroupDto, Long userId){
         Optional<StudyGroup> studyGroupOp = studyGroupRepository.findById(studyGroupId);
         if (studyGroupOp.isEmpty()){
             throw new NoSuchStudyGroupException(5,"no such study group. can't delete", HttpStatus.BAD_REQUEST);
@@ -71,12 +71,12 @@ public class StudyGroupService {
     }
 
     @Transactional
-    public void deleteStudyGroup(Long studyGroupId, String oauth2Id){
+    public void deleteStudyGroup(Long studyGroupId, Long userId){
         Optional<StudyGroup> studyGroupOp = studyGroupRepository.findById(studyGroupId);
         if (studyGroupOp.isEmpty()){
             throw new NoSuchStudyGroupException(5,"no such study group. can't delete", HttpStatus.BAD_REQUEST);
         }
-        if (!studyGroupOp.get().getOwnerOauth2Id().equals(oauth2Id)){
+        if (!studyGroupOp.get().getOwnerUserId().equals(userId)){
             throw new NotAuthorizedException(3,"not authorized. can't delete",HttpStatus.FORBIDDEN);
         }
         studyGroupRepository.deleteById(studyGroupId);

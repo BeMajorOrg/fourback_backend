@@ -1,7 +1,7 @@
 package com.fourback.bemajor.domain.community.dto;
 
 import com.fourback.bemajor.domain.community.entity.Post;
-import com.fourback.bemajor.domain.image.entity.PostImage;
+import com.fourback.bemajor.domain.image.entity.ImageEntity;
 import lombok.Data;
 
 import java.util.List;
@@ -14,7 +14,7 @@ public class PostUpdateDto {
     List<String> imageName;
     String updateDate;
 
-    public PostUpdateDto(Post post, String updateDate, List<PostImage> imageList) {
+    public PostUpdateDto(Post post, String updateDate, List<ImageEntity> imageList) {
         title = post.getTitle();
         content = post.getContent();
         this.updateDate = updateDate;
