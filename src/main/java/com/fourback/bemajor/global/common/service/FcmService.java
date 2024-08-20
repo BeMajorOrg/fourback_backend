@@ -1,6 +1,6 @@
-package com.fourback.bemajor.service;
+package com.fourback.bemajor.global.common.service;
 
-import com.fourback.bemajor.dto.ChatMessageDto;
+import com.fourback.bemajor.domain.chat.dto.ChatMessageDto;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -20,12 +20,15 @@ public class FcmService {
     @Value("${fcm.key}")
     private String googleCredentials;
 
-    public void sendalarm(ChatMessageDto chatMessageDto, String fcmToken, String StudyGroupName) {
+    public void sendalarm(ChatMessageDto chatMessageDto,
+                          String fcmToken, String StudyGroupName) {
         Message message = Message.builder()
                 .setNotification(Notification.builder()
                         .setTitle(StudyGroupName)
-                        .setBody(chatMessageDto.getSender() + ":" + chatMessageDto.getMessage())
+                        .setBody(chatMessageDto.getSenderName() + ":"
+                                + chatMessageDto.getMessage())
                         .build())
+                .putData("senderId", chatMessageDto.getSenderId().toString())
                 .setToken(fcmToken)
                 .build();
         FirebaseMessaging.getInstance().sendAsync(message);

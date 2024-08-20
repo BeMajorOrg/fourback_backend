@@ -1,5 +1,6 @@
 package com.fourback.bemajor.domain.studygroup.service;
 
+import com.fourback.bemajor.domain.chat.repository.GroupChatMessageRepository;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
@@ -11,14 +12,17 @@ import com.fourback.bemajor.global.exception.kind.NoSuchUserException;
 import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
-import com.fourback.bemajor.service.ChatMessageService;
+import com.fourback.bemajor.domain.chat.service.GroupChatMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,7 +32,8 @@ public class StudyJoinedService {
     private final UserRepository userRepository;
     private final StudyGroupRepository studyGroupRepository;
     private final RedisService redisService;
-    private final ChatMessageService chatMessageService;
+    private final GroupChatMessageRepository groupChatMessageRepository;
+    private final Map<Long, Set<WebSocketSession>> studyGrupIdSessionsMap;
 
     public void joinStudyGroup(Long userId, Long studyGroupId){
         Optional<StudyGroup> studyGroupOptional = studyGroupRepository.findById(studyGroupId);
@@ -40,14 +45,18 @@ public class StudyJoinedService {
             throw new NoSuchUserException(6, "no such user.", HttpStatus.BAD_REQUEST);
         }
         studyJoinedRepository.save(new StudyJoined(studyGroupOptional.get(), userOptional.get()));
+        if(!studyGrupIdSessionsMap.get(studyGroupId).isEmpty()){
+            redisService.putDisConnectUser(studyGroupId,userId);
+        }
     }
 
     @Transactional
     public void exitStudyGroup(Long studyGroupId, Long userId){
         List<Long> idsByStudyGroupIdAndOauth2Id = studyJoinedRepository.findIdsByStudyGroupIdAndOauth2Id(studyGroupId, userId);
         studyJoinedRepository.deleteByIds(idsByStudyGroupIdAndOauth2Id);
-        redisService.deleteDisConnectUser(Long.toString(studyGroupId), userId);
-        chatMessageService.deleteMessages(oauth2Id,studyGroupId);
+        if(!studyGrupIdSessionsMap.get(studyGroupId).isEmpty())
+            redisService.deleteDisConnectUser(studyGroupId, userId);
+        groupChatMessageRepository.deleteMessagesByStudyGroupIdAndReceiverId(userId,studyGroupId);
     }
 
     public List<UserResponseDto> getAllStudyUser(Long studyGroupId){

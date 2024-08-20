@@ -5,9 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UserLoginRequestDto {
-    private String userId;
-    private String registrationId;
+public class FcmTokenUpdateDto {
     private String fcmToken;
     private long fcmTokenExpiredTime;
 }

@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class StudyGroupDto {
     private Long id;
     private String studyName;

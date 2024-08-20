@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BeanConfig {
 
     @Bean
-    public Map<Long, Set<WebSocketSession>> websocketSessionsMap() {
+    public Map<Long, Set<WebSocketSession>> studyGrupIdSessionsMap() {
         return new ConcurrentHashMap<>();
     }
 

@@ -1,5 +1,6 @@
 package com.fourback.bemajor.domain.user.controller;
 
+import com.fourback.bemajor.domain.user.dto.request.FcmTokenUpdateDto;
 import com.fourback.bemajor.domain.user.dto.request.UserLoginRequestDto;
 import com.fourback.bemajor.domain.user.dto.request.UserUpdateRequestDto;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
@@ -63,6 +64,13 @@ public class UserController {
     public ResponseEntity<?> deleteImage(@AuthenticationPrincipal CustomUserDetails customUserDetails)
             throws IOException {
         userService.deleteImage(customUserDetails.getUserId());
+        return Response.onSuccess();
+    }
+
+    @PatchMapping
+    public ResponseEntity<?> updateFcmToken(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                            @RequestBody FcmTokenUpdateDto fcmTokenUpdateDto) {
+        userService.updateFcmToken(customUserDetails.getUserId(), fcmTokenUpdateDto);
         return Response.onSuccess();
     }
 }

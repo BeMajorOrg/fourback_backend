@@ -39,6 +39,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         String refreshToken = request.getHeader("refresh");
         Long userId = jwtUtil.getUserId(refreshToken);
         redisService.deleteRefreshToken(userId);
+        redisService.deleteFcmToken(userId);
         SecurityContextHolder.clearContext();
         response.setHeader("refresh", null);
         response.setHeader("access", null);

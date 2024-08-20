@@ -4,13 +4,14 @@ import com.fourback.bemajor.global.common.service.RedisService;
 import io.jsonwebtoken.Jwts;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Component
 public class JWTUtil {
@@ -54,11 +55,12 @@ public class JWTUtil {
     public List<Pair<String, String>> createTokens(Long userId, String role) {
         String access = "access";
         String refresh = "refresh";
+        long expiredTime = 86400000L;
         List<Pair<String, String>> tokens = new ArrayList<>(2);
         tokens.add(Pair.of(access, this.createToken(access, userId, role, 600000L)));
-        String refreshToken = this.createToken(refresh, userId, role, 86400000L);
+        String refreshToken = this.createToken(refresh, userId, role, expiredTime);
         tokens.add(Pair.of(refresh, refreshToken));
-        redisService.setRefreshToken(userId, refreshToken, 86400000L);
+        redisService.setRefreshToken(userId, refreshToken, expiredTime);
         return tokens;
     }
 }
