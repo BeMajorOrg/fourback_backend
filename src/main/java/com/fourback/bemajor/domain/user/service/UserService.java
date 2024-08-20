@@ -86,7 +86,7 @@ public class UserService {
                 studyJoined -> studyJoined.getStudyGroup().getId()).toList();
         redisService.deleteUsersJoined(studyGroupIds, userId);
         studyJoinedRepository.deleteAllInBatch(userJoinedList);
-        groupChatMessageRepository.deleteMessagesByUserId(userId);
+        groupChatMessageRepository.deleteMessagesByReceiverId(userId);
         userRepository.delete(user);
         redisService.deleteRefreshToken(userId);
         redisService.deleteFcmToken(userId);

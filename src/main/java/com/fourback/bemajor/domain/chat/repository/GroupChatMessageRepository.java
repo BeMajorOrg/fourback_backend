@@ -15,5 +15,5 @@ public interface GroupChatMessageRepository extends JpaRepository<GroupChatMessa
     @Query("delete from GroupChatMessageEntity c where c.receiverId=?1 and c.studyGroupId=?2")
     void deleteMessagesByStudyGroupIdAndReceiverId(Long receiverId, Long studyGroupId);
 
-    void deleteMessagesByUserId(Long userId);
+    void deleteMessagesByReceiverId(Long userId);
 }
