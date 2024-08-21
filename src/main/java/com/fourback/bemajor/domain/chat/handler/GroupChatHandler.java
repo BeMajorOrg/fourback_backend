@@ -35,13 +35,11 @@ public class GroupChatHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper;
     private final FcmService fcmService;
     private final StudyJoinedRepository studyJoinedRepository;
-    private final JWTUtil jwtUtil;
 
     @Override
     @Transactional
     public void afterConnectionEstablished(WebSocketSession session) throws IOException {
-        String accessToken = session.getHandshakeHeaders().getFirst("access");
-        Long userId = jwtUtil.getUserId(accessToken);
+        Long userId = (Long) session.getAttributes().get("userId");
         Long studyGroupId = Long.valueOf(Objects.requireNonNull(session.getUri())
                 .getQuery().split("&")[0].split("=")[1]);
         sessionIdsMap.put(session, Pair.of(userId, studyGroupId));
