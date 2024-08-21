@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -37,6 +38,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
     private final JWTUtil jwtUtil;
 
     @Override
+    @Transactional
     public void afterConnectionEstablished(WebSocketSession session) throws IOException {
         String accessToken = session.getHandshakeHeaders().getFirst("access");
         Long userId = jwtUtil.getUserId(accessToken);
@@ -57,6 +59,8 @@ public class GroupChatHandler extends TextWebSocketHandler {
     }
 
     @Override
+    @Async("threadPoolTaskExecutor")
+    @Transactional
     protected void handleTextMessage(WebSocketSession session,
                                      TextMessage message) throws Exception {
         String[] querys = Objects.requireNonNull(session.getUri())
