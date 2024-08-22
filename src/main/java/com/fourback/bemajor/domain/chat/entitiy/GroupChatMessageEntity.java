@@ -1,11 +1,13 @@
 package com.fourback.bemajor.domain.chat.entitiy;
 
-import com.fourback.bemajor.domain.chat.dto.ChatMessageDto;
+import com.fourback.bemajor.domain.chat.dto.ChatMessageResponseDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -25,7 +27,7 @@ public class GroupChatMessageEntity {
     @Column(name = "study_group_id")
     private Long studyGroupId;
 
-    @Column(name = "message")
+    @Column(name = "content")
     private String message;
 
     @Column(name = "sender_id")
@@ -34,11 +36,15 @@ public class GroupChatMessageEntity {
     @Column(name = "sender_name")
     private String senderName;
 
-    public ChatMessageDto toMessageDto() {
-        return ChatMessageDto.builder()
-                .message(this.message)
+    @Column(name = "send_time")
+    private LocalDateTime sendTime;
+
+    public ChatMessageResponseDto toMessageResponseDto() {
+        return ChatMessageResponseDto.builder()
+                .content(this.message)
                 .senderId(this.senderId)
                 .senderName(this.senderName)
+                .sendTime(this.sendTime)
                 .build();
     }
 }

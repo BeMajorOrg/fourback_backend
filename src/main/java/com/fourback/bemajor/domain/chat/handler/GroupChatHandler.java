@@ -1,14 +1,14 @@
 package com.fourback.bemajor.domain.chat.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourback.bemajor.domain.chat.dto.ChatMessageDto;
+import com.fourback.bemajor.domain.chat.dto.ChatMessageRequestDto;
+import com.fourback.bemajor.domain.chat.dto.ChatMessageResponseDto;
 import com.fourback.bemajor.domain.chat.service.GroupChatMessageService;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
-import com.fourback.bemajor.global.security.JWTUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
@@ -46,13 +46,13 @@ public class GroupChatHandler extends TextWebSocketHandler {
         this.putDisConnectUserFromDB(studyGroupId, userId);
         redisService.deleteDisConnectUser(studyGroupId, userId);
         studyGrupIdSessionsMap.get(studyGroupId).add(session);
-        List<ChatMessageDto> chatMessageDtos =
+        List<ChatMessageResponseDto> chatMessageResponseDtos =
                 groupChatMessageService.getMessages(userId, studyGroupId);
-        for (ChatMessageDto chatMessageDto : chatMessageDtos) {
+        for (ChatMessageResponseDto chatMessageResponseDto : chatMessageResponseDtos) {
             session.sendMessage(new TextMessage(
-                    objectMapper.writeValueAsString(chatMessageDto)));
+                    objectMapper.writeValueAsString(chatMessageResponseDto)));
         }
-        if (!chatMessageDtos.isEmpty())
+        if (!chatMessageResponseDtos.isEmpty())
             groupChatMessageService.deleteMessages(userId, studyGroupId);
     }
 
@@ -61,28 +61,28 @@ public class GroupChatHandler extends TextWebSocketHandler {
     @Transactional
     protected void handleTextMessage(WebSocketSession session,
                                      TextMessage message) throws Exception {
-        String[] querys = Objects.requireNonNull(session.getUri())
-                .getQuery().split("&");
-        String senderName = querys[1].split("=")[1];
-        String studyGroupName = querys[2].split("=")[1];
-        String msg = message.getPayload();
+        String payload = message.getPayload();
         Pair<Long, Long> ids = sessionIdsMap.get(session);
         Long senderId = ids.getLeft();
         Long studyGroupId = ids.getRight();
         Set<WebSocketSession> onSessions = studyGrupIdSessionsMap.get(studyGroupId);
-        ChatMessageDto chatMessageDto =
-                new ChatMessageDto(msg, senderName, senderId);
+        ChatMessageRequestDto chatMessageRequestDto =
+                objectMapper.readValue(payload, ChatMessageRequestDto.class);
+        ChatMessageResponseDto chatMessageResponseDto =
+                chatMessageRequestDto.toResponseDto(senderId);
         for (WebSocketSession onSession : onSessions) {
             onSession.sendMessage(new TextMessage(
-                    objectMapper.writeValueAsString(chatMessageDto)));
+                    objectMapper.writeValueAsString(chatMessageResponseDto)));
         }
         Set<Long> disconnectedUserId = redisService.getDisConnectUser(studyGroupId);
         disconnectedUserId.forEach(userId -> {
             String fcmToken = redisService.getFcmToken(userId);
             if(fcmToken==null)
                 return;
-            groupChatMessageService.saveMessage(userId, chatMessageDto, studyGroupId);
-            fcmService.sendalarm(chatMessageDto, fcmToken, studyGroupName);
+            groupChatMessageService.saveMessage(userId,
+                    chatMessageResponseDto, studyGroupId);
+            fcmService.sendalarm(chatMessageResponseDto, fcmToken,
+                    chatMessageRequestDto.getStudyGroupName());
         });
     }
 

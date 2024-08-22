@@ -1,6 +1,6 @@
 package com.fourback.bemajor.domain.chat.service;
 
-import com.fourback.bemajor.domain.chat.dto.ChatMessageDto;
+import com.fourback.bemajor.domain.chat.dto.ChatMessageResponseDto;
 import com.fourback.bemajor.domain.chat.entitiy.GroupChatMessageEntity;
 import com.fourback.bemajor.domain.chat.repository.GroupChatMessageRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,11 +14,11 @@ import java.util.List;
 public class GroupChatMessageService {
     private final GroupChatMessageRepository groupChatMessageRepository;
 
-    public List<ChatMessageDto> getMessages(Long userId, Long studyGroupId) {
+    public List<ChatMessageResponseDto> getMessages(Long userId, Long studyGroupId) {
         List<GroupChatMessageEntity> groupChatMessageEntities = groupChatMessageRepository
                 .findByStudyGroupIdAndReceiverId(userId, studyGroupId);
         return groupChatMessageEntities.stream()
-                .map(GroupChatMessageEntity::toMessageDto).toList();
+                .map(GroupChatMessageEntity::toMessageResponseDto).toList();
     }
 
     @Transactional
@@ -27,7 +27,7 @@ public class GroupChatMessageService {
     }
 
     @Transactional
-    public void saveMessage(Long userId, ChatMessageDto chatMessageDto, Long studyGroupId) {
+    public void saveMessage(Long userId, ChatMessageResponseDto chatMessageDto, Long studyGroupId) {
         groupChatMessageRepository.save(chatMessageDto.toMessageEntity(userId, studyGroupId));
     }
 }
