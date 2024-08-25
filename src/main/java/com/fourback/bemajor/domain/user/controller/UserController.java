@@ -34,6 +34,14 @@ public class UserController {
                 .body(userDto);
     }
 
+    @GetMapping("/email")
+    public ResponseEntity<?> getUserInfoByEmail(
+            @RequestParam String email) {
+        UserDto userDto = userService.findByEmail(email).toUserDto();
+        return ResponseEntity.ok()
+                .body(userDto);
+    }
+
     @PatchMapping
     public ResponseEntity<?> updateUserInfo(
             @RequestParam String userName, @RequestParam String email, @RequestParam String birth,

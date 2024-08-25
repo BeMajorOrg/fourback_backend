@@ -32,6 +32,15 @@ public class UserService {
     }
 
     @Transactional
+    public User findByEmail(String email) {
+        Optional<User> ou = userRepository.findByEmail(email);
+        if (ou.isEmpty()) {
+            throw new NotFoundElementException(1, "That is not in DB", HttpStatus.NOT_FOUND);
+        }
+        return ou.get();
+    }
+
+    @Transactional
     public User findByOauth2IdWithImage(String oauth2Id) {
         Optional<User> ou = userRepository.findByOauth2IdWithImage(oauth2Id);
         if (ou.isEmpty()) {

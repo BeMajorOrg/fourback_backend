@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User,Long> {
     Optional<User> findByOauth2Id(String oauthId);
+    Optional<User> findByEmail(String email);
     void deleteByOauth2Id(String oauthId);
     @Query("select u from User u left join fetch u.userImage where u.oauth2Id=?1")
     Optional<User> findByOauth2IdWithImage(String oauthId);
