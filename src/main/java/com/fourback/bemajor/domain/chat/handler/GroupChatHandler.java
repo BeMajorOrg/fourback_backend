@@ -44,8 +44,8 @@ public class GroupChatHandler extends TextWebSocketHandler {
         Long studyGroupId = Long.valueOf(Objects.requireNonNull(session.getUri())
                 .getQuery().split("&")[0].split("=")[1]);
         sessionIdsMap.put(session, Pair.of(userId, studyGroupId));
-        this.putDisConnectUserFromDB(studyGroupId, userId);
-        redisService.deleteDisConnectUser(studyGroupId, userId);
+//        this.putDisConnectUserFromDB(studyGroupId, userId);
+//        redisService.deleteDisConnectUser(studyGroupId, userId);
         studyGrupIdSessionsMap.get(studyGroupId).add(session);
         List<ChatMessageResponseDto> chatMessageResponseDtos =
                 groupChatMessageService.getMessages(userId, studyGroupId);
@@ -75,16 +75,16 @@ public class GroupChatHandler extends TextWebSocketHandler {
             onSession.sendMessage(new TextMessage(
                     objectMapper.writeValueAsString(chatMessageResponseDto)));
         }
-        Set<Long> disconnectedUserId = redisService.getDisConnectUser(studyGroupId);
-        disconnectedUserId.forEach(userId -> {
-            String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userId);
-            if(fcmToken==null)
-                return;
-            groupChatMessageService.saveMessage(userId,
-                    chatMessageResponseDto, studyGroupId);
-            fcmService.sendalarm(chatMessageResponseDto, fcmToken,
-                    chatMessageRequestDto.getStudyGroupName());
-        });
+//        Set<Long> disconnectedUserId = redisService.getDisConnectUser(studyGroupId);
+//        disconnectedUserId.forEach(userId -> {
+//            String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userId);
+//            if(fcmToken==null)
+//                return;
+//            groupChatMessageService.saveMessage(userId,
+//                    chatMessageResponseDto, studyGroupId);
+//            fcmService.sendalarm(chatMessageResponseDto, fcmToken,
+//                    chatMessageRequestDto.getStudyGroupName());
+//        });
     }
 
     @Override
@@ -92,7 +92,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
         Pair<Long, Long> ids = sessionIdsMap.get(session);
         Long userId = ids.getLeft();
         Long studyGroupId = ids.getRight();
-        redisService.putDisConnectUser(studyGroupId, userId);
+//        redisService.putDisConnectUser(studyGroupId, userId);
         studyGrupIdSessionsMap.get(studyGroupId).remove(session);
         sessionIdsMap.remove(session);
     }

@@ -74,7 +74,7 @@ public class RedisService {
         });
     }
 
-    @Scheduled(fixedDelay = 300000, initialDelay = 300000)
+//    @Scheduled(fixedDelay = 300000, initialDelay = 300000)
     public void deleteDisConnectUserKeysInPipe() {
         Set<String> allKeys = stringLongRedisTemplate.keys("disConnectUser:*");
         List<Long> list = Objects.requireNonNull(allKeys).stream().map(key ->

@@ -57,8 +57,8 @@ public class UserService {
                 userRepository.save(user);
             }
         }
-        redisService.setValue(RedisKeyPrefixEnum.FCM, user.getUserId(),
-                userLoginRequestDto.getFcmToken(), userLoginRequestDto.getFcmTokenExpiredTime());
+//        redisService.setValue(RedisKeyPrefixEnum.FCM, user.getUserId(),
+//                userLoginRequestDto.getFcmToken(), userLoginRequestDto.getFcmTokenExpiredTime());
         return jwtUtil.createTokens(user.getUserId(), user.getRole());
     }
 
@@ -85,7 +85,7 @@ public class UserService {
         List<StudyJoined> userJoinedList = studyJoinedRepository.findByUserId(userId);
         List<Long> studyGroupIds = userJoinedList.stream().map(
                 studyJoined -> studyJoined.getStudyGroup().getId()).toList();
-        redisService.deleteUsersJoined(studyGroupIds, userId);
+//        redisService.deleteUsersJoined(studyGroupIds, userId);
         studyJoinedRepository.deleteAllInBatch(userJoinedList);
         groupChatMessageRepository.deleteMessagesByReceiverId(userId);
         userRepository.delete(user);

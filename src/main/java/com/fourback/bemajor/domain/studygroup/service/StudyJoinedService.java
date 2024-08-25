@@ -35,41 +35,42 @@ public class StudyJoinedService {
     private final GroupChatMessageRepository groupChatMessageRepository;
     private final Map<Long, Set<WebSocketSession>> studyGrupIdSessionsMap;
 
-    public void joinStudyGroup(Long userId, Long studyGroupId){
+    public void joinStudyGroup(Long userId, Long studyGroupId) {
         Optional<StudyGroup> studyGroupOptional = studyGroupRepository.findById(studyGroupId);
         Optional<UserEntity> userOptional = userRepository.findById(userId);
-        if (studyGroupOptional.isEmpty()){
-            throw new NoSuchStudyGroupException(5,"no such study group.", HttpStatus.BAD_REQUEST);
+        if (studyGroupOptional.isEmpty()) {
+            throw new NoSuchStudyGroupException(5, "no such study group.", HttpStatus.BAD_REQUEST);
         }
-        if (userOptional.isEmpty()){
+        if (userOptional.isEmpty()) {
             throw new NoSuchUserException(6, "no such user.", HttpStatus.BAD_REQUEST);
         }
         studyJoinedRepository.save(new StudyJoined(studyGroupOptional.get(), userOptional.get()));
-        if(!studyGrupIdSessionsMap.get(studyGroupId).isEmpty()){
-            redisService.putDisConnectUser(studyGroupId,userId);
+        if (!studyGrupIdSessionsMap.get(studyGroupId).isEmpty()) {
+//            redisService.putDisConnectUser(studyGroupId,userId);
         }
     }
 
     @Transactional
-    public void exitStudyGroup(Long studyGroupId, Long userId){
+    public void exitStudyGroup(Long studyGroupId, Long userId) {
         List<Long> idsByStudyGroupIdAndOauth2Id = studyJoinedRepository.findIdsByStudyGroupIdAndOauth2Id(studyGroupId, userId);
         studyJoinedRepository.deleteByIds(idsByStudyGroupIdAndOauth2Id);
-        if(!studyGrupIdSessionsMap.get(studyGroupId).isEmpty())
-            redisService.deleteDisConnectUser(studyGroupId, userId);
-        groupChatMessageRepository.deleteMessagesByStudyGroupIdAndReceiverId(userId,studyGroupId);
+        if (!studyGrupIdSessionsMap.get(studyGroupId).isEmpty()) {
+//            redisService.deleteDisConnectUser(studyGroupId, userId);
+        }
+        groupChatMessageRepository.deleteMessagesByStudyGroupIdAndReceiverId(userId, studyGroupId);
     }
 
-    public List<UserResponseDto> getAllStudyUser(Long studyGroupId){
+    public List<UserResponseDto> getAllStudyUser(Long studyGroupId) {
         Optional<StudyGroup> studyGroupOptional = studyGroupRepository.findById(studyGroupId);
-        if (studyGroupOptional.isEmpty()){
-            throw new NoSuchStudyGroupException(5,"no such study group.", HttpStatus.BAD_REQUEST);
+        if (studyGroupOptional.isEmpty()) {
+            throw new NoSuchStudyGroupException(5, "no such study group.", HttpStatus.BAD_REQUEST);
         }
         return studyGroupOptional.get().getStudyJoineds().stream().map(StudyJoined::getUser).map(UserEntity::toUserResponseDto).collect(Collectors.toList());
     }
 
-    public List<StudyGroupDto> getAllMyGroups(Long userId){
+    public List<StudyGroupDto> getAllMyGroups(Long userId) {
         Optional<UserEntity> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()){
+        if (userOptional.isEmpty()) {
             throw new NoSuchUserException(6, "no such user.", HttpStatus.BAD_REQUEST);
         }
         return userOptional.get().getStudyJoineds().stream().map(StudyJoined::getStudyGroup).map(StudyGroupDto::toDto).collect(Collectors.toList());
