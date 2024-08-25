@@ -1,95 +1,96 @@
 package com.fourback.bemajor.domain.user.service;
 
-import com.fourback.bemajor.domain.user.entity.User;
-import com.fourback.bemajor.domain.user.dto.LoginUserDto;
-import com.fourback.bemajor.domain.user.dto.TokenDto;
-import com.fourback.bemajor.domain.user.dto.UserDto;
-import com.fourback.bemajor.global.exception.kind.NotFoundElementException;
+import com.fourback.bemajor.global.common.service.ImageFileService;
+import com.fourback.bemajor.domain.user.dto.request.UserLoginRequestDto;
+import com.fourback.bemajor.domain.user.dto.request.UserUpdateRequestDto;
+import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
-import com.fourback.bemajor.domain.image.service.ImageFileService;
+import com.fourback.bemajor.global.exception.ExceptionEnum;
+import com.fourback.bemajor.global.exception.kind.NotFoundElementException;
+import com.fourback.bemajor.global.security.JWTUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final AuthService authService;
+    private final JWTUtil jwtUtil;
     private final ImageFileService imageFileService;
 
     @Transactional
-    public User findByOauth2Id(String oauth2Id) {
-        Optional<User> ou = userRepository.findByOauth2Id(oauth2Id);
+    public List<Pair<String, String>> save(UserLoginRequestDto userLoginRequestDto) {
+        String oauth2Id = userLoginRequestDto.getRegistrationId() + userLoginRequestDto.getUserId();
+        Optional<UserEntity> ou = userRepository.findByOauth2Id(oauth2Id);
+        UserEntity user;
         if (ou.isEmpty()) {
-            throw new NotFoundElementException(1, "That is not in DB", HttpStatus.NOT_FOUND);
-        }
-        return ou.get();
-    }
-
-    @Transactional
-    public User findByEmail(String email) {
-        Optional<User> ou = userRepository.findByEmail(email);
-        if (ou.isEmpty()) {
-            throw new NotFoundElementException(1, "That is not in DB", HttpStatus.NOT_FOUND);
-        }
-        return ou.get();
-    }
-
-    @Transactional
-    public User findByOauth2IdWithImage(String oauth2Id) {
-        Optional<User> ou = userRepository.findByOauth2IdWithImage(oauth2Id);
-        if (ou.isEmpty()) {
-            throw new NotFoundElementException(1, "That is not in DB", HttpStatus.NOT_FOUND);
-        }
-        return ou.get();
-    }
-
-    @Transactional
-    public TokenDto save(LoginUserDto loginUserDto) {
-        String registrationId = loginUserDto.getRegistrationId();
-        String oauth2Id = registrationId + loginUserDto.getUserId();
-        Optional<User> ou = userRepository.findByOauth2Id(oauth2Id);
-        User user;
-        if (ou.isEmpty()) {
-            user = User.builder()
-                    .role("ROLE_USER")
-                    .oauth2Id(oauth2Id)
+            user = UserEntity.builder()
+                    .role("ROLE_USER").oauth2Id(oauth2Id)
+                    .isDeleted(false).studyJoineds(new ArrayList<>())
                     .build();
             userRepository.save(user);
         } else {
             user = ou.get();
-            if(user.isDeleted()){
+            if (user.isDeleted()) {
                 user.setDeleted(false);
                 userRepository.save(user);
             }
         }
-        return authService.newToken(user.getOauth2Id(), user.getRole());
+        return jwtUtil.createTokens(user.getUserId(), user.getRole());
+    }
+
+    public UserResponseDto get(Long userId) {
+        UserEntity user = this.findById(userId);
+        return user.toUserResponseDto();
     }
 
     @Transactional
-    public UserDto get(String oauth2Id) {
-        User user = findByOauth2IdWithImage(oauth2Id);
-        return user.toUserWithImageDto();
-    }
-
-    @Transactional
-    public void update(UserDto userDto, String oauth2Id) {
-        User user = findByOauth2Id(oauth2Id);
-        user.setUserDto(userDto);
+    public void update(UserUpdateRequestDto userUpdateRequestDto, Long userId) {
+        UserEntity user = this.findById(userId);
+        user.update(userUpdateRequestDto);
         userRepository.save(user);
     }
 
     @Transactional
-    public void delete(String oauth2Id) throws IOException {
-        User user = findByOauth2IdWithImage(oauth2Id);
-        if (user.getUserImage() != null) {
-            imageFileService.deleteImageFile(user.getUserImage().getFilePath());
+    public void delete(Long userId) throws IOException {
+        UserEntity user = this.findById(userId);
+        String fileName = user.getFileName();
+        if (fileName != null) {
+            imageFileService.deleteImageFile(fileName);
         }
         userRepository.delete(user);
+    }
+
+    @Transactional
+    public String saveImage(Long userId, MultipartFile file) throws IOException {
+        UserEntity user = this.findById(userId);
+        String uniqueFileName = imageFileService.saveImageFile(file);
+        user.setFileName(uniqueFileName);
+        userRepository.save(user);
+        return uniqueFileName;
+    }
+
+    public void deleteImage(Long userId) throws IOException {
+        UserEntity user = this.findById(userId);
+        imageFileService.deleteImageFile(user.getFileName());
+        user.setFileName(null);
+        userRepository.save(user);
+    }
+
+    private UserEntity findById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(()
+                -> new NotFoundElementException(ExceptionEnum.NOTFOUNDELEMENT.ordinal(),
+                "This is not in DB", HttpStatus.LOCKED));
     }
 }

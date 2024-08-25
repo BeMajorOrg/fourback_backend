@@ -1,7 +1,6 @@
 package com.fourback.bemajor.global.security;
 
-import com.fourback.bemajor.domain.CustomUserDetails;
-import com.fourback.bemajor.domain.user.dto.UserAuthDto;
+import com.fourback.bemajor.global.exception.ExceptionEnum;
 import com.fourback.bemajor.global.exception.kind.AccessTokenExpiredException;
 import com.fourback.bemajor.global.exception.kind.InvalidLoginTokenException;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -27,47 +26,42 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         String accessToken = request.getHeader("access");
-        String path = request.getServletPath();
-        String method = request.getMethod();
         if (accessToken == null) {
-            if (isNotPostAuth(path, method)) {
-                filterChain.doFilter(request, response);
-            } else {
-                log.debug("access token empty");
-                throw new InvalidLoginTokenException(4, "This is Invalid Token. Try logging in again", HttpStatus.UNAUTHORIZED);
-            }
+            filterChain.doFilter(request, response);
             return;
         }
+
         try {
             jwtUtil.isExpired(accessToken);
         } catch (ExpiredJwtException e) {
-            if(isNotPostAuth(path, method)) {
-                throw new AccessTokenExpiredException(6, "Access Token Expired", HttpStatus.UNAUTHORIZED);
-            }
-            else{
+            String path = request.getServletPath();
+            String method = request.getMethod();
+            if (path.equals("/reissue") && method.equals("POST")) {
+                request.setAttribute("reissue", true);
                 filterChain.doFilter(request, response);
+            } else {
+                throw new AccessTokenExpiredException(ExceptionEnum.ACCESSTOKENEXPIRED.ordinal(),
+                        "Access token expired", HttpStatus.UNAUTHORIZED);
             }
             return;
         }
 
         String category = jwtUtil.getCategory(accessToken);
-        if(!category.equals("access")) {
+        if (!category.equals("access")) {
             log.debug("invalid access token");
-            throw new InvalidLoginTokenException(4, "This is Invalid Token. Try logging in again", HttpStatus.UNAUTHORIZED);
+            throw new InvalidLoginTokenException(ExceptionEnum.INVALIDTOKEN.ordinal(),
+                    "This is Invalid Token. Try logging in again", HttpStatus.UNAUTHORIZED);
         }
 
-        String username = jwtUtil.getUsername(accessToken);
+        Long userId = jwtUtil.getUserId(accessToken);
         String role = jwtUtil.getRole(accessToken);
-        UserAuthDto userAuthDto = new UserAuthDto(username, role);
-        CustomUserDetails customOAuth2User = new CustomUserDetails(userAuthDto);
-        Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+        CustomUserDetails customOAuth2User = new CustomUserDetails(userId, role);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(customOAuth2User,
+                null, customOAuth2User.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         filterChain.doFilter(request, response);
-    }
-
-    private boolean isNotPostAuth(String path, String method){
-        return !path.equals("/auth") || !method.equals("POST");
     }
 }

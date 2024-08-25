@@ -2,6 +2,7 @@ package com.fourback.bemajor.domain.comment.dto;
 
 import com.fourback.bemajor.domain.comment.dto.GetCommentListResponse;
 import com.fourback.bemajor.domain.comment.entity.CommentType;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import com.fourback.bemajor.domain.comment.entity.Comment;
 @Data
 public class CommentResult {
     private Long id;
+    private UserEntity userEntity;
     private String content;
     private int goodCount;
     private String commentDate;
@@ -43,6 +45,7 @@ public class CommentResult {
         }
         return CommentResult.builder()
                 .id(comment.getId())
+                .userEntity(comment.getUser())
                 .goodCount(comment.getGoodCount())
                 .content(commentContent)
                 .commentDate(comment.getCreatedDate().toString())

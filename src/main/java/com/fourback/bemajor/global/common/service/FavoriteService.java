@@ -15,7 +15,7 @@ import com.fourback.bemajor.domain.community.repository.BoardRepository;
 import com.fourback.bemajor.domain.community.repository.FavoriteBoardRepository;
 import com.fourback.bemajor.domain.community.repository.FavoritePostRepository;
 import com.fourback.bemajor.domain.community.repository.PostRepository;
-import com.fourback.bemajor.domain.user.entity.User;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -37,10 +37,10 @@ public class FavoriteService {
     private final FavoritePostRepository favoritePostRepository;
 
     @Transactional
-    public void add(FavoriteDto favoriteDto, String oauth2Id) {
+    public void add(FavoriteDto favoriteDto, Long userId) {
         Board board = boardRepository.findByBoardName(favoriteDto.getBoardName());
-        User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
-        Optional<FavoriteBoard> favoriteBoardOpt = favoriteBoardRepository.findByUserAndBoard(user, board);
+        UserEntity userEntity = userRepository.findById(userId).orElse(null);
+        Optional<FavoriteBoard> favoriteBoardOpt = favoriteBoardRepository.findByUserAndBoard(userEntity, board);
 
         if(favoriteBoardOpt.isPresent()){
             FavoriteBoard favoriteBoard = favoriteBoardOpt.get();
@@ -48,21 +48,21 @@ public class FavoriteService {
         } else {
             FavoriteBoard favoriteBoard = new FavoriteBoard();
             favoriteBoard.setBoard(board);
-            favoriteBoard.setUser(user);
+            favoriteBoard.setUser(userEntity);
             favoriteBoardRepository.save(favoriteBoard);
         }
 
     }
 
-    public AddFavoriteCommentResponse addFavoriteComment(long commentId, String oauth2Id) {
+    public AddFavoriteCommentResponse addFavoriteComment(long commentId, Long userId) {
         Comment c = commentRepository.getById(commentId);
-        User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
-        FavoriteComment fc =  favoriteCommentRepository.findByCommentAndUser(c, user);
+        UserEntity userEntity = userRepository.findById(userId).orElse(null);
+        FavoriteComment fc =  favoriteCommentRepository.findByCommentAndUser(c, userEntity);
 
         if(fc == null) {
             fc = FavoriteComment.builder().
                     comment(c).
-                    user(user).
+                    user(userEntity).
                     isFavorite(true).
                     build();
         } else {
@@ -81,10 +81,10 @@ public class FavoriteService {
         return res;
     }
 
-    public DeleteFavoriteCommentResponse deleteFavoriteComment(long commentId, String oauth2Id) {
+    public DeleteFavoriteCommentResponse deleteFavoriteComment(long commentId, Long userId) {
         Comment c = commentRepository.getById(commentId);
-        User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
-        FavoriteComment fc = favoriteCommentRepository.findByCommentAndUser(c, user);
+        UserEntity userEntity = userRepository.findById(userId).orElse(null);
+        FavoriteComment fc = favoriteCommentRepository.findByCommentAndUser(c, userEntity);
 
         if(fc != null) {
             fc.setFavorite(false);
@@ -100,19 +100,19 @@ public class FavoriteService {
         return res;
     }
 
-    public Boolean getFavoriteComment(long commentId, String oauth2Id) {
+    public Boolean getFavoriteComment(long commentId, Long userId) {
         Comment c = commentRepository.getById(commentId);
-        User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
-        FavoriteComment fc = favoriteCommentRepository.findByCommentAndUser(c, user);
+        UserEntity userEntity = userRepository.findById(userId).orElse(null);
+        FavoriteComment fc = favoriteCommentRepository.findByCommentAndUser(c, userEntity);
 
         return (fc != null) ? fc.isFavorite() : false;
     }
 
     @Transactional
-    public void post(Long postId, String oauth2Id) {
+    public void post(Long postId, Long userId) {
         Post post = postRepository.findById(postId).orElse(null);
-        User user = userRepository.findByOauth2Id(oauth2Id).orElse(null);
-        Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(user, post);
+        UserEntity userEntity = userRepository.findById(userId).orElse(null);
+        Optional<FavoritePost> optionalFavoritePost = favoritePostRepository.findByUserAndPost(userEntity, post);
 
         if(optionalFavoritePost.isPresent()){
             FavoritePost favoritePost = optionalFavoritePost.get();
@@ -121,7 +121,7 @@ public class FavoriteService {
         } else {
             FavoritePost favoritePost = new FavoritePost();
             favoritePost.setPost(post);
-            favoritePost.setUser(user);
+            favoritePost.setUser(userEntity);
             favoritePostRepository.save(favoritePost);
             post.setGoodCount((post.getGoodCount() + 1));
         }

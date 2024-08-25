@@ -11,15 +11,13 @@ import java.util.concurrent.TimeUnit;
 public class RedisService {
     private final StringRedisTemplate redisTemplate;
 
-    public void setRefreshToken(String key, String value,Long expiredTime){
-        redisTemplate.opsForValue().set(key, value, expiredTime, TimeUnit.MILLISECONDS);
+    public void setRefreshToken(Long userId, String value,
+                                Long expiredTime) {
+        redisTemplate.opsForValue().set("Refresh:" + userId,
+                value, expiredTime, TimeUnit.MILLISECONDS);
     }
 
-    public String getRefreshToken(String key){
-        return (String) redisTemplate.opsForValue().get(key);
-    }
-
-    public void deleteRefreshToken(String key){
-        redisTemplate.delete(key);
+    public void deleteRefreshToken(Long userId) {
+        redisTemplate.delete("Refresh:" + userId);
     }
 }

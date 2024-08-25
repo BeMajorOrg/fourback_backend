@@ -23,12 +23,11 @@ public class StudyGroup {
     private String category;
     private String studyCycle;
     private String studyRule;
-    private List<String> studySchedule = new ArrayList<>();
-    private String ownerOauth2Id;
+    private Long ownerUserId;
     @OneToMany(mappedBy = "studyGroup")
     private List<StudyJoined> studyJoineds = new ArrayList<>();
 
-    public StudyGroup(String studyName,LocalDateTime startDate, LocalDateTime endDate, Integer teamSize, String studyLocation, String category, String studyCycle, String studyRule, List<String> studySchedule, String ownerOauth2Id) {
+    public StudyGroup(String studyName,LocalDateTime startDate, LocalDateTime endDate, Integer teamSize, String studyLocation, String category, String studyCycle, String studyRule, Long ownerUserId) {
         this.studyName = studyName;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -37,10 +36,9 @@ public class StudyGroup {
         this.category = category;
         this.studyCycle = studyCycle;
         this.studyRule = studyRule;
-        this.studySchedule = studySchedule;
-        this.ownerOauth2Id = ownerOauth2Id;
+        this.ownerUserId = ownerUserId;
     }
-    public void updateStudyGroup(String studyName,LocalDateTime startDate, LocalDateTime endDate, Integer teamSize, String studyLocation, String category, String studyCycle, String studyRule, List<String> studySchedule){
+    public void updateStudyGroup(String studyName,LocalDateTime startDate, LocalDateTime endDate, Integer teamSize, String studyLocation, String category, String studyCycle, String studyRule){
         this.studyName = studyName;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -49,6 +47,5 @@ public class StudyGroup {
         this.category = category;
         this.studyCycle = studyCycle;
         this.studyRule = studyRule;
-        this.studySchedule = studySchedule;
     }
 }

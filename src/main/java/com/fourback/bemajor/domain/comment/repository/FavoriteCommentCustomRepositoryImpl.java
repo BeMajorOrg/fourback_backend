@@ -2,7 +2,7 @@ package com.fourback.bemajor.domain.comment.repository;
 
 import com.fourback.bemajor.domain.comment.entity.Comment;
 import com.fourback.bemajor.domain.comment.entity.FavoriteComment;
-import com.fourback.bemajor.domain.user.entity.User;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.stereotype.Repository;
 
@@ -20,10 +20,10 @@ import static com.fourback.bemajor.domain.comment.entity.QFavoriteComment.favori
         }
 
         @Override
-        public FavoriteComment findByCommentAndUser(Comment comment, User user) {
+        public FavoriteComment findByCommentAndUser(Comment comment, UserEntity userEntity) {
             return (FavoriteComment) jpaQueryFactory.from(favoriteComment)
                     .where(favoriteComment.comment.eq(comment))
-                    .where(favoriteComment.user.eq(user))
+                    .where(favoriteComment.user.eq(userEntity))
                     .fetchOne();
         }
 
@@ -36,9 +36,9 @@ import static com.fourback.bemajor.domain.comment.entity.QFavoriteComment.favori
     }
 
     @Override
-    public List<FavoriteComment> findFavoriteCommentListByUser(User user) {
+    public List<FavoriteComment> findFavoriteCommentListByUser(UserEntity userEntity) {
         return (List<FavoriteComment>) jpaQueryFactory.from(favoriteComment)
-                .where(favoriteComment.user.eq(user))
+                .where(favoriteComment.user.eq(userEntity))
                 .fetch();
     }
 

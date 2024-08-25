@@ -1,10 +1,7 @@
 package com.fourback.bemajor.global.config;
 
 
-import com.fourback.bemajor.global.security.CustomLogoutFilter;
-import com.fourback.bemajor.global.security.JWTExceptionFilter;
-import com.fourback.bemajor.global.security.JWTFilter;
-import com.fourback.bemajor.global.security.JWTUtil;
+import com.fourback.bemajor.global.security.*;
 import com.fourback.bemajor.global.common.service.RedisService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +31,8 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
+                .cors(corsCustomizer
+                        -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration configuration = new CorsConfiguration();
@@ -45,7 +43,8 @@ public class SecurityConfig {
                         configuration.setMaxAge(3600L);
                         configuration.setExposedHeaders(Collections.singletonList("Authorization"));
                         return configuration;
-                    }}));
+                    }
+                }));
         http
                 .csrf(AbstractHttpConfigurer::disable);
         http
@@ -53,19 +52,20 @@ public class SecurityConfig {
         http
                 .httpBasic(AbstractHttpConfigurer::disable);
         http
-                .sessionManagement((session)->session
+                .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http
-                .authorizeHttpRequests((auth)->auth
-                        .requestMatchers(HttpMethod.POST,"/user").permitAll()
-                        .requestMatchers("/auth").permitAll()
+                .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .anyRequest().authenticated());
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         http
-                .addFilterBefore(new CustomLogoutFilter(redisService), LogoutFilter.class);
+                .addFilterBefore(new CustomLogoutFilter(redisService, jwtUtil), LogoutFilter.class);
         http
                 .addFilterBefore(new JWTExceptionFilter(), JWTFilter.class);
+        http
+                .addFilterAfter(new ReissueTokenFilter(jwtUtil), JWTFilter.class);
         return http.build();
     }
 }

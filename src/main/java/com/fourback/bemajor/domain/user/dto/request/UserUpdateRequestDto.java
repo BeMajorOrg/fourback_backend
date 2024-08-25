@@ -1,4 +1,4 @@
-package com.fourback.bemajor.domain.user.dto;
+package com.fourback.bemajor.domain.user.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDto {
+public class UserUpdateRequestDto {
     String userName;
     String email;
     String birth;

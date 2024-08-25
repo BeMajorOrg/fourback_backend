@@ -1,6 +1,6 @@
 package com.fourback.bemajor.domain.community.service;
 
-import com.fourback.bemajor.domain.user.entity.User;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.community.dto.BoardDto;
 import com.fourback.bemajor.domain.community.entity.Board;
 import com.fourback.bemajor.domain.community.entity.FavoriteBoard;
@@ -23,12 +23,12 @@ public class BoardService {
     private final UserRepository userRepository;
 
     @Transactional
-    public List<BoardDto> boards(String oauth2Id) {
-        Optional<User> optionalUser = userRepository.findByOauth2Id(oauth2Id);
-        User user = optionalUser.orElse(null);
+    public List<BoardDto> boards(Long userId) {
+        Optional<UserEntity> optionalUser = userRepository.findById(userId);
+        UserEntity userEntity = optionalUser.orElse(null);
 
         List<Board> boards = boardRepository.findAll();
-        List<FavoriteBoard> favoriteBoards = favoriteBoardRepository.findByUserUserId(user.getUserId());
+        List<FavoriteBoard> favoriteBoards = favoriteBoardRepository.findByUserUserId(userEntity.getUserId());
         Set<Long> favoriteBoardIds = new HashSet<>();
         for (FavoriteBoard favoriteBoard : favoriteBoards) {
             Board board = favoriteBoard.getBoard();

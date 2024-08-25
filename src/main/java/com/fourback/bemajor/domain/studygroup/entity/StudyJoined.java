@@ -1,6 +1,6 @@
 package com.fourback.bemajor.domain.studygroup.entity;
 
-import com.fourback.bemajor.domain.user.entity.User;
+import com.fourback.bemajor.domain.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,17 +15,17 @@ public class StudyJoined {
     @ManyToOne
     private StudyGroup studyGroup;
     @ManyToOne
-    private User user;
+    private UserEntity user;
 
-    public StudyJoined(StudyGroup studyGroup, User user) {
+    public StudyJoined(StudyGroup studyGroup, UserEntity userEntity) {
         this.studyGroup = studyGroup;
-        this.user = user;
+        this.user = userEntity;
     }
 
-    public void setStudyJoined(StudyGroup studyGroup, User user){
+    public void setStudyJoined(StudyGroup studyGroup, UserEntity userEntity){
         this.studyGroup = studyGroup;
         studyGroup.getStudyJoineds().add(this);
-        this.user = user;
-        user.getStudyJoineds().add(this);
+        this.user = userEntity;
+        userEntity.getStudyJoineds().add(this);
     }
 }
