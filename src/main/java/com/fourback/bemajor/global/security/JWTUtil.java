@@ -1,5 +1,6 @@
 package com.fourback.bemajor.global.security;
 
+import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
 import io.jsonwebtoken.Jwts;
 import org.apache.commons.lang3.tuple.Pair;
@@ -60,7 +61,7 @@ public class JWTUtil {
         tokens.add(Pair.of(access, this.createToken(access, userId, role, 600000L)));
         String refreshToken = this.createToken(refresh, userId, role, expiredTime);
         tokens.add(Pair.of(refresh, refreshToken));
-        redisService.setRefreshToken(userId, refreshToken, expiredTime);
+        redisService.setValue(RedisKeyPrefixEnum.REFRESH, userId, refreshToken, expiredTime);
         return tokens;
     }
 }

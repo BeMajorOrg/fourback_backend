@@ -1,5 +1,6 @@
 package com.fourback.bemajor.global.common.service;
 
+import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -24,18 +25,23 @@ public class RedisService {
     private final RedisTemplate<String, Long> stringLongRedisTemplate;
     private final Map<Long, Set<WebSocketSession>> studyGrupIdSessionsMap;
 
-    public void setRefreshToken(Long userId, String value, long expiredTime) {
-        stringRedisTemplate.opsForValue().set("Refresh:" + userId,
+    public void setValue(RedisKeyPrefixEnum prefixEnum, Long id,
+                         String value, long expiredTime) {
+        stringRedisTemplate.opsForValue().set(prefixEnum.getDescription() + id,
                 value, expiredTime, TimeUnit.MILLISECONDS);
     }
 
-    public void deleteRefreshToken(Long userId) {
-        stringRedisTemplate.delete("Refresh:" + userId);
+    public void deleteValue(RedisKeyPrefixEnum prefixEnum, Long id) {
+        stringRedisTemplate.delete(prefixEnum.getDescription() + id);
     }
 
-    public boolean checkDisConnectUserKey(Long studyGroupId) {
-        return Boolean.TRUE.equals(stringLongRedisTemplate.hasKey(
-                "disConnectUser:" + studyGroupId));
+    public String getValue(RedisKeyPrefixEnum prefixEnum, Long id) {
+        return stringRedisTemplate.opsForValue().get(prefixEnum.getDescription() + id);
+    }
+
+    public boolean checkKey(RedisKeyPrefixEnum prefixEnum, Long id) {
+        return Boolean.TRUE.equals(stringRedisTemplate.hasKey(
+                prefixEnum.getDescription() + id));
     }
 
     public void putDisConnectUser(Long studyGroupId, Long userId) {
@@ -88,18 +94,5 @@ public class RedisService {
     public void deleteDisConnectUser(Long studyGroupId, Long userId) {
         SetOperations<String, Long> operation = stringLongRedisTemplate.opsForSet();
         Long a = operation.remove("disConnectUser:" + studyGroupId, userId);
-    }
-
-    public void putFcmToken(Long userId, String fcmToken, long expiredTime) {
-        stringRedisTemplate.opsForValue().set(
-                "fcm:" + userId, fcmToken, expiredTime, TimeUnit.MILLISECONDS);
-    }
-
-    public String getFcmToken(Long userId) {
-        return stringRedisTemplate.opsForValue().get("fcm:" + userId);
-    }
-
-    public void deleteFcmToken(Long userId) {
-        stringRedisTemplate.delete("fcm:" + userId);
     }
 }

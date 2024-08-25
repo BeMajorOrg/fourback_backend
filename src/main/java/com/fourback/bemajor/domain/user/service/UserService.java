@@ -6,6 +6,7 @@ import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
 import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.dto.request.FcmTokenUpdateDto;
+import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.ImageFileService;
 import com.fourback.bemajor.domain.user.dto.request.UserLoginRequestDto;
 import com.fourback.bemajor.domain.user.dto.request.UserUpdateRequestDto;
@@ -56,8 +57,8 @@ public class UserService {
                 userRepository.save(user);
             }
         }
-        redisService.putFcmToken(user.getUserId(), userLoginRequestDto.getFcmToken(),
-                userLoginRequestDto.getFcmTokenExpiredTime());
+        redisService.setValue(RedisKeyPrefixEnum.FCM, user.getUserId(),
+                userLoginRequestDto.getFcmToken(), userLoginRequestDto.getFcmTokenExpiredTime());
         return jwtUtil.createTokens(user.getUserId(), user.getRole());
     }
 
@@ -88,8 +89,8 @@ public class UserService {
         studyJoinedRepository.deleteAllInBatch(userJoinedList);
         groupChatMessageRepository.deleteMessagesByReceiverId(userId);
         userRepository.delete(user);
-        redisService.deleteRefreshToken(userId);
-        redisService.deleteFcmToken(userId);
+        redisService.deleteValue(RedisKeyPrefixEnum.REFRESH, userId);
+        redisService.deleteValue(RedisKeyPrefixEnum.FCM, userId);
     }
 
     @Transactional
@@ -110,8 +111,8 @@ public class UserService {
     }
 
     public void updateFcmToken(Long userId, FcmTokenUpdateDto fcmTokenUpdateDto) {
-        redisService.putFcmToken(userId, fcmTokenUpdateDto.getFcmToken(),
-                fcmTokenUpdateDto.getFcmTokenExpiredTime());
+        redisService.setValue(RedisKeyPrefixEnum.FCM, userId,
+                fcmTokenUpdateDto.getFcmToken(), fcmTokenUpdateDto.getFcmTokenExpiredTime());
     }
 
     private UserEntity findById(Long userId) {

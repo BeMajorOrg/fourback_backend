@@ -7,6 +7,7 @@ import com.fourback.bemajor.domain.chat.service.GroupChatMessageService;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
+import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
 import jakarta.annotation.PostConstruct;
@@ -76,7 +77,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
         }
         Set<Long> disconnectedUserId = redisService.getDisConnectUser(studyGroupId);
         disconnectedUserId.forEach(userId -> {
-            String fcmToken = redisService.getFcmToken(userId);
+            String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userId);
             if(fcmToken==null)
                 return;
             groupChatMessageService.saveMessage(userId,
@@ -97,7 +98,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
     }
 
     private void putDisConnectUserFromDB(Long studyGroupId, Long userId) {
-        if (!redisService.checkDisConnectUserKey(studyGroupId)) {
+        if (!redisService.checkKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId)) {
             redisService.putDisConnectUserAll(studyGroupId,
                     studyJoinedRepository.findByStudyGroupIdNotUserId(studyGroupId, userId));
         }
