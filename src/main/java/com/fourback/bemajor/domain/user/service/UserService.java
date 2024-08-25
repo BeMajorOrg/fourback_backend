@@ -1,9 +1,7 @@
 package com.fourback.bemajor.domain.user.service;
 
 import com.fourback.bemajor.domain.chat.repository.GroupChatMessageRepository;
-import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
-import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.dto.request.FcmTokenUpdateDto;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
@@ -85,7 +83,8 @@ public class UserService {
         List<StudyJoined> userJoinedList = studyJoinedRepository.findByUserId(userId);
         List<Long> studyGroupIds = userJoinedList.stream().map(
                 studyJoined -> studyJoined.getStudyGroup().getId()).toList();
-        redisService.deleteUsersJoined(studyGroupIds, userId);
+        redisService.removeUserInKeysUsingPipeLine(RedisKeyPrefixEnum.DISCONNECTED,
+                studyGroupIds, userId);
         studyJoinedRepository.deleteAllInBatch(userJoinedList);
         groupChatMessageRepository.deleteMessagesByReceiverId(userId);
         userRepository.delete(user);

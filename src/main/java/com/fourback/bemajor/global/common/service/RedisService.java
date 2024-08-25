@@ -14,7 +14,6 @@ import org.springframework.web.socket.WebSocketSession;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -44,55 +43,63 @@ public class RedisService {
                 prefixEnum.getDescription() + id));
     }
 
-    public void putDisConnectUser(Long studyGroupId, Long userId) {
+    public void addLongMember(RedisKeyPrefixEnum prefixEnum,
+                              Long keyId, Long valueId) {
         stringLongRedisTemplate.opsForSet().add(
-                "disConnectUser:" + studyGroupId, userId);
+                prefixEnum.getDescription() + keyId, valueId);
     }
 
-    public void putDisConnectUserAll(Long studyGroupId, Long[] userIds) {
+    public void addLongMembers(RedisKeyPrefixEnum prefixEnum,
+                               Long keyId, Long[] valueIds) {
         stringLongRedisTemplate.opsForSet().add(
-                "disConnectUser:" + studyGroupId, userIds);
+                prefixEnum.getDescription() + keyId, valueIds);
     }
 
-    public Set<Long> getDisConnectUser(Long studyGroupId) {
+    public Set<Long> getLongMembers(RedisKeyPrefixEnum prefixEnum, Long id) {
         SetOperations<String, Long> operation = stringLongRedisTemplate.opsForSet();
-        return operation.members("disConnectUser:" + studyGroupId);
+        return operation.members(prefixEnum.getDescription() + id);
     }
 
-    public void deleteUsersJoined(List<Long> studyGroupIds, Long userId) {
+    public void removeLongMember(RedisKeyPrefixEnum prefixEnum, Long keyId, Long valueId) {
+        SetOperations<String, Long> operation = stringLongRedisTemplate.opsForSet();
+        operation.remove(prefixEnum.getDescription() + keyId, valueId);
+    }
+
+    public void removeUserInKeysUsingPipeLine(RedisKeyPrefixEnum prefixEnum,
+                                              List<Long> keyIds, Long valueId) {
         stringLongRedisTemplate.executePipelined((RedisCallback<?>) redisConnection -> {
-            byte[] byteUserId = ByteBuffer.allocate(Long.BYTES)
-                    .putLong(userId).array();
-            studyGroupIds.forEach(studyGroupId -> {
-                if (!studyGrupIdSessionsMap.get(studyGroupId).isEmpty()) {
-                    byte[] byteArray = ByteBuffer.allocate(Long.BYTES)
-                            .putLong(studyGroupId).array();
-                    redisConnection.setCommands().sRem(byteArray, byteUserId);
+            byte[] byteValue = ByteBuffer.allocate(Long.BYTES)
+                    .putLong(valueId).array();
+            keyIds.forEach(keyId -> {
+                if (!studyGrupIdSessionsMap.get(keyId).isEmpty()) {
+                    byte[] keyByte = (prefixEnum.getDescription() + keyId).getBytes();
+                    redisConnection.setCommands().sRem(keyByte, byteValue);
                 }
             });
             return null;
         });
     }
 
-    @Scheduled(fixedDelay = 300000, initialDelay = 300000)
-    public void deleteDisConnectUserKeysInPipe() {
-        Set<String> allKeys = stringLongRedisTemplate.keys("disConnectUser:*");
-        List<Long> list = Objects.requireNonNull(allKeys).stream().map(key ->
-                Long.valueOf(key.split(":")[1])).toList();
-        stringLongRedisTemplate.executePipelined((RedisCallback<?>) redisConnection -> {
-            list.forEach(studyGroupId -> {
-                if (!studyGrupIdSessionsMap.get(studyGroupId).isEmpty()) {
-                    byte[] byteArray = ByteBuffer.allocate(Long.BYTES)
-                            .putLong(studyGroupId).array();
-                    redisConnection.keyCommands().del(byteArray);
-                }
-            });
-            return null;
-        });
-    }
-
-    public void deleteDisConnectUser(Long studyGroupId, Long userId) {
-        SetOperations<String, Long> operation = stringLongRedisTemplate.opsForSet();
-        Long a = operation.remove("disConnectUser:" + studyGroupId, userId);
+    @Scheduled(fixedDelay = 300000)
+    public void removeKeysUsingPipeLine() {
+        Set<String> keys = stringLongRedisTemplate.keys(
+                RedisKeyPrefixEnum.DISCONNECTED + "*");
+        if (keys != null) {
+            List<byte[]> byteKeys = keys.stream().filter(key -> {
+                Long baseKey = Long.valueOf(key.split(":")[1]);
+                return studyGrupIdSessionsMap.get(baseKey).isEmpty();
+            }).map(String::getBytes).toList();
+            int batchSize = 100;
+            int keySize = byteKeys.size();
+            for (int i = 0; i < (keySize + batchSize - 1) / batchSize; i++) {
+                List<byte[]> tempByteKeys = byteKeys.subList(
+                        i, i += i + batchSize < keySize ? batchSize : keySize % batchSize);
+                stringLongRedisTemplate.executePipelined(
+                        (RedisCallback<?>) redisConnection -> {
+                            tempByteKeys.forEach(key -> redisConnection.keyCommands().del(key));
+                            return null;
+                        });
+            }
+        }
     }
 }

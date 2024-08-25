@@ -45,7 +45,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
                 .getQuery().split("&")[0].split("=")[1]);
         sessionIdsMap.put(session, Pair.of(userId, studyGroupId));
         this.putDisConnectUserFromDB(studyGroupId, userId);
-        redisService.deleteDisConnectUser(studyGroupId, userId);
+        redisService.removeLongMember(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
         studyGrupIdSessionsMap.get(studyGroupId).add(session);
         List<ChatMessageResponseDto> chatMessageResponseDtos =
                 groupChatMessageService.getMessages(userId, studyGroupId);
@@ -75,10 +75,11 @@ public class GroupChatHandler extends TextWebSocketHandler {
             onSession.sendMessage(new TextMessage(
                     objectMapper.writeValueAsString(chatMessageResponseDto)));
         }
-        Set<Long> disconnectedUserId = redisService.getDisConnectUser(studyGroupId);
+        Set<Long> disconnectedUserId = redisService.getLongMembers(
+                RedisKeyPrefixEnum.DISCONNECTED, studyGroupId);
         disconnectedUserId.forEach(userId -> {
             String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userId);
-            if(fcmToken==null)
+            if (fcmToken == null)
                 return;
             groupChatMessageService.saveMessage(userId,
                     chatMessageResponseDto, studyGroupId);
@@ -92,14 +93,14 @@ public class GroupChatHandler extends TextWebSocketHandler {
         Pair<Long, Long> ids = sessionIdsMap.get(session);
         Long userId = ids.getLeft();
         Long studyGroupId = ids.getRight();
-        redisService.putDisConnectUser(studyGroupId, userId);
+        redisService.addLongMember(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
         studyGrupIdSessionsMap.get(studyGroupId).remove(session);
         sessionIdsMap.remove(session);
     }
 
     private void putDisConnectUserFromDB(Long studyGroupId, Long userId) {
         if (!redisService.checkKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId)) {
-            redisService.putDisConnectUserAll(studyGroupId,
+            redisService.addLongMembers(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId,
                     studyJoinedRepository.findByStudyGroupIdNotUserId(studyGroupId, userId));
         }
     }
