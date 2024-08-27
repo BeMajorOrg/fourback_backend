@@ -39,6 +39,14 @@ public class UserController {
         return Response.onSuccess(userResponseDto);
     }
 
+    @GetMapping("/{email}")
+    public ResponseEntity<?> getUserByEmail(
+            @PathVariable("email") String email,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        UserResponseDto userResponseDto = userService.getByEmail(email);
+        return Response.onSuccess(userResponseDto);
+    }
+
     @PutMapping
     public ResponseEntity<?> updateUser(@RequestBody UserUpdateRequestDto userUpdateRequestDto,
                                         @AuthenticationPrincipal CustomUserDetails customUserDetails) {

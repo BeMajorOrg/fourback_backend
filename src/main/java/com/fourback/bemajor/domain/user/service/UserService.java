@@ -67,6 +67,11 @@ public class UserService {
         return user.toUserResponseDto();
     }
 
+    public UserResponseDto getByEmail(String email) {
+        UserEntity user = userRepository.findByEmail(email).get();
+        return user.toUserResponseDto();
+    }
+
     @Transactional
     public void update(UserUpdateRequestDto userUpdateRequestDto, Long userId) {
         UserEntity user = this.findById(userId);
