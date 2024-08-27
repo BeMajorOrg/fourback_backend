@@ -4,6 +4,7 @@ import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,6 +19,7 @@ public class StudyGroupDto {
     private String category;
     private String studyCycle;
     private String studyRule;
+    private List<String> studySchedule;
 
     public static StudyGroupDto toDto(StudyGroup studyGroup){
         return new StudyGroupDto(
@@ -29,7 +31,8 @@ public class StudyGroupDto {
                 studyGroup.getStudyLocation(),
                 studyGroup.getCategory(),
                 studyGroup.getStudyCycle(),
-                studyGroup.getStudyRule());
+                studyGroup.getStudyRule(),
+                studyGroup.getStudySchedule());
     }
 
     public StudyGroup toEntity(Long ownerUserId){
@@ -42,6 +45,7 @@ public class StudyGroupDto {
                 category,
                 studyCycle,
                 studyRule,
+                studySchedule,
                 ownerUserId);
     }
 }

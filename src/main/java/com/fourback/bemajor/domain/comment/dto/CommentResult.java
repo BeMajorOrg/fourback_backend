@@ -15,7 +15,6 @@ import com.fourback.bemajor.domain.comment.entity.Comment;
 @Data
 public class CommentResult {
     private Long id;
-    private UserEntity userEntity;
     private String content;
     private int goodCount;
     private String commentDate;
@@ -45,7 +44,6 @@ public class CommentResult {
         }
         return CommentResult.builder()
                 .id(comment.getId())
-                .userEntity(comment.getUser())
                 .goodCount(comment.getGoodCount())
                 .content(commentContent)
                 .commentDate(comment.getCreatedDate().toString())
