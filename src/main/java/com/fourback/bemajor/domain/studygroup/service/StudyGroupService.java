@@ -61,7 +61,7 @@ public class StudyGroupService {
             throw new NoSuchStudyGroupException(5,"no such study group. can't delete", HttpStatus.BAD_REQUEST);
         }
         StudyGroup studyGroup = studyGroupOp.get();
-        studyGroup.updateStudyGroup(studyGroupDto.getStudyName(),studyGroupDto.getStartDate(),studyGroupDto.getEndDate(), studyGroupDto.getTeamSize(),studyGroupDto.getStudyLocation(), studyGroup.getCategory(), studyGroupDto.getStudyCycle(), studyGroup.getStudyRule());
+        studyGroup.updateStudyGroup(studyGroupDto.getStudyName(),studyGroupDto.getStartDate(),studyGroupDto.getEndDate(), studyGroupDto.getTeamSize(),studyGroupDto.getStudyLocation(), studyGroup.getCategory(), studyGroupDto.getStudyCycle(), studyGroupDto.getStudyRule(), studyGroupDto.getStudySchedule());
     }
 
     @Transactional

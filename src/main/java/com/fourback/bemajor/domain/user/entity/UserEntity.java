@@ -80,6 +80,7 @@ public class UserEntity {
 
   public UserResponseDto toUserResponseDto() {
     return UserResponseDto.builder()
+                          .userId(this.userId)
                           .userName(this.userName)
                           .address(this.address)
                           .department(this.department)

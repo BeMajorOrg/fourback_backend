@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserResponseDto {
+    Long userId;
     String userName;
     String email;
     String birth;
