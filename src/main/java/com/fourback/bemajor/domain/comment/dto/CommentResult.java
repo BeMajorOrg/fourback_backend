@@ -25,6 +25,7 @@ public class CommentResult {
     private boolean userCheck;
     private int status;
 
+    private String profileImage;
     private String userName;
     private String email;
     private String birth;
@@ -45,6 +46,7 @@ public class CommentResult {
         return CommentResult.builder()
                 .id(comment.getId())
                 .goodCount(comment.getGoodCount())
+                .profileImage(comment.getUser().getFileName())
                 .content(commentContent)
                 .commentDate(comment.getCreatedDate().toString())
                 .userName(comment.getUser().getUserName())
