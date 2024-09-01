@@ -8,9 +8,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface ImageRepository extends JpaRepository<ImageEntity, Long> {
-    @Query("select i from ImageEntity i where i.fileName in (:names)")
-    List<ImageEntity> findByFileNames(@Param("names")List<String> fileNames);
-
+public interface ImageRepository extends JpaRepository<ImageEntity, Long>, CustomImageRepository{
     List<ImageEntity> findByPostId(Long id);
 }

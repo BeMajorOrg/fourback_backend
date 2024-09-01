@@ -40,6 +40,8 @@ public class ImageService {
     @Transactional
     public void delete(List<String> fileNames) throws IOException {
         List<ImageEntity> images = imageRepository.findByFileNames(fileNames);
+        System.out.println(fileNames);
+        System.out.println(images);
         for (ImageEntity image : images) {
             imageFileService.deleteImageFile(image.getFileName());
         }
