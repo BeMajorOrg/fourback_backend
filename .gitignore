@@ -27,6 +27,7 @@ out/
 !**/src/test/**/out/
 application-secrets.properties
 fcm-secrets.json
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/

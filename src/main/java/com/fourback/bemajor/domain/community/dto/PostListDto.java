@@ -14,6 +14,9 @@ public class PostListDto {
     String title;
     String content;
     String memberName;
+    String belong;
+    String department;
+    String profileImage;
     String postDate;
     int goodCount;
     int commentCount;
@@ -29,6 +32,9 @@ public class PostListDto {
         title = post.getTitle();
         content = post.getContent();
         memberName = post.getUser().getUserName();
+        department = post.getUser().getDepartment();
+        belong = post.getUser().getBelong();
+        profileImage = post.getUser().getFileName();
         goodCount = post.getGoodCount();
         commentCount = post.getCommentCount();
         viewCount = post.getViewCount();

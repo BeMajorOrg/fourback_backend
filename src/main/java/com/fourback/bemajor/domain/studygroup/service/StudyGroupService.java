@@ -17,7 +17,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.socket.WebSocketSession;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,6 +32,7 @@ public class StudyGroupService {
     private final StudyGroupRepository studyGroupRepository;
     private final UserRepository userRepository;
     private final StudyJoinedRepository studyJoinedRepository;
+    private final Map<Long, Set<WebSocketSession>> websocketSessionsMap;
 
     public List<StudyGroupDto> getAllStudyGroup(int page, String category){
         PageRequest pageable = PageRequest.of(page, 10, Sort.by("startDate").descending());
@@ -52,6 +56,8 @@ public class StudyGroupService {
         UserEntity userEntity = byOauth2Id.get();
         StudyJoined studyJoined = new StudyJoined(savedGroup, userEntity);
         studyJoinedRepository.save(studyJoined);
+        studyGroupRepository.save(studyGroup);
+        websocketSessionsMap.put(studyGroup.getId(), Collections.newSetFromMap(new ConcurrentHashMap<>()));
     }
 
     @Transactional
@@ -74,5 +80,6 @@ public class StudyGroupService {
             throw new NotAuthorizedException(3,"not authorized. can't delete",HttpStatus.FORBIDDEN);
         }
         studyGroupRepository.deleteById(studyGroupId);
+        websocketSessionsMap.remove(studyGroupId);
     }
 }

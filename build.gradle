@@ -30,6 +30,9 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     implementation 'org.apache.commons:commons-lang3:3.16.0'
 
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
 // Querydsl 추가
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
@@ -46,6 +49,8 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    implementation 'com.google.firebase:firebase-admin:9.1.1'
+    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
     implementation 'org.apache.commons:commons-lang3:3.16.0'
 
 }
