@@ -10,6 +10,7 @@ import com.google.firebase.messaging.Notification;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -20,6 +21,7 @@ public class FcmService {
     @Value("${fcm.key}")
     private String googleCredentials;
 
+    @Async("threadPoolTaskExecutor")
     public void sendalarm(ChatMessageResponseDto chatMessageDto,
                           String fcmToken, String StudyGroupName) {
         Message message = Message.builder()

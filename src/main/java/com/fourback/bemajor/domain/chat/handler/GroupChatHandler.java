@@ -58,7 +58,6 @@ public class GroupChatHandler extends TextWebSocketHandler {
     }
 
     @Override
-    @Async("threadPoolTaskExecutor")
     @Transactional
     protected void handleTextMessage(WebSocketSession session,
                                      TextMessage message) throws Exception {

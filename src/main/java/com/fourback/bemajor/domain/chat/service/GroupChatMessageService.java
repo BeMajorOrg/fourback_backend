@@ -4,6 +4,7 @@ import com.fourback.bemajor.domain.chat.dto.ChatMessageResponseDto;
 import com.fourback.bemajor.domain.chat.entitiy.GroupChatMessageEntity;
 import com.fourback.bemajor.domain.chat.repository.GroupChatMessageRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ public class GroupChatMessageService {
     }
 
     @Transactional
+    @Async("threadPoolTaskExecutor")
     public void saveMessage(Long userId, ChatMessageResponseDto chatMessageDto, Long studyGroupId) {
         groupChatMessageRepository.save(chatMessageDto.toMessageEntity(userId, studyGroupId));
     }
