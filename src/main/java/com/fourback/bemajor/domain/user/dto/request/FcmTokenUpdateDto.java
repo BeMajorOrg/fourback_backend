@@ -7,5 +7,4 @@ import lombok.Setter;
 @Setter
 public class FcmTokenUpdateDto {
     private String fcmToken;
-    private long fcmTokenExpiredTime;
 }

@@ -9,5 +9,4 @@ public class UserLoginRequestDto {
     private String userId;
     private String registrationId;
     private String fcmToken;
-    private long fcmTokenExpiredTime;
 }

@@ -61,7 +61,7 @@ public class JWTUtil {
         tokens.add(Pair.of(access, this.createToken(access, userId, role, 600000L)));
         String refreshToken = this.createToken(refresh, userId, role, expiredTime);
         tokens.add(Pair.of(refresh, refreshToken));
-        redisService.setValue(RedisKeyPrefixEnum.REFRESH, userId, refreshToken, expiredTime);
+        redisService.setValueWithExpiredTime(RedisKeyPrefixEnum.REFRESH, userId, refreshToken, expiredTime);
         return tokens;
     }
 }

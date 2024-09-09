@@ -24,10 +24,15 @@ public class RedisService {
     private final RedisTemplate<String, Long> stringLongRedisTemplate;
     private final Map<Long, Set<WebSocketSession>> studyGrupIdSessionsMap;
 
-    public void setValue(RedisKeyPrefixEnum prefixEnum, Long id,
-                         String value, long expiredTime) {
+    public void setValueWithExpiredTime(RedisKeyPrefixEnum prefixEnum, Long id,
+                                        String value, long expiredTime) {
         stringRedisTemplate.opsForValue().set(prefixEnum.getDescription() + id,
                 value, expiredTime, TimeUnit.MILLISECONDS);
+    }
+
+    public void setValue(RedisKeyPrefixEnum prefixEnum,
+                         Long id, String value) {
+        stringRedisTemplate.opsForValue().set(prefixEnum.getDescription() + id, value);
     }
 
     public void deleteValue(RedisKeyPrefixEnum prefixEnum, Long id) {

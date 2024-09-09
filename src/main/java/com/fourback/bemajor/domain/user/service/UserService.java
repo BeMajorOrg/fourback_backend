@@ -55,8 +55,8 @@ public class UserService {
                 userRepository.save(user);
             }
         }
-        redisService.setValue(RedisKeyPrefixEnum.FCM, user.getUserId(),
-                userLoginRequestDto.getFcmToken(), userLoginRequestDto.getFcmTokenExpiredTime());
+        redisService.setValue(RedisKeyPrefixEnum.FCM,
+                user.getUserId(), userLoginRequestDto.getFcmToken());
         return jwtUtil.createTokens(user.getUserId(), user.getRole());
     }
 
@@ -110,8 +110,8 @@ public class UserService {
     }
 
     public void updateFcmToken(Long userId, FcmTokenUpdateDto fcmTokenUpdateDto) {
-        redisService.setValue(RedisKeyPrefixEnum.FCM, userId,
-                fcmTokenUpdateDto.getFcmToken(), fcmTokenUpdateDto.getFcmTokenExpiredTime());
+        redisService.setValue(RedisKeyPrefixEnum.FCM,
+                userId, fcmTokenUpdateDto.getFcmToken());
     }
 
     private UserEntity findById(Long userId) {
