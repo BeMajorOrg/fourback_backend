@@ -6,13 +6,13 @@ import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
+import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.NoSuchStudyGroupException;
 import com.fourback.bemajor.global.exception.kind.NoSuchUserException;
 import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
-import com.fourback.bemajor.domain.chat.service.GroupChatMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -46,7 +46,7 @@ public class StudyJoinedService {
         }
         studyJoinedRepository.save(new StudyJoined(studyGroupOptional.get(), userOptional.get()));
         if (!studyGrupIdSessionsMap.get(studyGroupId).isEmpty()) {
-//            redisService.putDisConnectUser(studyGroupId,userId);
+            redisService.addLongMember(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
         }
     }
 
@@ -54,9 +54,8 @@ public class StudyJoinedService {
     public void exitStudyGroup(Long studyGroupId, Long userId) {
         List<Long> idsByStudyGroupIdAndOauth2Id = studyJoinedRepository.findIdsByStudyGroupIdAndOauth2Id(studyGroupId, userId);
         studyJoinedRepository.deleteByIds(idsByStudyGroupIdAndOauth2Id);
-        if (!studyGrupIdSessionsMap.get(studyGroupId).isEmpty()) {
-//            redisService.deleteDisConnectUser(studyGroupId, userId);
-        }
+        if (!studyGrupIdSessionsMap.get(studyGroupId).isEmpty())
+            redisService.removeLongMember(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
         groupChatMessageRepository.deleteMessagesByStudyGroupIdAndReceiverId(userId, studyGroupId);
     }
 
