@@ -1,4 +1,4 @@
-package com.fourback.bemajor.domain.studygroup.dto;
+package com.fourback.bemajor.domain.studygroup.dto.response;
 
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroupInvitation;
 

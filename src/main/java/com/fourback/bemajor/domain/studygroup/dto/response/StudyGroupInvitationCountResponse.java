@@ -1,4 +1,4 @@
-package com.fourback.bemajor.domain.studygroup.dto;
+package com.fourback.bemajor.domain.studygroup.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
