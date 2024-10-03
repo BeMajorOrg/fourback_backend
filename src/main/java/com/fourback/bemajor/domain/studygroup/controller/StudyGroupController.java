@@ -1,13 +1,12 @@
 package com.fourback.bemajor.domain.studygroup.controller;
 
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
-import com.fourback.bemajor.domain.studygroup.dto.StudyGroupInvitationCountResponse;
-import com.fourback.bemajor.domain.studygroup.dto.StudyGroupInvitationResponse;
-import com.fourback.bemajor.domain.studygroup.dto.StudyMemberResponse;
+import com.fourback.bemajor.domain.studygroup.dto.response.*;
 import com.fourback.bemajor.domain.studygroup.service.StudyGroupInvitationService;
 import com.fourback.bemajor.domain.studygroup.service.StudyGroupService;
 import com.fourback.bemajor.domain.studygroup.service.StudyJoinedService;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
+import com.fourback.bemajor.global.common.response.Response;
 import com.fourback.bemajor.global.security.CustomUserDetails;
 
 import org.springframework.http.ResponseEntity;
