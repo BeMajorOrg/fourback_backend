@@ -60,6 +60,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .anyRequest().authenticated());
         http
+                .exceptionHandling(e->e
+                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint()));
+        http
                 .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         http
                 .addFilterBefore(new CustomLogoutFilter(redisService, jwtUtil), LogoutFilter.class);
