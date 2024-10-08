@@ -22,7 +22,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(IOException.class)
     public ResponseEntity<ExceptionDto> handleIOException(IOException ex) {
-        ExceptionDto body = new ExceptionDto(2, ex.getMessage());
+        ExceptionDto body = new ExceptionDto(4, ex.getMessage());
         return this.handleExceptionInternal(body, HttpStatus.LOCKED);
     }
 
