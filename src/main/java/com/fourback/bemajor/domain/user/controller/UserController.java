@@ -5,7 +5,7 @@ import com.fourback.bemajor.domain.user.dto.request.UserLoginRequestDto;
 import com.fourback.bemajor.domain.user.dto.request.UserUpdateRequestDto;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
 import com.fourback.bemajor.domain.user.service.UserService;
-import com.fourback.bemajor.global.common.response.Response;
+import com.fourback.bemajor.global.common.util.ResponseUtil;
 import com.fourback.bemajor.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
-import static com.fourback.bemajor.global.common.response.Response.createHeaders;
+import static com.fourback.bemajor.global.common.util.ResponseUtil.createHeaders;
 
 
 @RequiredArgsConstructor
@@ -29,14 +29,14 @@ public class UserController {
     @PostMapping
     public ResponseEntity<?> saveUser(@RequestBody UserLoginRequestDto userLoginRequestDto) {
         List<Pair<String, String>> tokens = userService.save(userLoginRequestDto);
-        return Response.onSuccess(createHeaders(tokens));
+        return ResponseUtil.onSuccess(createHeaders(tokens));
 
     }
 
     @GetMapping
     public ResponseEntity<?> getUser(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         UserResponseDto userResponseDto = userService.get(customUserDetails.getUserId());
-        return Response.onSuccess(userResponseDto);
+        return ResponseUtil.onSuccess(userResponseDto);
     }
 
 //    @GetMapping("/{email}")
@@ -51,35 +51,35 @@ public class UserController {
     public ResponseEntity<?> updateUser(@RequestBody UserUpdateRequestDto userUpdateRequestDto,
                                         @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         userService.update(userUpdateRequestDto, customUserDetails.getUserId());
-        return Response.onSuccess();
+        return ResponseUtil.onSuccess();
     }
 
     @DeleteMapping
     public ResponseEntity<?> deleteUser(@AuthenticationPrincipal CustomUserDetails customUserDetails)
             throws IOException {
         userService.delete(customUserDetails.getUserId());
-        return Response.onSuccess();
+        return ResponseUtil.onSuccess();
     }
 
     @PostMapping("/image")
     public ResponseEntity<?> updateImage(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                          @RequestParam("file") MultipartFile file) throws IOException {
         String filename = userService.saveImage(customUserDetails.getUserId(), file);
-        return Response.onSuccess(filename);
+        return ResponseUtil.onSuccess(filename);
     }
 
     @DeleteMapping("/image")
     public ResponseEntity<?> deleteImage(@AuthenticationPrincipal CustomUserDetails customUserDetails)
             throws IOException {
         userService.deleteImage(customUserDetails.getUserId());
-        return Response.onSuccess();
+        return ResponseUtil.onSuccess();
     }
 
     @PatchMapping
     public ResponseEntity<?> updateFcmToken(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                             @RequestBody FcmTokenUpdateDto fcmTokenUpdateDto) {
         userService.updateFcmToken(customUserDetails.getUserId(), fcmTokenUpdateDto);
-        return Response.onSuccess();
+        return ResponseUtil.onSuccess();
     }
 }
 

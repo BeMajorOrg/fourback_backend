@@ -1,4 +1,4 @@
-package com.fourback.bemajor.global.common.response;
+package com.fourback.bemajor.global.common.util;
 
 import com.fourback.bemajor.global.exception.ExceptionBody;
 import org.apache.commons.lang3.tuple.Pair;
@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
-public class Response {
+public class ResponseUtil {
     public static ResponseEntity<?> onSuccess() {
         return ResponseEntity.ok().build();
     }

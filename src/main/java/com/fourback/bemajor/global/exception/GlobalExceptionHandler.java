@@ -1,6 +1,6 @@
 package com.fourback.bemajor.global.exception;
 
-import com.fourback.bemajor.global.common.response.Response;
+import com.fourback.bemajor.global.common.util.ResponseUtil;
 import com.fourback.bemajor.global.exception.kind.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -58,6 +58,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private ResponseEntity<ExceptionBody> handleExceptionInternal(ExceptionBody body,
                                                                   HttpStatusCode statusCode) {
-        return Response.onFailed(statusCode, body);
+        return ResponseUtil.onFailed(statusCode, body);
     }
 }

@@ -8,6 +8,7 @@ import com.fourback.bemajor.domain.studygroup.service.StudyGroupInvitationServic
 import com.fourback.bemajor.domain.studygroup.service.StudyGroupService;
 import com.fourback.bemajor.domain.studygroup.service.StudyJoinedService;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
+import com.fourback.bemajor.global.common.util.ResponseUtil;
 import com.fourback.bemajor.global.security.CustomUserDetails;
 
 import org.springframework.http.ResponseEntity;
@@ -155,5 +156,12 @@ public class StudyGroupController {
       @RequestBody StudyGroupDto studyGroupDto, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
     studyGroupService.updateStudyGroup(studyGroupId, studyGroupDto, customUserDetails.getUserId());
     return ResponseEntity.ok(studyGroupDto);
+  }
+
+  @PostMapping("/studygroup/{studyGroupId}/notification")
+  public ResponseEntity<?> onNotification(@PathVariable("studyGroupId") Long studyGroupId,
+                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+    return ResponseUtil.onSuccess();
   }
 }
