@@ -1,15 +1,13 @@
 package com.fourback.bemajor.global.security;
 
-import com.fourback.bemajor.global.exception.ExceptionEnum;
-import com.fourback.bemajor.global.exception.kind.AccessTokenExpiredException;
-import com.fourback.bemajor.global.exception.kind.InvalidLoginTokenException;
+import com.fourback.bemajor.global.exception.kind.TokenExpiredException;
+import com.fourback.bemajor.global.exception.kind.InvalidTokenException;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,8 +41,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 request.setAttribute("reissue", true);
                 filterChain.doFilter(request, response);
             } else {
-                throw new AccessTokenExpiredException(ExceptionEnum.ACCESSTOKENEXPIRED.ordinal(),
-                        "Access token expired", HttpStatus.UNAUTHORIZED);
+                throw new TokenExpiredException("Access token expired");
             }
             return;
         }
@@ -52,8 +49,7 @@ public class JWTFilter extends OncePerRequestFilter {
         String category = jwtUtil.getCategory(accessToken);
         if (!category.equals("access")) {
             log.debug("invalid access token");
-            throw new InvalidLoginTokenException(ExceptionEnum.INVALIDTOKEN.ordinal(),
-                    "This is Invalid Token. Try logging in again", HttpStatus.UNAUTHORIZED);
+            throw new InvalidTokenException("Unmatched Access Token Category");
         }
 
         Long userId = jwtUtil.getUserId(accessToken);

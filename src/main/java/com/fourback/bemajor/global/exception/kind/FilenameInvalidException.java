@@ -1,5 +1,6 @@
 package com.fourback.bemajor.global.exception.kind;
 
+import com.fourback.bemajor.global.exception.CustomException;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -8,8 +9,6 @@ import org.springframework.http.HttpStatus;
 public class FilenameInvalidException extends CustomException {
 
     public FilenameInvalidException(String message) {
-        super(message);
-        code = 400;
-        statusCode = HttpStatus.BAD_REQUEST;
+        super(400, message, HttpStatus.BAD_REQUEST);
     }
 }

@@ -1,6 +1,6 @@
 package com.fourback.bemajor.global.common.util;
 
-import com.fourback.bemajor.global.exception.ExceptionBody;
+import com.fourback.bemajor.global.exception.ExceptionDto;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -25,8 +25,8 @@ public class ResponseUtil {
         return ResponseEntity.ok(body);
     }
 
-    public static ResponseEntity<ExceptionBody> onFailed(
-            HttpStatusCode httpStatusCode, ExceptionBody body) {
+    public static ResponseEntity<ExceptionDto> onFailed(
+            HttpStatusCode httpStatusCode, ExceptionDto body) {
         return ResponseEntity.status(httpStatusCode).body(body);
     }
 

@@ -12,13 +12,11 @@ import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
 import com.fourback.bemajor.global.common.service.RedisService;
-import com.fourback.bemajor.global.exception.ExceptionEnum;
-import com.fourback.bemajor.global.exception.kind.NotFoundElementException;
+import com.fourback.bemajor.global.exception.kind.NotFoundException;
 import com.fourback.bemajor.global.security.JWTUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -116,7 +114,6 @@ public class UserService {
 
     private UserEntity findById(Long userId) {
         return userRepository.findById(userId).orElseThrow(()
-                -> new NotFoundElementException(ExceptionEnum.NOTFOUNDELEMENT.ordinal(),
-                "This is not in DB", HttpStatus.LOCKED));
+                -> new NotFoundException("This is not in user db"));
     }
 }
