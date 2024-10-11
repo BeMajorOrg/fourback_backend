@@ -1,7 +1,7 @@
 package com.fourback.bemajor.domain.studygroup.service;
 
-import com.fourback.bemajor.domain.studygroup.dto.StudyGroupInvitationResponse;
-import com.fourback.bemajor.domain.studygroup.dto.StudyMemberResponse;
+import com.fourback.bemajor.domain.studygroup.dto.response.StudyGroupInvitationResponse;
+import com.fourback.bemajor.domain.studygroup.dto.response.StudyMemberResponse;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroupInvitation;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
@@ -86,5 +86,6 @@ public class StudyGroupInvitationService {
     StudyGroup studyGroup = studyGroupRepository.findById(groupId).orElseThrow(RuntimeException::new);
     //TODO : 중복 참여 방지 로직 추가
     studyGroupInvitationRepository.save(new StudyGroupInvitation(studyGroup, userEntity));
+
   }
 }
