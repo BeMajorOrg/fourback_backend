@@ -20,7 +20,6 @@ public class StudyMemberResponse {
   private String profileImage;
 
   public static StudyMemberResponse fromUserEntity(UserEntity userEntity) {
-    System.out.println(userEntity);
     return new StudyMemberResponse(userEntity.getUserId(), userEntity.getUserName(), userEntity.getFileName());
   }
 }

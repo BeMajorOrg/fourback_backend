@@ -14,14 +14,20 @@ import java.util.stream.Stream;
 @Getter
 @AllArgsConstructor
 public class StudyGroupGoalResponse {
+    private Long studyGroupGoalId;
     private String name;
     private LocalDate endDate;
     private Integer percentage;
 
     public static StudyGroupGoalResponse fromEntity(StudyGoal studyGoal){
+        Integer percentage;
         List<StudyDetailGoal> detailGoals = studyGoal.getDetailGoals();
         long finished = detailGoals.stream().filter(dgs -> dgs.getValid()).count();
-        Integer percentage = (int) finished * 100 / detailGoals.size();
-        return new StudyGroupGoalResponse(studyGoal.getGoalName(), studyGoal.getEndDate(), Integer.valueOf(percentage));
+        if (detailGoals.size() != 0) {
+            percentage = (int) finished * 100 / detailGoals.size();
+        }
+        else
+            percentage = 0;
+        return new StudyGroupGoalResponse(studyGoal.getId(),studyGoal.getGoalName(), studyGoal.getEndDate(), Integer.valueOf(percentage));
     }
 }
