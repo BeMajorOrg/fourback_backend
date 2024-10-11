@@ -16,6 +16,17 @@ public class StudyDetailGoal {
     @ManyToOne(fetch = FetchType.LAZY)
     private StudyGoal studyGoal;
 
+    public StudyDetailGoal(String detailGoalName, StudyGoal studyGoal) {
+        this.detailGoalName = detailGoalName;
+        this.valid = false;
+        this.studyGoal = studyGoal;
+    }
+
+    public void checkValid(Boolean check){
+        this.valid = check;
+    }
+
+
     public void registerStudyDetail(StudyGoal studyGoal){
         this.studyGoal = studyGoal;
     }
