@@ -109,6 +109,17 @@ public class FriendService {
         return res;
     }
 
+    public List<String> getFriendInvitationList(Long userId) {
+        List<UserEntity> users = userRepo.findAll();
+        List<String> userNameList = new ArrayList<>();
+
+        for(UserEntity c : users) {
+            if(c.getUserId() != userId)
+            userNameList.add(c.getUserName());
+        }
+        return userNameList;
+    }
+
     public DeleteFriendResponse deleteFriend(FriendRequest.Delete request) {
         Friend f = friendRepo.findFriendByUserIdAndFriendId(request.userId(), request.friendId());
 
