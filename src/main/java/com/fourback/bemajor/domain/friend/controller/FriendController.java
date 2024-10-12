@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(produces = "application/json;charset=UTF-8")
@@ -39,6 +41,15 @@ public class FriendController {
     ) {
 
         AcceptFriendApplyResponse res = friendService.acceptFriendApply(applyId);
+        return ResponseEntity.ok().body(res);
+    }
+
+    @ResponseBody
+    @GetMapping("/api/friend/invitation-list")
+    public ResponseEntity<List<String>> getFriendInvitationList(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        List<String> res = friendService.getFriendInvitationList(customUserDetails.getUserId());
         return ResponseEntity.ok().body(res);
     }
 
