@@ -4,8 +4,8 @@ import com.fourback.bemajor.global.exception.CustomException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
-public class NotAuthorizedException extends CustomException {
-    public NotAuthorizedException(String message) {
-        super(3, message, HttpStatus.FORBIDDEN);
+public class TokenExpiredException extends CustomException {
+    public TokenExpiredException(String message) {
+        super(0, message, HttpStatus.UNAUTHORIZED);
     }
 }

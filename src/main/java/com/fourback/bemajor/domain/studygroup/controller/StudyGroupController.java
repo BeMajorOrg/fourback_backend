@@ -6,6 +6,7 @@ import com.fourback.bemajor.domain.studygroup.service.StudyGroupInvitationServic
 import com.fourback.bemajor.domain.studygroup.service.StudyGroupService;
 import com.fourback.bemajor.domain.studygroup.service.StudyJoinedService;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
+import com.fourback.bemajor.global.common.util.ResponseUtil;
 import com.fourback.bemajor.global.security.CustomUserDetails;
 
 import org.springframework.http.ResponseEntity;
@@ -204,8 +205,15 @@ public class StudyGroupController {
    * @return
    */
   @GetMapping("/studygroup/applications/{studyGroupId}/count")
-  public ResponseEntity<StudyGroupApplicationCountResponse> getApplicationCount(@PathVariable("studyGroupId") Long studyGroupId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+  public ResponseEntity<StudyGroupApplicationCountResponse> getApplicationCount(@PathVariable("studyGroupId") Long studyGroupId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
     StudyGroupApplicationCountResponse applicationCount = studyJoinedService.getApplicationCount(customUserDetails.getUserId(), studyGroupId);
     return ResponseEntity.ok(applicationCount);
+  }
+
+  @PostMapping("/studygroup/{studyGroupId}/notification")
+  public ResponseEntity<?> onNotification(@PathVariable("studyGroupId") Long studyGroupId,
+                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+    return ResponseUtil.onSuccess();
   }
 }

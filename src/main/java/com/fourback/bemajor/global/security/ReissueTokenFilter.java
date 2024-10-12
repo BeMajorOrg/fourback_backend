@@ -1,7 +1,7 @@
 package com.fourback.bemajor.global.security;
 
-import com.fourback.bemajor.global.exception.ExceptionEnum;
-import com.fourback.bemajor.global.exception.kind.InvalidLoginTokenException;
+import com.fourback.bemajor.global.exception.kind.InvalidTokenException;
+import com.fourback.bemajor.global.exception.kind.TokenExpiredException;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -30,22 +29,19 @@ public class ReissueTokenFilter extends OncePerRequestFilter {
         if (reissue != null && reissue) {
             String refresh = request.getHeader("refresh");
             if (refresh == null) {
-                throw new InvalidLoginTokenException(ExceptionEnum.INVALIDTOKEN.ordinal(),
-                        "This is Invalid Token", HttpStatus.UNAUTHORIZED);
+                throw new InvalidTokenException("Refresh Token is empty");
             }
             try {
                 jwtUtil.isExpired(refresh);
             } catch (ExpiredJwtException e) {
-                throw new InvalidLoginTokenException(ExceptionEnum.INVALIDTOKEN.ordinal(),
-                        "This is Invalid Token", HttpStatus.UNAUTHORIZED);
+                throw new TokenExpiredException("Refresh Token is expired");
             }
 
             String category = jwtUtil.getCategory(refresh);
 
             if (!category.equals("refresh")) {
 
-                throw new InvalidLoginTokenException(ExceptionEnum.INVALIDTOKEN.ordinal(),
-                        "This is Invalid Token", HttpStatus.UNAUTHORIZED);
+                throw new InvalidTokenException("Unmatched Refresh Token Category");
             }
 
             Long userId = jwtUtil.getUserId(refresh);

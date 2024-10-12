@@ -23,7 +23,7 @@ import lombok.Setter;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @AllArgsConstructor
 @SQLDelete(sql = "update user set is_deleted=true where user_id = ?")
 @Builder
