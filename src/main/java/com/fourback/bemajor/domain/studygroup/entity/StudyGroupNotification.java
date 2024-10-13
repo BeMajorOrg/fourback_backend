@@ -12,8 +12,10 @@ public class StudyGroupNotification {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "study_group_id")
     private StudyGroup studyGroup;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private UserEntity user;
 }
