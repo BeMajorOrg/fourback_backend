@@ -1,11 +1,17 @@
-package com.fourback.bemajor.domain.studygroup.entity;
+package com.fourback.bemajor.domain.studyGroupNotification.entitiy;
 
+import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
+@Getter
+@Builder
 @Table(name = "study_group_notification")
-public class StudyGroupNotification {
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+public class StudyGroupNotificationEntity {
     @Id
     @Column(name = "notification_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -8,16 +8,16 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserResponseDto {
-    Long userId;
-    String userName;
-    String email;
-    String birth;
-    String belong;
-    String department;
-    String hobby;
-    String objective;
-    String address;
-    String techStack;
-    String fileName;
+    private Long userId;
+    private String userName;
+    private String email;
+    private String birth;
+    private String belong;
+    private String department;
+    private String hobby;
+    private String objective;
+    private String address;
+    private String techStack;
+    private String fileName;
     private boolean isDeleted;
 }

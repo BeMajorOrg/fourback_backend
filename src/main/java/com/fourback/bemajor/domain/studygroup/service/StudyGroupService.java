@@ -1,5 +1,6 @@
 package com.fourback.bemajor.domain.studygroup.service;
 
+import com.fourback.bemajor.domain.studyGroupNotification.repository.StudyGroupNotificationRepository;
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
@@ -29,6 +30,7 @@ public class StudyGroupService {
     private final UserRepository userRepository;
     private final StudyJoinedRepository studyJoinedRepository;
     private final Map<Long, Set<WebSocketSession>> websocketSessionsMap;
+    private final StudyGroupNotificationRepository studyGroupNotificationRepository;
 
     public List<StudyGroupDto> getAllStudyGroup(int page, String category){
         PageRequest pageable = PageRequest.of(page, 10, Sort.by("startDate").descending());
@@ -75,6 +77,7 @@ public class StudyGroupService {
         if (!studyGroupOp.get().getOwnerUserId().equals(userId)){
             throw new NotAuthorizedException("not authorized. can't delete in studyGroup");
         }
+        studyGroupNotificationRepository.deleteAllByStudyGroupId(studyGroupId);
         studyGroupRepository.deleteById(studyGroupId);
         websocketSessionsMap.remove(studyGroupId);
     }
