@@ -44,9 +44,9 @@ public class GroupChatHandler extends TextWebSocketHandler {
         Long studyGroupId = Long.valueOf(Objects.requireNonNull(session.getUri())
                 .getQuery().split("&")[0].split("=")[1]);
         sessionIdsMap.put(session, Pair.of(userId, studyGroupId));
+        studyGrupIdSessionsMap.get(studyGroupId).add(session);
         this.putDisConnectUserFromDB(studyGroupId, userId);
         redisService.removeLongMember(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
-        studyGrupIdSessionsMap.get(studyGroupId).add(session);
         List<ChatMessageResponseDto> chatMessageResponseDtos =
                 groupChatMessageService.getMessages(userId, studyGroupId);
         for (ChatMessageResponseDto chatMessageResponseDto : chatMessageResponseDtos) {
