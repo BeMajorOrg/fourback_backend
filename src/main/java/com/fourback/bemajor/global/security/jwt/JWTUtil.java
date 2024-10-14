@@ -1,4 +1,4 @@
-package com.fourback.bemajor.global.security;
+package com.fourback.bemajor.global.security.jwt;
 
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
@@ -45,14 +45,6 @@ public class JWTUtil {
                 .parseSignedClaims(token).getPayload().get("category", String.class);
     }
 
-    public String createToken(String category, Long userId, String role, Long expiredMs) {
-        return Jwts.builder()
-                .claim("category", category).claim("userId", userId)
-                .claim("role", role).issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiredMs)).signWith(secretKey)
-                .compact();
-    }
-
     public List<Pair<String, String>> createTokens(Long userId, String role) {
         String access = "access";
         String refresh = "refresh";
@@ -63,5 +55,13 @@ public class JWTUtil {
         tokens.add(Pair.of(refresh, refreshToken));
         redisService.setValueWithExpiredTime(RedisKeyPrefixEnum.REFRESH, userId, refreshToken, expiredTime);
         return tokens;
+    }
+
+    private String createToken(String category, Long userId, String role, Long expiredMs) {
+        return Jwts.builder()
+                .claim("category", category).claim("userId", userId)
+                .claim("role", role).issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiredMs)).signWith(secretKey)
+                .compact();
     }
 }

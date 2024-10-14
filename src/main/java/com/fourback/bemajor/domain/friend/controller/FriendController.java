@@ -7,7 +7,7 @@ package com.fourback.bemajor.domain.friend.controller;
 
 import com.fourback.bemajor.domain.friend.dto.*;
 import com.fourback.bemajor.domain.friend.service.FriendService;
-import com.fourback.bemajor.global.security.CustomUserDetails;
+import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

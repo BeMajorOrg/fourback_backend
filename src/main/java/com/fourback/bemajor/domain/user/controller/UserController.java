@@ -6,7 +6,7 @@ import com.fourback.bemajor.domain.user.dto.request.UserUpdateRequestDto;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
 import com.fourback.bemajor.domain.user.service.UserService;
 import com.fourback.bemajor.global.common.util.ResponseUtil;
-import com.fourback.bemajor.global.security.CustomUserDetails;
+import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;

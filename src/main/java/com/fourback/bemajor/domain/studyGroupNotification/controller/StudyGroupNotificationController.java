@@ -2,7 +2,7 @@ package com.fourback.bemajor.domain.studyGroupNotification.controller;
 
 import com.fourback.bemajor.domain.studyGroupNotification.service.StudyGroupNotificationService;
 import com.fourback.bemajor.global.common.util.ResponseUtil;
-import com.fourback.bemajor.global.security.CustomUserDetails;
+import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

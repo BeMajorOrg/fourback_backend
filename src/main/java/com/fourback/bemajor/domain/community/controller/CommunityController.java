@@ -4,7 +4,7 @@ import com.fourback.bemajor.domain.community.dto.*;
 import com.fourback.bemajor.domain.community.service.BoardService;
 import com.fourback.bemajor.global.common.service.FavoriteService;
 import com.fourback.bemajor.domain.community.service.PostService;
-import com.fourback.bemajor.global.security.CustomUserDetails;
+import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;

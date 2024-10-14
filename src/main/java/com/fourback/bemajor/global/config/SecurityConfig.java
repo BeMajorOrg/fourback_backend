@@ -1,9 +1,13 @@
 package com.fourback.bemajor.global.config;
 
 
-import com.fourback.bemajor.global.security.*;
 import com.fourback.bemajor.global.common.service.RedisService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.fourback.bemajor.global.security.custom.CustomAuthenticationEntryPoint;
+import com.fourback.bemajor.global.security.custom.CustomLogoutFilter;
+import com.fourback.bemajor.global.security.jwt.JWTExceptionFilter;
+import com.fourback.bemajor.global.security.jwt.JWTFilter;
+import com.fourback.bemajor.global.security.jwt.JWTUtil;
+import com.fourback.bemajor.global.security.jwt.ReissueTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -72,7 +76,7 @@ public class SecurityConfig {
             configuration.setAllowCredentials(true);
             configuration.setAllowedHeaders(Collections.singletonList("*"));
             configuration.setMaxAge(3600L);
-            configuration.setExposedHeaders(List.of("Authorization", "Refresh"));
+            configuration.setExposedHeaders(List.of("access", "refresh"));
             return configuration;
         };
     }

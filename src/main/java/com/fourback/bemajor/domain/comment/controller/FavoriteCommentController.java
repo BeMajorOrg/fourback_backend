@@ -7,7 +7,7 @@ package com.fourback.bemajor.domain.comment.controller;
 
 import com.fourback.bemajor.domain.comment.dto.AddFavoriteCommentResponse;
 import com.fourback.bemajor.domain.comment.dto.DeleteFavoriteCommentResponse;
-import com.fourback.bemajor.global.security.CustomUserDetails;
+import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 import com.fourback.bemajor.global.common.service.FavoriteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
