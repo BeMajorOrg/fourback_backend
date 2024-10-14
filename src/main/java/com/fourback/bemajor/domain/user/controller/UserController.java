@@ -17,9 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
-import static com.fourback.bemajor.global.common.util.ResponseUtil.createHeaders;
-
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users")
@@ -29,7 +26,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<?> saveUser(@RequestBody UserLoginRequestDto userLoginRequestDto) {
         List<Pair<String, String>> tokens = userService.save(userLoginRequestDto);
-        return ResponseUtil.onSuccess(createHeaders(tokens));
+        return ResponseUtil.onSuccess(tokens);
 
     }
 

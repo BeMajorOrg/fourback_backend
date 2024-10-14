@@ -11,9 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
-import static com.fourback.bemajor.global.common.util.ResponseUtil.createContentDispositionHeader;
-
-
 @RestController
 @RequestMapping("/api/images")
 @RequiredArgsConstructor
@@ -21,11 +18,10 @@ public class ImageController {
     private final ImageService imageService;
 
     @GetMapping("/{name}")
-    public ResponseEntity<Resource> getImage(@PathVariable("name") String filename)
+    public ResponseEntity<?> getImage(@PathVariable("name") String filename)
             throws IOException {
         Resource resource = imageService.get(filename);
-        return ResponseUtil.onSuccess(createContentDispositionHeader(resource.getFilename()),
-                                  resource);
+        return ResponseUtil.onSuccess(resource);
     }
 
     @DeleteMapping
