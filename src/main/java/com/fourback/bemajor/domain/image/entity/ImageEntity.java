@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Setter
 @Getter
 @Table(name = "image")
 public class ImageEntity {
@@ -24,4 +23,9 @@ public class ImageEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
+
+    public void setFileAttribute(String filePath, String fileName) {
+        this.filePath = filePath;
+        this.fileName = fileName;
+    }
 }

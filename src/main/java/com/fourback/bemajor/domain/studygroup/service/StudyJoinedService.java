@@ -1,6 +1,7 @@
 package com.fourback.bemajor.domain.studygroup.service;
 
 import com.fourback.bemajor.domain.chat.repository.GroupChatMessageRepository;
+import com.fourback.bemajor.domain.chat.service.GroupChatMessageService;
 import com.fourback.bemajor.domain.studyGroupNotification.repository.StudyGroupNotificationRepository;
 import com.fourback.bemajor.domain.studyGroupNotification.service.StudyGroupNotificationService;
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
@@ -32,7 +33,7 @@ public class StudyJoinedService {
     private final StudyJoinedRepository studyJoinedRepository;
     private final UserRepository userRepository;
     private final StudyGroupRepository studyGroupRepository;
-    private final GroupChatMessageRepository groupChatMessageRepository;
+    private final GroupChatMessageService groupChatMessageService;
     private final StudyJoinApplicationRepository studyJoinApplicationRepository;
     private final StudyGroupNotificationService studyGroupNotificationService;
     private final StudyGroupNotificationRepository studyGroupNotificationRepository;
@@ -120,7 +121,7 @@ public class StudyJoinedService {
         List<Long> idsByStudyGroupIdAndOauth2Id = studyJoinedRepository.findIdsByStudyGroupIdAndOauth2Id(studyGroupId, userId);
         studyJoinedRepository.deleteByIds(idsByStudyGroupIdAndOauth2Id);
         studyGroupNotificationService.disableNotification(studyGroupId, userId);
-        groupChatMessageRepository.deleteMessagesByStudyGroupIdAndReceiverId(userId, studyGroupId);
+        groupChatMessageService.deleteMessages(userId, studyGroupId);
     }
 
     public StudyGroupDetailsResponseDto getDetails(Long studyGroupId, Long userId) {

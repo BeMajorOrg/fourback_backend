@@ -18,7 +18,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class CustomHandshakeInterceptor implements HandshakeInterceptor {
-    private final JWTUtil jwtUtil;
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,

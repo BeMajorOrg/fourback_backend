@@ -80,8 +80,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
             String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userId);
             if (fcmToken == null)
                 return;
-            groupChatMessageService.saveMessage(userId,
-                    chatMessageResponseDto, studyGroupId);
+            groupChatMessageService.saveMessage(userId, chatMessageResponseDto, studyGroupId);
             fcmService.sendalarm(chatMessageResponseDto, fcmToken,
                     chatMessageRequestDto.getStudyGroupName());
         });

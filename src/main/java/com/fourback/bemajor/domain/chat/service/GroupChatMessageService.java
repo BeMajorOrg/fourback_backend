@@ -17,14 +17,14 @@ public class GroupChatMessageService {
 
     public List<ChatMessageResponseDto> getMessages(Long userId, Long studyGroupId) {
         List<GroupChatMessageEntity> groupChatMessageEntities = groupChatMessageRepository
-                .findByStudyGroupIdAndReceiverId(userId, studyGroupId);
+                .findByReceiverIdAndStudyGroupId(userId, studyGroupId);
         return groupChatMessageEntities.stream()
                 .map(GroupChatMessageEntity::toMessageResponseDto).toList();
     }
 
     @Transactional
     public void deleteMessages(Long userId, Long studyGroupId) {
-        groupChatMessageRepository.deleteMessagesByStudyGroupIdAndReceiverId(userId, studyGroupId);
+        groupChatMessageRepository.deleteByReceiverIdAndStudyGroupId(userId, studyGroupId);
     }
 
     @Transactional

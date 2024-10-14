@@ -41,15 +41,14 @@ public class StudyGroupNotificationService {
         return notificationEntity.getId();
     }
 
-    public void disableNotification(Long notificationId, Long userId) {
+    public void disableNotification(Long studyGroupId, Long userId) {
         StudyGroupNotificationEntity notificationEntity = studyGroupNotificationRepository
-                .findByIdWithUserAndStudyGroup(notificationId).orElseThrow(()
+                .findByStudyGroupIdAndUserIdWithUser(studyGroupId, userId).orElseThrow(()
                         -> new NotFoundException("no such study group notification"));
         if(!notificationEntity.getUser().getUserId().equals(userId)){
             throw new NotAuthorizedException("not authorized. can't delete in studyGroupNotification");
         }
         studyGroupNotificationRepository.delete(notificationEntity);
-        Long studyGroupId = notificationEntity.getStudyGroup().getId();
         if (!studyGrupIdSessionsMap.get(studyGroupId).isEmpty())
             redisService.removeLongMember(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
     }

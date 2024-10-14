@@ -15,8 +15,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class ImageService {
     private final ImageRepository imageRepository;
     private final ImageFileService imageFileService;
@@ -32,16 +32,13 @@ public class ImageService {
     public void save(ImageEntity image, MultipartFile file) throws IOException {
         String uniqueFilename = imageFileService.saveImageFile(file);
         String filePath = UPLOAD_DIR + uniqueFilename;
-        image.setFilePath(filePath);
-        image.setFileName(uniqueFilename);
+        image.setFileAttribute(filePath, uniqueFilename);
         imageRepository.save(image);
     }
 
     @Transactional
     public void delete(List<String> fileNames) throws IOException {
         List<ImageEntity> images = imageRepository.findByFileNames(fileNames);
-        System.out.println(fileNames);
-        System.out.println(images);
         for (ImageEntity image : images) {
             imageFileService.deleteImageFile(image.getFileName());
         }

@@ -77,7 +77,7 @@ public class StudyGroupService {
         if (!studyGroupOp.get().getOwnerUserId().equals(userId)){
             throw new NotAuthorizedException("not authorized. can't delete in studyGroup");
         }
-        studyGroupNotificationRepository.deleteAllByStudyGroupId(studyGroupId);
+        studyGroupNotificationRepository.deleteByStudyGroupId(studyGroupId);
         studyGroupRepository.deleteById(studyGroupId);
         websocketSessionsMap.remove(studyGroupId);
     }

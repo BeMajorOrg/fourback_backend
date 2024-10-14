@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/studyGroup/notification")
+@RequestMapping("/studyGroup/notification/{studyGroupId}")
 public class StudyGroupNotificationController {
     private final StudyGroupNotificationService studyGroupNotificationService;
 
-    @PostMapping("/{studyGroupId}")
+    @PostMapping
     public ResponseEntity<?> enableNotifications(
             @PathVariable("studyGroupId") Long studyGroupId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -23,12 +23,12 @@ public class StudyGroupNotificationController {
         return ResponseUtil.onSuccess(response);
     }
 
-    @DeleteMapping("/{notificationId}")
+    @DeleteMapping
     public ResponseEntity<?> disableNotifications(
-            @PathVariable("notificationId") Long notificationId,
+            @PathVariable("studyGroupId") Long studyGroupId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         studyGroupNotificationService
-                .disableNotification(notificationId, userDetails.getUserId());
+                .disableNotification(studyGroupId, userDetails.getUserId());
         return ResponseUtil.onSuccess();
     }
 }
