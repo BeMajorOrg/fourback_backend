@@ -81,8 +81,7 @@ public class UserService {
         List<StudyJoined> userJoinedList = studyJoinedRepository.findByUserId(userId);
         List<Long> studyGroupIds = userJoinedList.stream().map(
                 studyJoined -> studyJoined.getStudyGroup().getId()).toList();
-        redisService.removeUserInKeysUsingPipeLine(RedisKeyPrefixEnum.DISCONNECTED,
-                studyGroupIds, userId);
+        redisService.removeUserInGroupSession(studyGroupIds, userId);
         studyJoinedRepository.deleteAllInBatch(userJoinedList);
         groupChatMessageRepository.deleteMessagesByReceiverId(userId);
         userRepository.delete(user);
