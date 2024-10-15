@@ -1,6 +1,5 @@
 package com.fourback.bemajor.domain.studygroup.service;
 
-import com.fourback.bemajor.domain.chat.repository.GroupChatMessageRepository;
 import com.fourback.bemajor.domain.chat.service.GroupChatMessageService;
 import com.fourback.bemajor.domain.studyGroupNotification.repository.StudyGroupNotificationRepository;
 import com.fourback.bemajor.domain.studyGroupNotification.service.StudyGroupNotificationService;
@@ -70,7 +69,7 @@ public class StudyJoinedService {
         studyJoinedRepository.save(new StudyJoined(studyGroup,user));
         studyJoinApplicationRepository.deleteById(studyJoinApplicationId);
 
-        studyGroupNotificationService.enableNotification(studyGroupId,userId);
+        studyGroupNotificationService.enableRealTimeNotification(studyGroupId,userId);
     }
 
     /**

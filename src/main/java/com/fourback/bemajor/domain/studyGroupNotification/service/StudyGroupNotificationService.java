@@ -28,19 +28,23 @@ public class StudyGroupNotificationService {
     private final RedisService redisService;
 
     @Transactional
-    public Long enableNotification(Long studyGroupId, Long userId) {
+    public void enableNotification(Long studyGroupId, Long userId) {
         StudyGroup studyGroup = studyGroupRepository.findById(studyGroupId)
                 .orElseThrow(() -> new NotFoundException("no such study group notification"));
         UserEntity user = userServiceRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("no such study group notification"));;
+                .orElseThrow(() -> new NotFoundException("no such study group notification"));
         StudyGroupNotificationEntity notificationEntity = StudyGroupNotificationEntity.builder()
                 .studyGroup(studyGroup).user(user)
                 .build();
         studyGroupNotificationRepository.save(notificationEntity);
+    }
+
+    @Transactional
+    public void enableRealTimeNotification(Long studyGroupId, Long userId) {
+        this.enableNotification(studyGroupId, userId);
         if (!studyGrupIdSessionsMap.get(studyGroupId).isEmpty()) {
             redisService.addLongMember(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
         }
-        return notificationEntity.getId();
     }
 
     @Transactional

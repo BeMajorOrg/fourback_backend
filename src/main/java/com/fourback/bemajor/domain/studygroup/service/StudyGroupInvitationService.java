@@ -42,7 +42,7 @@ public class StudyGroupInvitationService {
     StudyJoined studyJoined = studyGroupInvitation.acceptInvitation();
     studyJoinedRepository.save(studyJoined);
     studyGroupInvitationRepository.delete(studyGroupInvitation);
-    studyGroupNotificationService.enableNotification(
+    studyGroupNotificationService.enableRealTimeNotification(
             studyJoined.getStudyGroup().getId(),studyJoined.getUser().getUserId());
 
   }

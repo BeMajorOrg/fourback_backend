@@ -18,9 +18,9 @@ public class StudyGroupNotificationController {
     public ResponseEntity<?> enableNotifications(
             @PathVariable("studyGroupId") Long studyGroupId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long response = studyGroupNotificationService
-                .enableNotification(studyGroupId, userDetails.getUserId());
-        return ResponseUtil.onSuccess(response);
+        studyGroupNotificationService
+                .enableRealTimeNotification(studyGroupId, userDetails.getUserId());
+        return ResponseUtil.onSuccess();
     }
 
     @DeleteMapping
