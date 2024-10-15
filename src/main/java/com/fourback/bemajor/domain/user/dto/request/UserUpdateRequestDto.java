@@ -10,13 +10,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserUpdateRequestDto {
-    String userName;
-    String email;
-    String birth;
-    String belong;
-    String department;
-    String hobby;
-    String objective;
-    String address;
-    String techStack;
+    private String userName;
+    private String email;
+    private String birth;
+    private String belong;
+    private String department;
+    private String hobby;
+    private String objective;
+    private String address;
+    private String techStack;
 }
