@@ -10,6 +10,7 @@ import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.NotAuthorizedException;
 import com.fourback.bemajor.global.exception.kind.NotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.WebSocketSession;
@@ -26,6 +27,7 @@ public class StudyGroupNotificationService {
     private final Map<Long, Set<WebSocketSession>> studyGrupIdSessionsMap;
     private final RedisService redisService;
 
+    @Transactional
     public Long enableNotification(Long studyGroupId, Long userId) {
         StudyGroup studyGroup = studyGroupRepository.findById(studyGroupId)
                 .orElseThrow(() -> new NotFoundException("no such study group notification"));
@@ -41,6 +43,7 @@ public class StudyGroupNotificationService {
         return notificationEntity.getId();
     }
 
+    @Transactional
     public void disableNotification(Long studyGroupId, Long userId) {
         StudyGroupNotificationEntity notificationEntity = studyGroupNotificationRepository
                 .findByStudyGroupIdAndUserIdWithUser(studyGroupId, userId).orElseThrow(()
