@@ -1,4 +1,4 @@
-package com.fourback.bemajor.domain.studygroup.dto;
+package com.fourback.bemajor.domain.studygroup.dto.response;
 
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 
@@ -20,7 +20,6 @@ public class StudyMemberResponse {
   private String profileImage;
 
   public static StudyMemberResponse fromUserEntity(UserEntity userEntity) {
-    System.out.println(userEntity);
     return new StudyMemberResponse(userEntity.getUserId(), userEntity.getUserName(), userEntity.getFileName());
   }
 }

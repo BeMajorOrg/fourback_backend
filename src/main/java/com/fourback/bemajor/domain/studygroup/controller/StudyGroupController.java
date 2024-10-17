@@ -1,9 +1,7 @@
 package com.fourback.bemajor.domain.studygroup.controller;
 
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
-import com.fourback.bemajor.domain.studygroup.dto.StudyGroupInvitationCountResponse;
-import com.fourback.bemajor.domain.studygroup.dto.StudyGroupInvitationResponse;
-import com.fourback.bemajor.domain.studygroup.dto.StudyMemberResponse;
+import com.fourback.bemajor.domain.studygroup.dto.response.*;
 import com.fourback.bemajor.domain.studygroup.service.StudyGroupInvitationService;
 import com.fourback.bemajor.domain.studygroup.service.StudyGroupService;
 import com.fourback.bemajor.domain.studygroup.service.StudyJoinedService;
@@ -137,6 +135,12 @@ public class StudyGroupController {
     return ResponseEntity.ok().build();
   }
 
+  /**
+   * 스터디 그룹 참가 신청
+   * @param groupId
+   * @param customUserDetails
+   * @return
+   */
   @PostMapping("/studygroup/joingroup/{studyGroupId}")
   public ResponseEntity<Void> joinGroup(@PathVariable("studyGroupId") Long groupId,
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -156,6 +160,54 @@ public class StudyGroupController {
       @RequestBody StudyGroupDto studyGroupDto, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
     studyGroupService.updateStudyGroup(studyGroupId, studyGroupDto, customUserDetails.getUserId());
     return ResponseEntity.ok(studyGroupDto);
+  }
+
+  /**
+   * 스터디 그룹과 어떤 관계인지 -> NONE, MEMBER, ADMIN
+   * @param studyGroupId
+   * @param customUserDetails
+   * @return
+   */
+  @GetMapping("/studygroup/{studyGroupId}/role")
+  public ResponseEntity<StudyGroupRoleResponse> getRoleOfGroup(@PathVariable("studyGroupId") Long studyGroupId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+    StudyGroupRoleResponse role = studyJoinedService.getRole(customUserDetails.getUserId(), studyGroupId);
+    return ResponseEntity.ok(role);
+  }
+
+  /**
+   * 받은 스터디 그룹 참여 신청 리스트 조회
+   * @param studyGroupId
+   * @param customUserDetails
+   * @return
+   */
+  @GetMapping("/studygroup/applications/{studyGroupId}")
+  public ResponseEntity<List<StudyGroupApplicationResponse>> getApplications(@PathVariable("studyGroupId") Long studyGroupId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+    List<StudyGroupApplicationResponse> applications = studyJoinedService.getApplications(customUserDetails.getUserId(), studyGroupId);
+    return ResponseEntity.ok(applications);
+  }
+
+  /**
+   * 스터디 그룹 참여 신청 수락
+   * @param studyApplicationId
+   * @param customUserDetails
+   * @return
+   */
+  @PostMapping("/studygroup/applications/{studyApplicationId}/accept")
+  public ResponseEntity<Void> acceptApplications(@PathVariable("studyApplicationId") Long studyApplicationId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+    studyJoinedService.authorizeStudyGroupApplication(studyApplicationId);
+    return ResponseEntity.ok().build();
+  }
+
+  /**
+   * 스터디 그룹 입장 신청 개수 조회
+   * @param studyGroupId
+   * @param customUserDetails
+   * @return
+   */
+  @GetMapping("/studygroup/applications/{studyGroupId}/count")
+  public ResponseEntity<StudyGroupApplicationCountResponse> getApplicationCount(@PathVariable("studyGroupId") Long studyGroupId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    StudyGroupApplicationCountResponse applicationCount = studyJoinedService.getApplicationCount(customUserDetails.getUserId(), studyGroupId);
+    return ResponseEntity.ok(applicationCount);
   }
 
   @PostMapping("/studygroup/{studyGroupId}/notification")

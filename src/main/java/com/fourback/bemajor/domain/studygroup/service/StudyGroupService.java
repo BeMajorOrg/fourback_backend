@@ -63,7 +63,7 @@ public class StudyGroupService {
             throw new NotFoundException("no such study group. can't delete");
         }
         StudyGroup studyGroup = studyGroupOp.get();
-        studyGroup.updateStudyGroup(studyGroupDto.getStudyName(),studyGroupDto.getStartDate(),studyGroupDto.getEndDate(), studyGroupDto.getTeamSize(),studyGroupDto.getStudyLocation(), studyGroup.getCategory(), studyGroupDto.getStudyCycle(), studyGroupDto.getStudyRule(), studyGroupDto.getStudySchedule());
+        studyGroup.updateStudyGroup(studyGroupDto.getStudyName(),studyGroupDto.getStartDate(),studyGroupDto.getEndDate(), studyGroupDto.getTeamSize(),studyGroupDto.getStudyLocation(), studyGroup.getCategory(), studyGroupDto.getStudyCycle(), studyGroupDto.getStudyRule());
     }
 
     @Transactional

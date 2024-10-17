@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface StudyJoinedRepository extends JpaRepository<StudyJoined, Long> {
     @Query("SELECT a.id FROM StudyJoined a JOIN a.studyGroup b JOIN a.user c WHERE b.id = :studyGroupID AND c.userId = :userId")
@@ -15,6 +16,8 @@ public interface StudyJoinedRepository extends JpaRepository<StudyJoined, Long> 
     @Modifying
     @Query("DELETE FROM StudyJoined a WHERE a.id IN :ids")
     void deleteByIds(@Param("ids") List<Long> ids);
+
+    Optional<StudyJoined> findByUser_UserIdAndStudyGroup_Id(Long userId, Long studyGroupId);
 
     @Query("SELECT a.user.userId FROM StudyJoined a WHERE a.studyGroup.id = ?1 and a.user.userId <> ?2")
     Long[] findByStudyGroupIdNotUserId(Long studyGroupId, Long userId);
