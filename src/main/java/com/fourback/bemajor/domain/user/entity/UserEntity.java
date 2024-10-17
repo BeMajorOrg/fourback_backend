@@ -32,51 +32,51 @@ public class UserEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "user_id")
-  Long userId;
+  private Long userId;
 
   @Column(name = "name")
-  String userName;
+  private String userName;
 
   @Column(name = "email")
-  String email;
+  private String email;
 
   @Column(name = "birth")
-  String birth;
+  private String birth;
 
   @Column(name = "oauth2_id")
-  String oauth2Id;
+  private String oauth2Id;
 
   @Column(name = "role")
-  String role;
+  private String role;
 
   @Column(name = "belong")
-  String belong;
+  private String belong;
 
   @Column(name = "department")
-  String department;
+  private String department;
 
   @Column(name = "bobby")
-  String hobby;
+  private String hobby;
 
   @Column(name = "objective")
-  String objective; //희망 분야
+  private String objective; //희망 분야
 
   @Column(name = "address")
-  String address;
+  private String address;
 
   @Column(name = "tech_stack")
-  String techStack;
+  private String techStack;
 
   @Setter
   @Column(name = "is_deleted")
-  boolean isDeleted;
+  private boolean isDeleted;
 
   @Setter
   @Column(name = "user_image")
-  String fileName;
+  private String fileName;
 
   @OneToMany(mappedBy = "user")
-  List<StudyJoined> studyJoineds;
+  private List<StudyJoined> studyJoineds;
 
   public UserResponseDto toUserResponseDto() {
     return UserResponseDto.builder()
