@@ -24,14 +24,10 @@ import static com.fourback.bemajor.domain.friend.entity.QFriendApply.friendApply
     public Friend findFriendByUserIdAndFriendId(Long userId, Long friendId) {
         return (Friend) jpaQueryFactory.from(friend)
                 .where(
-                        friend.id.accountId.eq(userId)
-                                .or(friend.id.friendAccountId.eq(userId))
+                        (friend.id.accountId.eq(userId).and(friend.id.friendAccountId.eq(friendId)))
+                                .or(friend.id.accountId.eq(friendId).and(friend.id.friendAccountId.eq(userId)))
                 )
-                .where(
-                        friend.id.accountId.eq(friendId)
-                                .or(friend.id.friendAccountId.eq(friendId))
-                )
-                .fetch();
+                .fetchOne();
     }
 
     @Override
