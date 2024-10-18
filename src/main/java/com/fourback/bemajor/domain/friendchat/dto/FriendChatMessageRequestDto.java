@@ -11,15 +11,12 @@ import java.time.LocalDateTime;
 public class FriendChatMessageRequestDto {
     private String content;
     private String senderName;
-    private LocalDateTime sendTime;
-
 
     public FriendChatMessageResponseDto toResponseDto(Long userId) {
         return FriendChatMessageResponseDto.builder()
                 .content(this.content)
                 .senderId(userId)
                 .senderName(this.senderName)
-                .sendTime(this.sendTime)
                 .build();
     }
 }

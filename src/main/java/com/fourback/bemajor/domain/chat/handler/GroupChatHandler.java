@@ -22,6 +22,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -66,10 +67,15 @@ public class GroupChatHandler extends TextWebSocketHandler {
         Long senderId = ids.getLeft();
         Long studyGroupId = ids.getRight();
         Set<WebSocketSession> onSessions = studyGrupIdSessionsMap.get(studyGroupId);
+
         ChatMessageRequestDto chatMessageRequestDto =
                 objectMapper.readValue(payload, ChatMessageRequestDto.class);
         ChatMessageResponseDto chatMessageResponseDto =
                 chatMessageRequestDto.toResponseDto(senderId);
+
+        LocalDateTime currentServerTime = LocalDateTime.now();
+        chatMessageResponseDto.setSendTime(currentServerTime);
+
         for (WebSocketSession onSession : onSessions) {
             onSession.sendMessage(new TextMessage(
                     objectMapper.writeValueAsString(chatMessageResponseDto)));

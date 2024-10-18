@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 public class ChatMessageRequestDto {
     private String content;
     private String senderName;
-    private LocalDateTime sendTime;
     private String studyGroupName;
 
     public ChatMessageResponseDto toResponseDto(Long userId) {
@@ -18,7 +17,6 @@ public class ChatMessageRequestDto {
                 .content(this.content)
                 .senderId(userId)
                 .senderName(this.senderName)
-                .sendTime(this.sendTime)
                 .build();
     }
 }
