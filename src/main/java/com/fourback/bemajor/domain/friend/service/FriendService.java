@@ -135,6 +135,7 @@ public class FriendService {
         friendRepo.delete(f);
 
         DeleteFriendResponse res = DeleteFriendResponse.builder()
+                .isSuccess(true)
                 .build();
 
         return res;
