@@ -27,6 +27,7 @@ public class S3UploadService {
 
   @Value("${cloud.aws.s3.bucket}")
   private String bucket;
+  private final String SPLIT_STRING = ".com/";
 
   public String saveFile(MultipartFile multipartFile) throws IOException {
     ObjectMetadata metadata = new ObjectMetadata();
@@ -43,15 +44,13 @@ public class S3UploadService {
   }
 
   public void deleteFile(String imageUrl) {
-    String splitStr = ".com/";
-    String fileName = imageUrl.substring(imageUrl.lastIndexOf(splitStr) + splitStr.length());
+    String fileName = imageUrl.substring(imageUrl.lastIndexOf(SPLIT_STRING) + SPLIT_STRING.length());
     amazonS3.deleteObject(bucket, fileName);
   }
 
   public void deleteFiles(List<String> imageUrls) {
-    String splitStr = ".com/";
     List<KeyVersion> keyVersions = imageUrls.stream()
-            .map(url -> url.substring(url.lastIndexOf(splitStr) + splitStr.length()))
+            .map(url -> url.substring(url.lastIndexOf(SPLIT_STRING) + SPLIT_STRING.length()))
             .map(KeyVersion::new).toList();
     DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucket)
             .withKeys(keyVersions);

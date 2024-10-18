@@ -262,8 +262,10 @@ public class PostService {
         }
 
         List<ImageEntity> images = imageRepository.findByPostId(postId);
-        s3UploadService.deleteFiles(images.stream().map(ImageEntity::getImageUrl).toList());
-        imageRepository.deleteAllInBatch(images);
+        if(!images.isEmpty()) {
+            s3UploadService.deleteFiles(images.stream().map(ImageEntity::getImageUrl).toList());
+            imageRepository.deleteAllInBatch(images);
+        }
         postRepository.delete(post);
     }
 
@@ -278,7 +280,7 @@ public class PostService {
     public void deleteImage(Long userId, List<String> imageUrls, Long postId) {
         Post post = postRepository.findByIdWithUser(postId)
                 .orElseThrow(() -> new NotFoundException("no such study group. can't delete"));
-        if(post.getUser().getUserId().equals(userId))
+        if(!post.getUser().getUserId().equals(userId))
             throw new NotAuthorizedException("not authorized. can't delete in post image");
         List<ImageEntity> images = imageRepository.findAllByImageUrlsWithPost(imageUrls);
         if(!images.stream().allMatch(image -> image.getPost().getId().equals(postId))){
