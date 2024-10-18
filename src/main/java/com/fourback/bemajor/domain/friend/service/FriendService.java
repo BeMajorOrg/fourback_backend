@@ -24,8 +24,8 @@ public class FriendService {
     private final UserRepository userRepo;
 
     @Transactional
-    public AddFriendApplyResponse addFriendApply(FriendRequest.Apply request) {
-        UserEntity user = userRepo.findById(request.userId()).orElse(null);
+    public AddFriendApplyResponse addFriendApply(long userId, FriendRequest.Apply request) {
+        UserEntity user = userRepo.findById(userId).orElse(null);
         UserEntity friend = userRepo.findById(request.friendId()).orElse(null);
 
         if(friendApplyRepo.checkDuplicateFriendApply(user.getUserId(), friend.getUserId()) != null) {
@@ -109,19 +109,28 @@ public class FriendService {
         return res;
     }
 
-    public List<String> getFriendInvitationList(Long userId) {
+    public GetUserListForInvitationResponse getFriendInvitationList(Long userId) {
         List<UserEntity> users = userRepo.findAll();
-        List<String> userNameList = new ArrayList<>();
+        List<UserForInvitationResponse> userList = new ArrayList<>();
 
-        for(UserEntity c : users) {
-            if(c.getUserId() != userId)
-            userNameList.add(c.getUserName());
+        for(UserEntity user : users) {
+            if(userId.equals(user.getUserId()) == false) {
+                UserForInvitationResponse result = UserForInvitationResponse.fromUser(user);
+                userList.add(result);
+            }
         }
-        return userNameList;
+
+        GetUserListForInvitationResponse res = GetUserListForInvitationResponse.
+                builder().
+                result(userList).
+                size(userList.size()).
+                build();
+
+        return res;
     }
 
-    public DeleteFriendResponse deleteFriend(FriendRequest.Delete request) {
-        Friend f = friendRepo.findFriendByUserIdAndFriendId(request.userId(), request.friendId());
+    public DeleteFriendResponse deleteFriend(long userId, FriendRequest.Delete request) {
+        Friend f = friendRepo.findFriendByUserIdAndFriendId(userId, request.friendId());
 
         friendRepo.delete(f);
 

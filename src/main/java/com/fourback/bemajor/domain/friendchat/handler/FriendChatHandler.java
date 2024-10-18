@@ -19,6 +19,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -69,10 +70,15 @@ public class FriendChatHandler extends TextWebSocketHandler {
         Pair<Long, Long> ids = sessionIdsMap.get(session);
         Long senderId = ids.getLeft();
         Long chatRoomIdLong = ids.getRight();
+
         FriendChatMessageRequestDto friendchatMessageRequestDto =
                 objectMapper.readValue(payload, FriendChatMessageRequestDto.class);
         FriendChatMessageResponseDto friendchatMessageResponseDto =
                 friendchatMessageRequestDto.toResponseDto(senderId);
+
+        LocalDateTime currentServerTime = LocalDateTime.now();
+        friendchatMessageResponseDto.setSendTime(currentServerTime);
+
         Set<WebSocketSession> onSessions = chatRoomSessionsMap.get(chatRoomIdLong);
 
         for (WebSocketSession onSession : onSessions) {

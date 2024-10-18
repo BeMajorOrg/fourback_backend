@@ -9,10 +9,11 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @AllArgsConstructor
 public class StudyGroupGoalDetailResponse {
+    private Long id;
     private String name;
     private Boolean checked;
 
     public static StudyGroupGoalDetailResponse fromEntity(StudyDetailGoal studyDetailGoal){
-        return new StudyGroupGoalDetailResponse(studyDetailGoal.getDetailGoalName(), studyDetailGoal.getValid());
+        return new StudyGroupGoalDetailResponse(studyDetailGoal.getId(),studyDetailGoal.getDetailGoalName(), studyDetailGoal.getValid());
     }
 }
