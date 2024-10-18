@@ -1,7 +1,7 @@
 package com.fourback.bemajor.domain.community.dto;
 
 import com.fourback.bemajor.domain.community.entity.Post;
-import com.fourback.bemajor.domain.image.entity.ImageEntity;
+import com.fourback.bemajor.domain.community.entity.ImageEntity;
 import lombok.Data;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public class PostUpdateDto {
         content = post.getContent();
         this.updateDate = updateDate;
         imageName = imageList.stream()
-                .map(image -> image.getFileName())
+                .map(ImageEntity::getImageUrl)
                 .collect(Collectors.toList());
 
     }

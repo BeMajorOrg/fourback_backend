@@ -1,7 +1,7 @@
 package com.fourback.bemajor.domain.community.dto;
 
 import com.fourback.bemajor.domain.community.entity.Post;
-import com.fourback.bemajor.domain.image.entity.ImageEntity;
+import com.fourback.bemajor.domain.community.entity.ImageEntity;
 import lombok.Data;
 
 import java.util.List;
@@ -34,14 +34,14 @@ public class PostListDto {
         memberName = post.getUser().getUserName();
         department = post.getUser().getDepartment();
         belong = post.getUser().getBelong();
-        profileImage = post.getUser().getFileName();
+        profileImage = post.getUser().getImageUrl();
         goodCount = post.getGoodCount();
         commentCount = post.getCommentCount();
         viewCount = post.getViewCount();
         this.postDate = postDate;
         boardName = post.getBoard().getBoardName();
         imageName = imageList.stream()
-                .map(image -> image.getFileName())
+                .map(ImageEntity::getImageUrl)
                 .collect(Collectors.toList());
         this.postGood = postGood;
         this.userCheck = userCheck;

@@ -72,8 +72,8 @@ public class UserEntity {
   private boolean isDeleted;
 
   @Setter
-  @Column(name = "user_image")
-  private String fileName;
+  @Column(name = "image_url")
+  private String imageUrl;
 
   @OneToMany(mappedBy = "user")
   private List<StudyJoined> studyJoineds;
@@ -84,7 +84,7 @@ public class UserEntity {
                           .userName(this.userName)
                           .address(this.address)
                           .department(this.department)
-                          .fileName(this.fileName)
+                          .imageUrl(this.imageUrl)
                           .email(this.email)
                           .hobby(this.hobby)
                           .birth(this.birth)

@@ -18,6 +18,6 @@ public class UserResponseDto {
     private String objective;
     private String address;
     private String techStack;
-    private String fileName;
+    private String imageUrl;
     private boolean isDeleted;
 }

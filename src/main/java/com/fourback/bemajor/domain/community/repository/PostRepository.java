@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 
 @Repository
@@ -26,6 +27,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("select p from Post p where p.createdDate <= :startDate AND p.createdDate >= :endDate AND p.goodCount >= 1")
     Page<Post> findPopularPosts(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, Pageable pageable);
 
-
+    @Query("select p from Post p join fetch p.user where p.id=?1")
+    Optional<Post> findByIdWithUser(Long postId);
 
 }

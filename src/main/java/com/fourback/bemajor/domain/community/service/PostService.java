@@ -1,6 +1,7 @@
 package com.fourback.bemajor.domain.community.service;
 
 
+import com.fourback.bemajor.domain.aws.service.S3UploadService;
 import com.fourback.bemajor.domain.comment.entity.Comment;
 import com.fourback.bemajor.domain.comment.entity.FavoriteComment;
 import com.fourback.bemajor.domain.comment.repository.CommentRepository;
@@ -11,8 +12,8 @@ import com.fourback.bemajor.domain.community.entity.Post;
 import com.fourback.bemajor.domain.community.repository.BoardRepository;
 import com.fourback.bemajor.domain.community.repository.FavoritePostRepository;
 import com.fourback.bemajor.domain.community.repository.PostRepository;
-import com.fourback.bemajor.domain.image.entity.ImageEntity;
-import com.fourback.bemajor.domain.image.repository.ImageRepository;
+import com.fourback.bemajor.domain.community.entity.ImageEntity;
+import com.fourback.bemajor.domain.community.repository.ImageRepository;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
 import com.fourback.bemajor.domain.community.dto.PostDto;
@@ -20,8 +21,8 @@ import com.fourback.bemajor.domain.community.dto.PostListDto;
 
 import com.fourback.bemajor.domain.community.dto.PostUpdateDto;
 
-import com.fourback.bemajor.global.common.service.ImageFileService;
-import com.fourback.bemajor.domain.image.service.ImageService;
+import com.fourback.bemajor.global.exception.kind.NotAuthorizedException;
+import com.fourback.bemajor.global.exception.kind.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -45,15 +46,14 @@ public class PostService {
     private final PostRepository postRepository;
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
-    private final ImageService imageService;
     private final ImageRepository imageRepository;
     private final FavoritePostRepository favoritePostRepository;
     private final FavoriteCommentRepository favoriteCommentRepository;
     private final CommentRepository commentRepository;
-    private final ImageFileService imageFileService;
+    private final S3UploadService s3UploadService;
 
     @Transactional
-    public Long create(PostDto postDto, Long userId, MultipartFile[] imageFiles) throws IOException {
+    public Long create(PostDto postDto, Long userId, MultipartFile[] images) throws IOException {
         Post post = new Post();
         Optional<Board> optionalBoard = boardRepository.findById((postDto.getBoardId()));
         Board board = optionalBoard.orElse(new Board());
@@ -63,13 +63,7 @@ public class PostService {
         post.setBoard(board);
         post.setUser(userEntity);
         postRepository.save(post);
-        if (imageFiles != null) {
-            for (MultipartFile imageFile : imageFiles) {
-                ImageEntity image = new ImageEntity();
-                image.setPost(post);
-                imageService.save(image, imageFile);
-            }
-        }
+        this.saveImage(post, images);
         return post.getId();
     }
 
@@ -210,15 +204,7 @@ public class PostService {
         Post post = optionalPost.get();
         post.setTitle(title);
         post.setContent(content);
-        if (images != null) {
-            for (MultipartFile imageFile : images) {
-                ImageEntity image = new ImageEntity();
-                image.setPost(post);
-                imageService.save(image, imageFile);
-            }
-
-
-        }
+        this.saveImage(post, images);
         return ResponseEntity.ok("post update");
     }
 
@@ -276,10 +262,8 @@ public class PostService {
         }
 
         List<ImageEntity> images = imageRepository.findByPostId(postId);
-        for (ImageEntity image : images) {
-            imageFileService.deleteImageFile(image.getFileName());
-            imageRepository.delete(image);
-        }
+        s3UploadService.deleteFiles(images.stream().map(ImageEntity::getImageUrl).toList());
+        imageRepository.deleteAllInBatch(images);
         postRepository.delete(post);
     }
 
@@ -289,5 +273,28 @@ public class PostService {
         post.setViewCount(post.getViewCount() + 1);
         return ResponseEntity.ok("ok");
 
+    }
+    @Transactional
+    public void deleteImage(Long userId, List<String> imageUrls, Long postId) {
+        Post post = postRepository.findByIdWithUser(postId)
+                .orElseThrow(() -> new NotFoundException("no such study group. can't delete"));
+        if(post.getUser().getUserId().equals(userId))
+            throw new NotAuthorizedException("not authorized. can't delete in post image");
+        List<ImageEntity> images = imageRepository.findAllByImageUrlsWithPost(imageUrls);
+        if(!images.stream().allMatch(image -> image.getPost().getId().equals(postId))){
+            throw new NotAuthorizedException("not authorized. can't delete in post image");
+        }
+        s3UploadService.deleteFiles(imageUrls);
+        imageRepository.deleteAllInBatch(images);
+    }
+
+    private void saveImage(Post post, MultipartFile[] images) throws IOException {
+        if (images != null) {
+            for (MultipartFile imageFile : images) {
+                String imageUrl = s3UploadService.saveFile(imageFile);
+                ImageEntity image = ImageEntity.of(post, imageUrl);
+                imageRepository.save(image);
+            }
+        }
     }
 }

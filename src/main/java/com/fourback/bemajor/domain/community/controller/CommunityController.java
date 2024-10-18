@@ -4,6 +4,7 @@ import com.fourback.bemajor.domain.community.dto.*;
 import com.fourback.bemajor.domain.community.service.BoardService;
 import com.fourback.bemajor.global.common.service.FavoriteService;
 import com.fourback.bemajor.domain.community.service.PostService;
+import com.fourback.bemajor.global.common.util.ResponseUtil;
 import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -150,5 +151,12 @@ public class CommunityController {
         Long userId = customUserDetails.getUserId();
         favoriteService.post(postId,userId);
         return "ok";
+    }
+
+    @DeleteMapping("/api/post/{id}/images")
+    public ResponseEntity<?> deleteImage(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                         @RequestBody List<String> imageUrls, @PathVariable("id") Long id) {
+        postService.deleteImage(userDetails.getUserId(), imageUrls, id);
+        return ResponseUtil.onSuccess();
     }
 }

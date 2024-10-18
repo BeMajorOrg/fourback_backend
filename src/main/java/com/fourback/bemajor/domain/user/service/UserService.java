@@ -1,11 +1,11 @@
 package com.fourback.bemajor.domain.user.service;
 
+import com.fourback.bemajor.domain.aws.service.S3UploadService;
 import com.fourback.bemajor.domain.chat.repository.GroupChatMessageRepository;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.dto.request.FcmTokenUpdateDto;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
-import com.fourback.bemajor.global.common.service.ImageFileService;
 import com.fourback.bemajor.domain.user.dto.request.UserLoginRequestDto;
 import com.fourback.bemajor.domain.user.dto.request.UserUpdateRequestDto;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
@@ -30,10 +30,10 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
-    private final ImageFileService imageFileService;
     private final RedisService redisService;
     private final StudyJoinedRepository studyJoinedRepository;
     private final GroupChatMessageRepository groupChatMessageRepository;
+    private final S3UploadService s3UploadService;
 
     @Transactional
     public List<Pair<String, String>> save(UserLoginRequestDto userLoginRequestDto) {
@@ -73,9 +73,9 @@ public class UserService {
     @Transactional
     public void delete(Long userId) throws IOException {
         UserEntity user = this.findById(userId);
-        String fileName = user.getFileName();
-        if (fileName != null) {
-            imageFileService.deleteImageFile(fileName);
+        String imageUrl = user.getImageUrl();
+        if (imageUrl != null) {
+            s3UploadService.deleteFile(imageUrl);
         }
         //user가 join한 곳에 대해서만 삭제해주기 + redis에서도 지워줘야 함
         List<StudyJoined> userJoinedList = studyJoinedRepository.findByUserId(userId);
@@ -92,17 +92,17 @@ public class UserService {
     @Transactional
     public String saveImage(Long userId, MultipartFile file) throws IOException {
         UserEntity user = this.findById(userId);
-        String uniqueFileName = imageFileService.saveImageFile(file);
-        user.setFileName(uniqueFileName);
+        String imageUrl = s3UploadService.saveFile(file);
+        user.setImageUrl(imageUrl);
         userRepository.save(user);
-        return uniqueFileName;
+        return imageUrl;
     }
 
     @Transactional
-    public void deleteImage(Long userId) throws IOException {
+    public void deleteImage(Long userId) {
         UserEntity user = this.findById(userId);
-        imageFileService.deleteImageFile(user.getFileName());
-        user.setFileName(null);
+        s3UploadService.deleteFile(user.getImageUrl());
+        user.setImageUrl(null);
         userRepository.save(user);
     }
 

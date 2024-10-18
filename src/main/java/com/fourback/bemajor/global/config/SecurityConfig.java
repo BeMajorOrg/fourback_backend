@@ -63,11 +63,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().requestMatchers("/image/{name}");
-    }
-
     private CorsConfigurationSource corsCustomizer() {
         return request -> {
             CorsConfiguration configuration = new CorsConfiguration();

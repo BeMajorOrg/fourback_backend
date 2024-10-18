@@ -59,15 +59,14 @@ public class UserController {
     }
 
     @PostMapping("/image")
-    public ResponseEntity<?> updateImage(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+    public ResponseEntity<?> saveImage(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                          @RequestParam("file") MultipartFile file) throws IOException {
         String filename = userService.saveImage(customUserDetails.getUserId(), file);
         return ResponseUtil.onSuccess(filename);
     }
 
     @DeleteMapping("/image")
-    public ResponseEntity<?> deleteImage(@AuthenticationPrincipal CustomUserDetails customUserDetails)
-            throws IOException {
+    public ResponseEntity<?> deleteImage(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         userService.deleteImage(customUserDetails.getUserId());
         return ResponseUtil.onSuccess();
     }
