@@ -12,4 +12,5 @@ import java.util.List;
 @Getter
 @Builder@Data
 public class DeleteFriendResponse {
+    boolean isSuccess;
 }
