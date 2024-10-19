@@ -2,8 +2,11 @@ package com.fourback.bemajor.domain.studygroup.service;
 
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
+import com.fourback.bemajor.domain.studygroup.entity.StudyJoinApplication;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
+import com.fourback.bemajor.domain.studygroup.repository.StudyGroupInvitationRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
+import com.fourback.bemajor.domain.studygroup.repository.StudyJoinApplicationRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
@@ -28,6 +31,8 @@ public class StudyGroupService {
     private final StudyGroupRepository studyGroupRepository;
     private final UserRepository userRepository;
     private final StudyJoinedRepository studyJoinedRepository;
+    private final StudyGroupInvitationRepository studyGroupInvitationRepository;
+    private final StudyJoinApplicationRepository studyJoinApplicationRepository;
     private final Map<Long, Set<WebSocketSession>> websocketSessionsMap;
 
     public List<StudyGroupDto> getAllStudyGroup(int page, String category){
@@ -75,6 +80,8 @@ public class StudyGroupService {
         if (!studyGroupOp.get().getOwnerUserId().equals(userId)){
             throw new NotAuthorizedException("not authorized. can't delete in studyGroup");
         }
+        studyGroupInvitationRepository.deleteByStudyGroup(studyGroupOp.get());
+        studyJoinApplicationRepository.deleteByStudyGroup(studyGroupOp.get());
         studyGroupRepository.deleteById(studyGroupId);
         websocketSessionsMap.remove(studyGroupId);
     }
