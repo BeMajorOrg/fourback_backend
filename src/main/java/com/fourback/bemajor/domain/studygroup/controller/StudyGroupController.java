@@ -46,6 +46,12 @@ public class StudyGroupController {
     return ResponseEntity.ok().build();
   }
 
+  /**
+   * 스터디 그룹 생성
+   * @param studyGroupDto
+   * @param customUserDetails
+   * @return
+   */
   @PostMapping("/studygroup")
   public ResponseEntity<StudyGroupDto> createStudyGroup(@RequestBody StudyGroupDto studyGroupDto,
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -53,6 +59,12 @@ public class StudyGroupController {
     return ResponseEntity.ok(studyGroupDto);
   }
 
+  /**
+   * 스터디 그룹 삭제
+   * @param studyGroupId
+   * @param customUserDetails
+   * @return
+   */
   @DeleteMapping("/studygroup/{studyGroupId}")
   public ResponseEntity<Void> deleteStudyGroup(@PathVariable("studyGroupId") Long studyGroupId,
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -60,6 +72,12 @@ public class StudyGroupController {
     return ResponseEntity.ok().build();
   }
 
+  /**
+   * 스터디 그룹 나가기
+   * @param groupId
+   * @param customUserDetails
+   * @return
+   */
   @PostMapping("/studygroup/exitgroup/{studyGroupId}")
   public ResponseEntity<Void> exitGroup(@PathVariable("studyGroupId") Long groupId,
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -67,6 +85,12 @@ public class StudyGroupController {
     return ResponseEntity.ok().build();
   }
 
+  /**
+   * 스터디 그룹 멤버 조회
+   * @param studyGroupID
+   * @param customUserDetails
+   * @return
+   */
   @GetMapping("/studygroup/members/{studyGroupId}")
   public ResponseEntity<List<UserResponseDto>> getGroupMembers(@PathVariable("studyGroupId") Long studyGroupID,
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -115,6 +139,12 @@ public class StudyGroupController {
     return ResponseEntity.ok(userInfoByEmail);
   }
 
+  /**
+   * 스터디그룹 조회
+   * @param page
+   * @param category
+   * @return
+   */
   @GetMapping("/studygroup")
   public List<StudyGroupDto> getStudyGroup(@RequestParam(value = "page", defaultValue = "0") int page,
       @RequestParam(value = "category", defaultValue = "") String category) {
@@ -148,6 +178,11 @@ public class StudyGroupController {
     return ResponseEntity.ok().build();
   }
 
+  /**
+   * 자신의 스터디그룹 리스트 조회
+   * @param customUserDetails
+   * @return
+   */
   @GetMapping("/studygroup/mygroups")
   public ResponseEntity<List<StudyGroupDto>> myStudyGroupList(
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -155,6 +190,13 @@ public class StudyGroupController {
     return ResponseEntity.ok(allMyGroups);
   }
 
+  /**
+   * 스터디 그룹 수정
+   * @param studyGroupId
+   * @param studyGroupDto
+   * @param customUserDetails
+   * @return
+   */
   @PutMapping("/studygroup/{studyGroupId}")
   public ResponseEntity<StudyGroupDto> updateStudyGroup(@PathVariable("studyGroupId") Long studyGroupId,
       @RequestBody StudyGroupDto studyGroupDto, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
