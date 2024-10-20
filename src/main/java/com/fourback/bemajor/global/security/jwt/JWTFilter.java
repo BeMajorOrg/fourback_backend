@@ -1,7 +1,8 @@
-package com.fourback.bemajor.global.security;
+package com.fourback.bemajor.global.security.jwt;
 
 import com.fourback.bemajor.global.exception.kind.TokenExpiredException;
 import com.fourback.bemajor.global.exception.kind.InvalidTokenException;
+import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -1,5 +1,7 @@
 package com.fourback.bemajor.domain.studygroup.service;
 
+import com.fourback.bemajor.domain.studyGroupNotification.repository.StudyGroupNotificationRepository;
+import com.fourback.bemajor.domain.studyGroupNotification.service.StudyGroupNotificationService;
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoinApplication;
@@ -34,6 +36,8 @@ public class StudyGroupService {
     private final StudyGroupInvitationRepository studyGroupInvitationRepository;
     private final StudyJoinApplicationRepository studyJoinApplicationRepository;
     private final Map<Long, Set<WebSocketSession>> websocketSessionsMap;
+    private final StudyGroupNotificationRepository studyGroupNotificationRepository;
+    private final StudyGroupNotificationService studyGroupNotificationService;
 
     public List<StudyGroupDto> getAllStudyGroup(int page, String category){
         PageRequest pageable = PageRequest.of(page, 10, Sort.by("startDate").descending());
@@ -58,7 +62,9 @@ public class StudyGroupService {
         StudyJoined studyJoined = new StudyJoined(savedGroup, userEntity);
         studyJoinedRepository.save(studyJoined);
         studyGroupRepository.save(studyGroup);
-        websocketSessionsMap.put(studyGroup.getId(), Collections.newSetFromMap(new ConcurrentHashMap<>()));
+        Long studyGroupId = studyGroup.getId();
+        websocketSessionsMap.put(studyGroupId, Collections.newSetFromMap(new ConcurrentHashMap<>()));
+        studyGroupNotificationService.enableNotification(studyGroupId, userId);
     }
 
     @Transactional
@@ -82,6 +88,7 @@ public class StudyGroupService {
         }
         studyGroupInvitationRepository.deleteByStudyGroup(studyGroupOp.get());
         studyJoinApplicationRepository.deleteByStudyGroup(studyGroupOp.get());
+        studyGroupNotificationRepository.deleteByStudyGroupId(studyGroupId);
         studyGroupRepository.deleteById(studyGroupId);
         websocketSessionsMap.remove(studyGroupId);
     }

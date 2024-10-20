@@ -1,4 +1,4 @@
-package com.fourback.bemajor.global.security;
+package com.fourback.bemajor.global.security.custom;
 
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;

@@ -1,7 +1,7 @@
 package com.fourback.bemajor.domain.chat.Interceptor;
 
-import com.fourback.bemajor.global.security.CustomUserDetails;
-import com.fourback.bemajor.global.security.JWTUtil;
+import com.fourback.bemajor.global.security.custom.CustomUserDetails;
+import com.fourback.bemajor.global.security.jwt.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
@@ -18,7 +18,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class CustomHandshakeInterceptor implements HandshakeInterceptor {
-    private final JWTUtil jwtUtil;
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,

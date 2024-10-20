@@ -1,4 +1,4 @@
-package com.fourback.bemajor.global.security;
+package com.fourback.bemajor.global.security.jwt;
 
 import com.fourback.bemajor.global.exception.kind.InvalidTokenException;
 import com.fourback.bemajor.global.exception.kind.TokenExpiredException;
@@ -48,9 +48,7 @@ public class ReissueTokenFilter extends OncePerRequestFilter {
             String role = jwtUtil.getRole(refresh);
 
             List<Pair<String, String>> pairs = jwtUtil.createTokens(userId, role);
-            for (Pair<String, String> pair : pairs) {
-                response.setHeader(pair.getLeft(), pair.getRight());
-            }
+            pairs.forEach(pair -> response.setHeader(pair.getLeft(), pair.getRight()));
             response.setStatus(HttpServletResponse.SC_OK);
         } else {
             filterChain.doFilter(request, response);

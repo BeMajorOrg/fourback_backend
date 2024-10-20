@@ -7,11 +7,13 @@ package com.fourback.bemajor.domain.friend.controller;
 
 import com.fourback.bemajor.domain.friend.dto.*;
 import com.fourback.bemajor.domain.friend.service.FriendService;
-import com.fourback.bemajor.global.security.CustomUserDetails;
+import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class FriendController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
 
-        AddFriendApplyResponse res = friendService.addFriendApply(request);
+        AddFriendApplyResponse res = friendService.addFriendApply(customUserDetails.getUserId(), request);
         return ResponseEntity.ok().body(res);
     }
 
@@ -43,46 +45,52 @@ public class FriendController {
     }
 
     @ResponseBody
-    @GetMapping("/api/friend/apply/{userId}")
+    @GetMapping("/api/friend/invitation-list")
+    public ResponseEntity<GetUserListForInvitationResponse> getFriendInvitationList(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        GetUserListForInvitationResponse res = friendService.getFriendInvitationList(customUserDetails.getUserId());
+        return ResponseEntity.ok().body(res);
+    }
+
+    @ResponseBody
+    @GetMapping("/api/friend/apply")
     public ResponseEntity<GetFriendAppliesResponse> getFriendApplies(
-            @PathVariable("userId") Long userId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
 
-        GetFriendAppliesResponse res = friendService.getReceiveApplies(userId);
+        GetFriendAppliesResponse res = friendService.getReceiveApplies(customUserDetails.getUserId());
         return ResponseEntity.ok().body(res);
     }
 
     @ResponseBody
-    @GetMapping("/api/friend/apply/count/{userId}")
+    @GetMapping("/api/friend/apply/count")
     public ResponseEntity<CountFriendApplyResponse> countFriendApply(
-            @PathVariable("userId") Long userId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
 
-        CountFriendApplyResponse res = friendService.countApplies(userId);
+        CountFriendApplyResponse res = friendService.countApplies(customUserDetails.getUserId());
         return ResponseEntity.ok().body(res);
     }
 
     @ResponseBody
-    @GetMapping("/api/friend/{userId}")
+    @GetMapping("/api/friend")
     public ResponseEntity<GetFriendListResponse> getFriendList(
-            @PathVariable("userId") Long userId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
 
-        GetFriendListResponse res = friendService.getFriendList(userId);
+        GetFriendListResponse res = friendService.getFriendList(customUserDetails.getUserId());
         return ResponseEntity.ok().body(res);
     }
 
     @ResponseBody
-    @DeleteMapping("/api/friend/apply")
+    @DeleteMapping("/api/friend")
     public ResponseEntity<DeleteFriendResponse> deleteFriend(
             @RequestBody FriendRequest.Delete request,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
 
-        DeleteFriendResponse res = friendService.deleteFriend(request);
+        DeleteFriendResponse res = friendService.deleteFriend(customUserDetails.getUserId(), request);
         return ResponseEntity.ok().body(res);
     }
 

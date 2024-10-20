@@ -46,7 +46,7 @@ public class CommentResult {
         return CommentResult.builder()
                 .id(comment.getId())
                 .goodCount(comment.getGoodCount())
-                .profileImage(comment.getUser().getFileName())
+                .profileImage(comment.getUser().getImageUrl())
                 .content(commentContent)
                 .commentDate(comment.getCreatedDate().toString())
                 .userName(comment.getUser().getUserName())

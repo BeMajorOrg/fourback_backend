@@ -1,4 +1,4 @@
-package com.fourback.bemajor.global.security;
+package com.fourback.bemajor.global.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourback.bemajor.global.exception.ExceptionDto;
@@ -9,6 +9,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class JWTExceptionFilter extends OncePerRequestFilter {
             throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         response.setStatus(exception.getStatusCode().value());
-        response.setContentType("application/json");
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
         ExceptionDto exceptionDto = new ExceptionDto(exception.getCode(), exception.getMessage());
         String jsonResponse = mapper.writeValueAsString(exceptionDto);

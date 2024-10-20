@@ -70,15 +70,15 @@ public class RedisService {
         operation.remove(prefixEnum.getDescription() + keyId, valueId);
     }
 
-    public void removeUserInKeysUsingPipeLine(RedisKeyPrefixEnum prefixEnum,
-                                              List<Long> keyIds, Long valueId) {
+    public void removeUserInGroupSession(List<Long> keyIds, Long valueId) {
         stringLongRedisTemplate.executePipelined((RedisCallback<?>) redisConnection -> {
-            byte[] byteValue = ByteBuffer.allocate(Long.BYTES)
+            byte[] valueByte = ByteBuffer.allocate(Long.BYTES)
                     .putLong(valueId).array();
             keyIds.forEach(keyId -> {
                 if (!studyGrupIdSessionsMap.get(keyId).isEmpty()) {
-                    byte[] keyByte = (prefixEnum.getDescription() + keyId).getBytes();
-                    redisConnection.setCommands().sRem(keyByte, byteValue);
+                    byte[] keyByte = (RedisKeyPrefixEnum.DISCONNECTED.getDescription() + keyId)
+                            .getBytes();
+                    redisConnection.setCommands().sRem(keyByte, valueByte);
                 }
             });
             return null;
@@ -86,7 +86,7 @@ public class RedisService {
     }
 
     @Scheduled(fixedDelay = 300000)
-    public void removeKeysUsingPipeLine() {
+    public void removeDisConnectedKey() {
         Set<String> keys = stringLongRedisTemplate.keys(
                 RedisKeyPrefixEnum.DISCONNECTED + "*");
         if (keys != null) {

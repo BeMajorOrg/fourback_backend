@@ -26,6 +26,6 @@ public class GetFriendApplyResponse {
             friendApply.getFriend().getUserId(),
             friendApply.getUser().getUserId(),
             friendApply.getUser().getUserName(),
-            friendApply.getUser().getFileName());
+            friendApply.getUser().getImageUrl());
   }
 }

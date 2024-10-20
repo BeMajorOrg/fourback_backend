@@ -20,11 +20,6 @@ public class BeanConfig {
     }
 
     @Bean
-    public Map<WebSocketSession, Pair<Long, Long>> sessionIdsMap() {
-        return new ConcurrentHashMap<>();
-    }
-
-    @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());

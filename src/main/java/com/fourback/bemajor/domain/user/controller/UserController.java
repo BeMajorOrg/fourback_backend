@@ -6,7 +6,7 @@ import com.fourback.bemajor.domain.user.dto.request.UserUpdateRequestDto;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
 import com.fourback.bemajor.domain.user.service.UserService;
 import com.fourback.bemajor.global.common.util.ResponseUtil;
-import com.fourback.bemajor.global.security.CustomUserDetails;
+import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
-import static com.fourback.bemajor.global.common.util.ResponseUtil.createHeaders;
-
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users")
@@ -29,7 +26,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<?> saveUser(@RequestBody UserLoginRequestDto userLoginRequestDto) {
         List<Pair<String, String>> tokens = userService.save(userLoginRequestDto);
-        return ResponseUtil.onSuccess(createHeaders(tokens));
+        return ResponseUtil.onSuccess(tokens);
 
     }
 
@@ -62,15 +59,14 @@ public class UserController {
     }
 
     @PostMapping("/image")
-    public ResponseEntity<?> updateImage(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+    public ResponseEntity<?> saveImage(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                          @RequestParam("file") MultipartFile file) throws IOException {
         String filename = userService.saveImage(customUserDetails.getUserId(), file);
         return ResponseUtil.onSuccess(filename);
     }
 
     @DeleteMapping("/image")
-    public ResponseEntity<?> deleteImage(@AuthenticationPrincipal CustomUserDetails customUserDetails)
-            throws IOException {
+    public ResponseEntity<?> deleteImage(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         userService.deleteImage(customUserDetails.getUserId());
         return ResponseUtil.onSuccess();
     }

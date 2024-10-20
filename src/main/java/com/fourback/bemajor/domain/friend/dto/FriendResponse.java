@@ -34,7 +34,7 @@ public class FriendResponse {
                 .objective(user.getObjective())
                 .address(user.getAddress())
                 .techstack(user.getTechStack())
-                .fileName(user.getFileName())
+                .fileName(user.getImageUrl())
                 .build();
     }
 }

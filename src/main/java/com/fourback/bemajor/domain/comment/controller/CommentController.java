@@ -14,7 +14,7 @@ import com.fourback.bemajor.domain.comment.dto.GetCommentResponse;
 import com.fourback.bemajor.domain.comment.dto.PutCommentResponse;
 import com.fourback.bemajor.domain.community.repository.PostRepository;
 import com.fourback.bemajor.domain.comment.service.CommentService;
-import com.fourback.bemajor.global.security.CustomUserDetails;
+import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

@@ -1,7 +1,8 @@
-package com.fourback.bemajor.global.security;
+package com.fourback.bemajor.global.security.custom;
 
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
+import com.fourback.bemajor.global.security.jwt.JWTUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -28,7 +29,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
     private void doFilter(HttpServletRequest request, HttpServletResponse response,
                           FilterChain filterChain) throws IOException, ServletException {
         String requestUri = request.getRequestURI();
-        if (!requestUri.matches("^\\/logout$")) {
+        if (!requestUri.matches("/logout")) {
             filterChain.doFilter(request, response);
             return;
         }

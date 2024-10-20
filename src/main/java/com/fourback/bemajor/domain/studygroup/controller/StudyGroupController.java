@@ -5,9 +5,7 @@ import com.fourback.bemajor.domain.studygroup.dto.response.*;
 import com.fourback.bemajor.domain.studygroup.service.StudyGroupInvitationService;
 import com.fourback.bemajor.domain.studygroup.service.StudyGroupService;
 import com.fourback.bemajor.domain.studygroup.service.StudyJoinedService;
-import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
-import com.fourback.bemajor.global.common.util.ResponseUtil;
-import com.fourback.bemajor.global.security.CustomUserDetails;
+import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -85,17 +83,12 @@ public class StudyGroupController {
     return ResponseEntity.ok().build();
   }
 
-  /**
-   * 스터디 그룹 멤버 조회
-   * @param studyGroupID
-   * @param customUserDetails
-   * @return
-   */
-  @GetMapping("/studygroup/members/{studyGroupId}")
-  public ResponseEntity<List<UserResponseDto>> getGroupMembers(@PathVariable("studyGroupId") Long studyGroupID,
-      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-    List<UserResponseDto> allStudyUser = studyJoinedService.getAllStudyUser(studyGroupID);
-    return ResponseEntity.ok(allStudyUser);
+  @GetMapping("/studygroup/details/{studyGroupId}")
+  public ResponseEntity<?> getGroupDetails(@PathVariable("studyGroupId") Long studyGroupID,
+                                           @AuthenticationPrincipal CustomUserDetails userDetails) {
+    StudyGroupDetailsResponseDto response = studyJoinedService.getDetails(
+            studyGroupID, userDetails.getUserId());
+    return ResponseEntity.ok(response);
   }
 
   /**
@@ -250,12 +243,5 @@ public class StudyGroupController {
   public ResponseEntity<StudyGroupApplicationCountResponse> getApplicationCount(@PathVariable("studyGroupId") Long studyGroupId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
     StudyGroupApplicationCountResponse applicationCount = studyJoinedService.getApplicationCount(customUserDetails.getUserId(), studyGroupId);
     return ResponseEntity.ok(applicationCount);
-  }
-
-  @PostMapping("/studygroup/{studyGroupId}/notification")
-  public ResponseEntity<?> onNotification(@PathVariable("studyGroupId") Long studyGroupId,
-                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-    return ResponseUtil.onSuccess();
   }
 }

@@ -1,5 +1,6 @@
 package com.fourback.bemajor.domain.studygroup.service;
 
+import com.fourback.bemajor.domain.studyGroupNotification.service.StudyGroupNotificationService;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyGroupInvitationResponse;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyMemberResponse;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
@@ -10,13 +11,11 @@ import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * 스터디 그룹 초대 서비스
@@ -29,6 +28,7 @@ public class StudyGroupInvitationService {
   private final StudyGroupRepository studyGroupRepository;
   private final StudyJoinedRepository studyJoinedRepository;
   private final UserRepository userRepository;
+  private final StudyGroupNotificationService studyGroupNotificationService;
 
   /**
    * 스터디 초대 수락
@@ -42,6 +42,9 @@ public class StudyGroupInvitationService {
     StudyJoined studyJoined = studyGroupInvitation.acceptInvitation();
     studyJoinedRepository.save(studyJoined);
     studyGroupInvitationRepository.delete(studyGroupInvitation);
+    studyGroupNotificationService.enableRealTimeNotification(
+            studyJoined.getStudyGroup().getId(),studyJoined.getUser().getUserId());
+
   }
 
   @Transactional(readOnly = true)
