@@ -5,18 +5,12 @@ import com.fourback.bemajor.domain.studygroup.dto.response.*;
 import com.fourback.bemajor.domain.studygroup.service.StudyGroupInvitationService;
 import com.fourback.bemajor.domain.studygroup.service.StudyGroupService;
 import com.fourback.bemajor.domain.studygroup.service.StudyJoinedService;
+import com.fourback.bemajor.global.common.util.ResponseUtil;
 import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -243,5 +237,12 @@ public class StudyGroupController {
   public ResponseEntity<StudyGroupApplicationCountResponse> getApplicationCount(@PathVariable("studyGroupId") Long studyGroupId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
     StudyGroupApplicationCountResponse applicationCount = studyJoinedService.getApplicationCount(customUserDetails.getUserId(), studyGroupId);
     return ResponseEntity.ok(applicationCount);
+  }
+
+  @PatchMapping("/studygroup/{studyGroupId}/alarm")
+  public ResponseEntity<?> changeAlarmSet(@PathVariable("studyGroupId") Long studyGroupId,
+                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
+    studyJoinedService.update(studyGroupId, userDetails.getUserId());
+    return ResponseUtil.onSuccess();
   }
 }

@@ -10,10 +10,10 @@ import java.util.List;
 @Builder
 public class StudyGroupDetailsResponseDto {
     private List<UserResponseDto> users;
-    private boolean isEnableNotification;
+    private Boolean isEnableNotification;
 
     public static StudyGroupDetailsResponseDto of(
-            List<UserResponseDto> users, boolean isEnableNotification ) {
+            List<UserResponseDto> users, Boolean isEnableNotification ) {
         return StudyGroupDetailsResponseDto.builder()
                 .users(users)
                 .isEnableNotification(isEnableNotification)
