@@ -17,15 +17,16 @@ public class StudyJoined {
     @ManyToOne
     private UserEntity user;
 
-    public StudyJoined(StudyGroup studyGroup, UserEntity userEntity) {
+    @Column(name = "is_alarm_set")
+    private Boolean isAlarmSet;
+
+    public StudyJoined(StudyGroup studyGroup, UserEntity userEntity, Boolean isAlarmSet) {
         this.studyGroup = studyGroup;
         this.user = userEntity;
+        this.isAlarmSet = isAlarmSet;
     }
 
-    public void setStudyJoined(StudyGroup studyGroup, UserEntity userEntity){
-        this.studyGroup = studyGroup;
-        studyGroup.getStudyJoineds().add(this);
-        this.user = userEntity;
-        userEntity.getStudyJoineds().add(this);
+    public void changeAlarmSet(Boolean isAlarmSet) {
+        this.isAlarmSet = isAlarmSet;
     }
 }

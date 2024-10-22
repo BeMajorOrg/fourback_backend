@@ -1,14 +1,16 @@
 package com.fourback.bemajor.domain.studygroup.service;
 
-import com.fourback.bemajor.domain.studyGroupNotification.repository.StudyGroupNotificationRepository;
-import com.fourback.bemajor.domain.studyGroupNotification.service.StudyGroupNotificationService;
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
+import com.fourback.bemajor.domain.studygroup.repository.StudyGroupInvitationRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
+import com.fourback.bemajor.domain.studygroup.repository.StudyJoinApplicationRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
+import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.NotAuthorizedException;
 import com.fourback.bemajor.global.exception.kind.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +32,10 @@ public class StudyGroupService {
     private final StudyGroupRepository studyGroupRepository;
     private final UserRepository userRepository;
     private final StudyJoinedRepository studyJoinedRepository;
+    private final StudyGroupInvitationRepository studyGroupInvitationRepository;
+    private final StudyJoinApplicationRepository studyJoinApplicationRepository;
     private final Map<Long, Set<WebSocketSession>> websocketSessionsMap;
-    private final StudyGroupNotificationRepository studyGroupNotificationRepository;
-    private final StudyGroupNotificationService studyGroupNotificationService;
+    private final RedisService redisService;
 
     public List<StudyGroupDto> getAllStudyGroup(int page, String category){
         PageRequest pageable = PageRequest.of(page, 10, Sort.by("startDate").descending());
@@ -54,12 +57,11 @@ public class StudyGroupService {
         Optional<UserEntity> byOauth2Id = userRepository.findById(userId);
         if (byOauth2Id.isEmpty()) throw new NotFoundException("no such user");
         UserEntity userEntity = byOauth2Id.get();
-        StudyJoined studyJoined = new StudyJoined(savedGroup, userEntity);
+        StudyJoined studyJoined = new StudyJoined(savedGroup, userEntity,true);
         studyJoinedRepository.save(studyJoined);
         studyGroupRepository.save(studyGroup);
         Long studyGroupId = studyGroup.getId();
         websocketSessionsMap.put(studyGroupId, Collections.newSetFromMap(new ConcurrentHashMap<>()));
-        studyGroupNotificationService.enableNotification(studyGroupId, userId);
     }
 
     @Transactional
@@ -81,8 +83,12 @@ public class StudyGroupService {
         if (!studyGroupOp.get().getOwnerUserId().equals(userId)){
             throw new NotAuthorizedException("not authorized. can't delete in studyGroup");
         }
-        studyGroupNotificationRepository.deleteByStudyGroupId(studyGroupId);
+        studyGroupInvitationRepository.deleteByStudyGroup(studyGroupOp.get());
+        studyJoinApplicationRepository.deleteByStudyGroup(studyGroupOp.get());
         studyGroupRepository.deleteById(studyGroupId);
+        if(!websocketSessionsMap.get(studyGroupId).isEmpty()){
+            redisService.deleteKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId);
+        }
         websocketSessionsMap.remove(studyGroupId);
     }
 }

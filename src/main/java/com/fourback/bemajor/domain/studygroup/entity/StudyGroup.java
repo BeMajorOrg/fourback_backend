@@ -25,10 +25,10 @@ public class StudyGroup {
     private String studyCycle;
     private String studyRule;
     private Long ownerUserId;
-    @OneToMany(mappedBy = "studyGroup", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "studyGroup", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<StudyJoined> studyJoineds = new ArrayList<>();
 
-    @OneToMany(mappedBy = "studyGroup", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "studyGroup", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<StudyGoal> studyGoals;
 
     public void addStudyGoal(StudyGoal studyGoal){

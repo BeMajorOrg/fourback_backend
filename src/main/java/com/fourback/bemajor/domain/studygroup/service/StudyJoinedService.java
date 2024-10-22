@@ -1,9 +1,8 @@
 package com.fourback.bemajor.domain.studygroup.service;
 
 import com.fourback.bemajor.domain.chat.service.GroupChatMessageService;
-import com.fourback.bemajor.domain.studyGroupNotification.repository.StudyGroupNotificationRepository;
-import com.fourback.bemajor.domain.studyGroupNotification.service.StudyGroupNotificationService;
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
+import com.fourback.bemajor.domain.studygroup.dto.request.StudyGroupAlarmDto;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyGroupApplicationCountResponse;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyGroupApplicationResponse;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyGroupDetailsResponseDto;
@@ -17,13 +16,21 @@ import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
+import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.service.RedisService;
+import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.service.FcmService;
+import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,8 +41,9 @@ public class StudyJoinedService {
     private final StudyGroupRepository studyGroupRepository;
     private final GroupChatMessageService groupChatMessageService;
     private final StudyJoinApplicationRepository studyJoinApplicationRepository;
-    private final StudyGroupNotificationService studyGroupNotificationService;
-    private final StudyGroupNotificationRepository studyGroupNotificationRepository;
+    private final RedisService redisService;
+    private final Map<Long, Set<WebSocketSession>> websocketSessionsMap;
+    private final FcmService fcmService;
 
     /**
      * 스터디 그룹 참여 신청
@@ -51,6 +59,15 @@ public class StudyJoinedService {
         //TODO - 스터디 그룹 이미 지원했는지 검사
 
         studyJoinApplicationRepository.save(new StudyJoinApplication(userEntity, studyGroup));
+
+        Long ownerUserId = studyGroup.getOwnerUserId();
+        String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, ownerUserId);
+        fcmService.sendStudyGroupAlarm(StudyGroupAlarmDto.builder()
+                        .title(studyGroup.getStudyName())
+                        .fcmToken(fcmToken)
+                .message(userEntity.getUserName() + "님이 그룹 참여를 신청하셨습니다.")
+                .build());
+
     }
 
     /**
@@ -63,13 +80,17 @@ public class StudyJoinedService {
         StudyJoinApplication studyJoinApplication = studyJoinApplicationRepository.findById(studyJoinApplicationId).orElseThrow(() -> new RuntimeException("TODO - 예외처리"));
         StudyGroup studyGroup = studyJoinApplication.getStudyGroup();
         UserEntity user = studyJoinApplication.getUser();
+        studyJoinedRepository.save(new StudyJoined(studyGroup,user, true));
         Long studyGroupId = studyGroup.getId();
         Long userId = user.getUserId();
-
-        studyJoinedRepository.save(new StudyJoined(studyGroup,user));
+        putDisConnectedUser(studyGroupId, userId);
         studyJoinApplicationRepository.deleteById(studyJoinApplicationId);
 
-        studyGroupNotificationService.enableRealTimeNotification(studyGroupId,userId);
+        String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, user.getUserId());
+        fcmService.sendStudyGroupAlarm(StudyGroupAlarmDto.builder()
+                .fcmToken(fcmToken)
+                .title(studyGroup.getStudyName())
+                .message(studyGroup.getStudyName() + "그룹 입장신청이 수락되었습니다.").build());
     }
 
     /**
@@ -119,17 +140,19 @@ public class StudyJoinedService {
     public void exitStudyGroup(Long studyGroupId, Long userId) {
         List<Long> idsByStudyGroupIdAndOauth2Id = studyJoinedRepository.findIdsByStudyGroupIdAndOauth2Id(studyGroupId, userId);
         studyJoinedRepository.deleteByIds(idsByStudyGroupIdAndOauth2Id);
-        studyGroupNotificationService.disableNotification(studyGroupId, userId);
+        if (!websocketSessionsMap.get(studyGroupId).isEmpty()) {
+            redisService.deleteLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
+        }
         groupChatMessageService.deleteMessages(userId, studyGroupId);
     }
 
     public StudyGroupDetailsResponseDto getDetails(Long studyGroupId, Long userId) {
-        List<StudyJoined> studyJoined = studyJoinedRepository.findByStudyGroup_Id(studyGroupId);
+        List<StudyJoined> studyJoined = studyJoinedRepository.findByStudyGroupId(studyGroupId);
         List<UserResponseDto> userResponses = studyJoined.stream().map(StudyJoined::getUser)
                 .map(UserEntity::toUserResponseDto).toList();
-        boolean isEnableNotification = studyGroupNotificationRepository
-                .existsByStudyGroupIdAndUserUserId(studyGroupId,userId);
-        return StudyGroupDetailsResponseDto.of(userResponses, isEnableNotification);
+        Boolean isAlarmSet = studyJoined.stream().filter(joined -> joined.getUser().getUserId().equals(userId))
+                .map(StudyJoined::getIsAlarmSet).findFirst().orElse(false);
+        return StudyGroupDetailsResponseDto.of(userResponses, isAlarmSet);
     }
 
     public List<StudyGroupDto> getAllMyGroups(Long userId) {
@@ -138,5 +161,24 @@ public class StudyJoinedService {
             throw new NotFoundException("no such user.");
         }
         return userOptional.get().getStudyJoineds().stream().map(StudyJoined::getStudyGroup).map(StudyGroupDto::toDto).collect(Collectors.toList());
+    }
+
+    public void update(Long studyGroupId, Long userId) {
+        StudyJoined studyJoined = studyJoinedRepository
+                .findByUser_UserIdAndStudyGroup_Id(userId, studyGroupId)
+                .orElseThrow(() -> new NotFoundException("no such study joined."));
+        Boolean isAlarmSet = studyJoined.getIsAlarmSet();
+        studyJoined.changeAlarmSet(!isAlarmSet);
+        studyJoinedRepository.save(studyJoined);
+        if(!websocketSessionsMap.get(studyGroupId).isEmpty()){
+            redisService.putLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED,
+                    studyGroupId, userId, !isAlarmSet);
+        }
+    }
+
+    protected void putDisConnectedUser(Long studyGroupId, Long userId) {
+        if(!websocketSessionsMap.get(studyGroupId).isEmpty()){
+            redisService.putLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId, true);
+        }
     }
 }

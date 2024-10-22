@@ -1,5 +1,6 @@
 package com.fourback.bemajor.domain.studygroup.repository;
 
+import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroupInvitation;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +14,6 @@ public interface StudyGroupInvitationRepository extends JpaRepository<StudyGroup
   Integer countAllByUser_UserId(Long id);
 
   List<StudyGroupInvitation> findAllByUser_UserId(Long id);
+
+  void deleteByStudyGroup(StudyGroup studyGroup);
 }

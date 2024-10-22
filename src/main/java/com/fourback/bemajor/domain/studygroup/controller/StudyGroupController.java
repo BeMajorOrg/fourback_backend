@@ -5,18 +5,12 @@ import com.fourback.bemajor.domain.studygroup.dto.response.*;
 import com.fourback.bemajor.domain.studygroup.service.StudyGroupInvitationService;
 import com.fourback.bemajor.domain.studygroup.service.StudyGroupService;
 import com.fourback.bemajor.domain.studygroup.service.StudyJoinedService;
+import com.fourback.bemajor.global.common.util.ResponseUtil;
 import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -44,6 +38,12 @@ public class StudyGroupController {
     return ResponseEntity.ok().build();
   }
 
+  /**
+   * 스터디 그룹 생성
+   * @param studyGroupDto
+   * @param customUserDetails
+   * @return
+   */
   @PostMapping("/studygroup")
   public ResponseEntity<StudyGroupDto> createStudyGroup(@RequestBody StudyGroupDto studyGroupDto,
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -51,6 +51,12 @@ public class StudyGroupController {
     return ResponseEntity.ok(studyGroupDto);
   }
 
+  /**
+   * 스터디 그룹 삭제
+   * @param studyGroupId
+   * @param customUserDetails
+   * @return
+   */
   @DeleteMapping("/studygroup/{studyGroupId}")
   public ResponseEntity<Void> deleteStudyGroup(@PathVariable("studyGroupId") Long studyGroupId,
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -58,6 +64,12 @@ public class StudyGroupController {
     return ResponseEntity.ok().build();
   }
 
+  /**
+   * 스터디 그룹 나가기
+   * @param groupId
+   * @param customUserDetails
+   * @return
+   */
   @PostMapping("/studygroup/exitgroup/{studyGroupId}")
   public ResponseEntity<Void> exitGroup(@PathVariable("studyGroupId") Long groupId,
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -114,6 +126,12 @@ public class StudyGroupController {
     return ResponseEntity.ok(userInfoByEmail);
   }
 
+  /**
+   * 스터디그룹 조회
+   * @param page
+   * @param category
+   * @return
+   */
   @GetMapping("/studygroup")
   public List<StudyGroupDto> getStudyGroup(@RequestParam(value = "page", defaultValue = "0") int page,
       @RequestParam(value = "category", defaultValue = "") String category) {
@@ -147,6 +165,11 @@ public class StudyGroupController {
     return ResponseEntity.ok().build();
   }
 
+  /**
+   * 자신의 스터디그룹 리스트 조회
+   * @param customUserDetails
+   * @return
+   */
   @GetMapping("/studygroup/mygroups")
   public ResponseEntity<List<StudyGroupDto>> myStudyGroupList(
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -154,6 +177,13 @@ public class StudyGroupController {
     return ResponseEntity.ok(allMyGroups);
   }
 
+  /**
+   * 스터디 그룹 수정
+   * @param studyGroupId
+   * @param studyGroupDto
+   * @param customUserDetails
+   * @return
+   */
   @PutMapping("/studygroup/{studyGroupId}")
   public ResponseEntity<StudyGroupDto> updateStudyGroup(@PathVariable("studyGroupId") Long studyGroupId,
       @RequestBody StudyGroupDto studyGroupDto, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -207,5 +237,12 @@ public class StudyGroupController {
   public ResponseEntity<StudyGroupApplicationCountResponse> getApplicationCount(@PathVariable("studyGroupId") Long studyGroupId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
     StudyGroupApplicationCountResponse applicationCount = studyJoinedService.getApplicationCount(customUserDetails.getUserId(), studyGroupId);
     return ResponseEntity.ok(applicationCount);
+  }
+
+  @PatchMapping("/studygroup/{studyGroupId}/alarm")
+  public ResponseEntity<?> changeAlarmSet(@PathVariable("studyGroupId") Long studyGroupId,
+                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
+    studyJoinedService.update(studyGroupId, userDetails.getUserId());
+    return ResponseUtil.onSuccess();
   }
 }

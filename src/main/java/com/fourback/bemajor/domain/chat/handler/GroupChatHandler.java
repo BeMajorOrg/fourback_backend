@@ -5,7 +5,7 @@ import com.fourback.bemajor.domain.chat.dto.ChatMessageRequestDto;
 import com.fourback.bemajor.domain.chat.dto.ChatMessageResponseDto;
 import com.fourback.bemajor.domain.chat.service.GroupChatMessageService;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
-import com.fourback.bemajor.domain.studyGroupNotification.repository.StudyGroupNotificationRepository;
+import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
 import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -36,7 +37,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
     private final GroupChatMessageService groupChatMessageService;
     private final ObjectMapper objectMapper;
     private final FcmService fcmService;
-    private final StudyGroupNotificationRepository studyGroupNotificationRepository;
+    private final StudyJoinedRepository studyJoinedRepository;
 
     @Override
     @Transactional
@@ -47,7 +48,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
         sessionIdsMap.put(session, Pair.of(userId, studyGroupId));
         studyGrupIdSessionsMap.get(studyGroupId).add(session);
         this.putDisConnectUserFromDB(studyGroupId, userId);
-        redisService.removeLongMember(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
+        redisService.deleteLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
         List<ChatMessageResponseDto> chatMessageResponseDtos =
                 groupChatMessageService.getMessages(userId, studyGroupId);
         for (ChatMessageResponseDto chatMessageResponseDto : chatMessageResponseDtos) {
@@ -80,15 +81,17 @@ public class GroupChatHandler extends TextWebSocketHandler {
             onSession.sendMessage(new TextMessage(
                     objectMapper.writeValueAsString(chatMessageResponseDto)));
         }
-        Set<Long> disconnectedUserId = redisService.getLongMembers(
+        Map<Long, Boolean> disconnectedUserId = redisService.EntriesLongBoolean(
                 RedisKeyPrefixEnum.DISCONNECTED, studyGroupId);
-        disconnectedUserId.forEach(userId -> {
+        disconnectedUserId.forEach((userId, isAlarm) -> {
             String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userId);
             if (fcmToken == null)
                 return;
             groupChatMessageService.saveMessage(userId, chatMessageResponseDto, studyGroupId);
-            fcmService.sendalarm(chatMessageResponseDto, fcmToken,
-                    chatMessageRequestDto.getStudyGroupName());
+            if(isAlarm) {
+                fcmService.sendalarm(chatMessageResponseDto, fcmToken,
+                        chatMessageRequestDto.getStudyGroupName());
+            }
         });
     }
 
@@ -97,16 +100,22 @@ public class GroupChatHandler extends TextWebSocketHandler {
         Pair<Long, Long> ids = sessionIdsMap.get(session);
         Long userId = ids.getLeft();
         Long studyGroupId = ids.getRight();
-        redisService.addLongMember(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
+        Boolean isAlarmSet = Boolean.valueOf(Objects.requireNonNull(session.getUri())
+                .getQuery().split("&")[1].split("=")[1]);
+        redisService.putLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED,
+                studyGroupId, userId, isAlarmSet);
         studyGrupIdSessionsMap.get(studyGroupId).remove(session);
         sessionIdsMap.remove(session);
     }
 
     private void putDisConnectUserFromDB(Long studyGroupId, Long userId) {
         if (!redisService.checkKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId)) {
-            redisService.addLongMembers(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId,
-                    studyGroupNotificationRepository.findByStudyGroupIdNotUserId(
-                            studyGroupId, userId));
+            List<StudyJoined> joineds = studyJoinedRepository
+                    .findAllByUserIdNotAndStudyGroupId(userId, studyGroupId);
+            Map<Long, Boolean> joinedMap = joineds.stream().collect(
+                    Collectors.toMap(studyJoined ->studyJoined.getUser().getUserId(),
+                            StudyJoined::getIsAlarmSet));
+            redisService.putLongBooleanFields(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, joinedMap);
         }
     }
 

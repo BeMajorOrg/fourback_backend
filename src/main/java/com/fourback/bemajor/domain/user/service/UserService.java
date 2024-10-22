@@ -81,12 +81,12 @@ public class UserService {
         List<StudyJoined> userJoinedList = studyJoinedRepository.findByUserId(userId);
         List<Long> studyGroupIds = userJoinedList.stream().map(
                 studyJoined -> studyJoined.getStudyGroup().getId()).toList();
-        redisService.removeUserInGroupSession(studyGroupIds, userId);
+//        redisService.removeUserInGroupSession(studyGroupIds, userId);
         studyJoinedRepository.deleteAllInBatch(userJoinedList);
         groupChatMessageRepository.deleteMessagesByReceiverId(userId);
         userRepository.delete(user);
-        redisService.deleteValue(RedisKeyPrefixEnum.REFRESH, userId);
-        redisService.deleteValue(RedisKeyPrefixEnum.FCM, userId);
+        redisService.deleteKey(RedisKeyPrefixEnum.REFRESH, userId);
+        redisService.deleteKey(RedisKeyPrefixEnum.FCM, userId);
     }
 
     @Transactional

@@ -18,7 +18,7 @@ public class StudyGoal {
     private Long id;
     private String goalName;
     private LocalDate endDate;
-    @OneToMany(mappedBy = "studyGoal", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "studyGoal", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<StudyDetailGoal> detailGoals;
 
     @ManyToOne
