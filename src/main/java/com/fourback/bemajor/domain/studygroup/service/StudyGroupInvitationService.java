@@ -1,5 +1,6 @@
 package com.fourback.bemajor.domain.studygroup.service;
 
+import com.fourback.bemajor.domain.studygroup.dto.request.StudyGroupAlarmDto;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyGroupInvitationResponse;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyMemberResponse;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
@@ -11,6 +12,10 @@ import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.service.FcmService;
+import com.fourback.bemajor.global.common.service.RedisService;
+import com.fourback.bemajor.global.exception.kind.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +34,8 @@ public class StudyGroupInvitationService {
   private final StudyJoinedRepository studyJoinedRepository;
   private final UserRepository userRepository;
   private final StudyJoinedService studyJoinedService;
+  private final FcmService fcmService;
+  private final RedisService redisService;
 
   /**
    * 스터디 초대 수락
@@ -46,6 +53,16 @@ public class StudyGroupInvitationService {
     Long userId = studyJoined.getUser().getUserId();
     studyJoinedService.putDisConnectedUser(studyGroupId, userId);
 
+    Long ownerUserId = studyJoined.getStudyGroup().getOwnerUserId();
+    UserEntity userEntity = userRepository.findById(ownerUserId)
+            .orElseThrow(() -> new NotFoundException("방장을 찾을 수 없는 그룹입니다."));
+    String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userEntity.getUserId());
+    if (fcmToken == null) return;
+
+    fcmService.sendStudyGroupAlarm(StudyGroupAlarmDto.builder()
+            .title(studyJoined.getStudyGroup().getStudyName())
+            .fcmToken(fcmToken)
+            .message(userEntity.getUserName() + "님이 그룹 초대를 수락하셨습니다.").build());
   }
 
   @Transactional(readOnly = true)
@@ -91,5 +108,11 @@ public class StudyGroupInvitationService {
     //TODO : 중복 참여 방지 로직 추가
     studyGroupInvitationRepository.save(new StudyGroupInvitation(studyGroup, userEntity));
 
+    String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userEntity.getUserId());
+    fcmService.sendStudyGroupAlarm(StudyGroupAlarmDto.builder()
+                    .fcmToken(fcmToken)
+                    .title(studyGroup.getStudyName())
+                    .message(studyGroup.getStudyName() + "그룹에게서 초대장이 도착했습니다.")
+            .build());
   }
 }

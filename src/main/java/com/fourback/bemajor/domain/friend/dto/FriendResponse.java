@@ -21,7 +21,7 @@ public class FriendResponse {
     private String objective;
     private String address;
     private String techstack;
-    private String fileName;
+    private String imageUrl;
 
     public static FriendResponse fromUser(UserEntity user) {
         return FriendResponse.builder()
@@ -34,7 +34,7 @@ public class FriendResponse {
                 .objective(user.getObjective())
                 .address(user.getAddress())
                 .techstack(user.getTechStack())
-                .fileName(user.getImageUrl())
+                .imageUrl(user.getImageUrl())
                 .build();
     }
 }

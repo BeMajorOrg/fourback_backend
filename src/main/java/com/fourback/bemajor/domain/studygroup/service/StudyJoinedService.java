@@ -2,6 +2,7 @@ package com.fourback.bemajor.domain.studygroup.service;
 
 import com.fourback.bemajor.domain.chat.service.GroupChatMessageService;
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
+import com.fourback.bemajor.domain.studygroup.dto.request.StudyGroupAlarmDto;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyGroupApplicationCountResponse;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyGroupApplicationResponse;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyGroupDetailsResponseDto;
@@ -16,6 +17,9 @@ import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.service.RedisService;
+import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +43,7 @@ public class StudyJoinedService {
     private final StudyJoinApplicationRepository studyJoinApplicationRepository;
     private final RedisService redisService;
     private final Map<Long, Set<WebSocketSession>> websocketSessionsMap;
+    private final FcmService fcmService;
 
     /**
      * 스터디 그룹 참여 신청
@@ -54,6 +59,15 @@ public class StudyJoinedService {
         //TODO - 스터디 그룹 이미 지원했는지 검사
 
         studyJoinApplicationRepository.save(new StudyJoinApplication(userEntity, studyGroup));
+
+        Long ownerUserId = studyGroup.getOwnerUserId();
+        String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, ownerUserId);
+        fcmService.sendStudyGroupAlarm(StudyGroupAlarmDto.builder()
+                        .title(studyGroup.getStudyName())
+                        .fcmToken(fcmToken)
+                .message(userEntity.getUserName() + "님이 그룹 참여를 신청하셨습니다.")
+                .build());
+
     }
 
     /**
@@ -71,6 +85,12 @@ public class StudyJoinedService {
         Long userId = user.getUserId();
         putDisConnectedUser(studyGroupId, userId);
         studyJoinApplicationRepository.deleteById(studyJoinApplicationId);
+
+        String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, user.getUserId());
+        fcmService.sendStudyGroupAlarm(StudyGroupAlarmDto.builder()
+                .fcmToken(fcmToken)
+                .title(studyGroup.getStudyName())
+                .message(studyGroup.getStudyName() + "그룹 입장신청이 수락되었습니다.").build());
     }
 
     /**
