@@ -32,6 +32,10 @@ public class FriendService {
             throw new IllegalArgumentException("");
         };
 
+        if(friendRepo.checkDuplicateFriend(user.getUserId(), friend.getUserId()) != null) {
+            throw new IllegalArgumentException("");
+        };
+
         FriendApply friendApply = FriendApply.builder().user(user).friend(friend).build();
         friendApplyRepo.save(friendApply);
 
