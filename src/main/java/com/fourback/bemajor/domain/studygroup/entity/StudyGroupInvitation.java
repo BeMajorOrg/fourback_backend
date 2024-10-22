@@ -36,6 +36,6 @@ public class StudyGroupInvitation {
    * @return
    */
   public StudyJoined acceptInvitation() {
-    return new StudyJoined(studyGroup, user);
+    return new StudyJoined(studyGroup, user, true);
   }
 }

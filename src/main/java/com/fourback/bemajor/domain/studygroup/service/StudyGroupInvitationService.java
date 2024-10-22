@@ -1,6 +1,5 @@
 package com.fourback.bemajor.domain.studygroup.service;
 
-import com.fourback.bemajor.domain.studyGroupNotification.service.StudyGroupNotificationService;
 import com.fourback.bemajor.domain.studygroup.dto.request.StudyGroupAlarmDto;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyGroupInvitationResponse;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyMemberResponse;
@@ -12,6 +11,7 @@ import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
+import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
@@ -33,7 +33,7 @@ public class StudyGroupInvitationService {
   private final StudyGroupRepository studyGroupRepository;
   private final StudyJoinedRepository studyJoinedRepository;
   private final UserRepository userRepository;
-  private final StudyGroupNotificationService studyGroupNotificationService;
+  private final StudyJoinedService studyJoinedService;
   private final FcmService fcmService;
   private final RedisService redisService;
 
@@ -49,8 +49,9 @@ public class StudyGroupInvitationService {
     StudyJoined studyJoined = studyGroupInvitation.acceptInvitation();
     studyJoinedRepository.save(studyJoined);
     studyGroupInvitationRepository.delete(studyGroupInvitation);
-    studyGroupNotificationService.enableRealTimeNotification(
-            studyJoined.getStudyGroup().getId(),studyJoined.getUser().getUserId());
+    Long studyGroupId = studyJoined.getStudyGroup().getId();
+    Long userId = studyJoined.getUser().getUserId();
+    studyJoinedService.putDisConnectedUser(studyGroupId, userId);
 
     Long ownerUserId = studyJoined.getStudyGroup().getOwnerUserId();
     UserEntity userEntity = userRepository.findById(ownerUserId)
