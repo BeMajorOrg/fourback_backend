@@ -130,7 +130,7 @@ public class StudyJoinedService {
         List<StudyJoined> studyJoined = studyJoinedRepository.findByStudyGroupId(studyGroupId);
         List<UserResponseDto> userResponses = studyJoined.stream().map(StudyJoined::getUser)
                 .map(UserEntity::toUserResponseDto).toList();
-        Boolean isAlarmSet = studyJoined.stream().filter(joined -> joined.getId().equals(userId))
+        Boolean isAlarmSet = studyJoined.stream().filter(joined -> joined.getUser().getUserId().equals(userId))
                 .map(StudyJoined::getIsAlarmSet).findFirst().orElse(false);
         return StudyGroupDetailsResponseDto.of(userResponses, isAlarmSet);
     }
