@@ -2,6 +2,7 @@ package com.fourback.bemajor.global.common.service;
 
 import com.fourback.bemajor.domain.chat.dto.ChatMessageResponseDto;
 import com.fourback.bemajor.domain.friendchat.dto.FriendChatMessageResponseDto;
+import com.fourback.bemajor.domain.studygroup.dto.request.StudyGroupAlarmDto;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -33,6 +34,22 @@ public class FcmService {
                         .build())
                 .putData("senderId", chatMessageDto.getSenderId().toString())
                 .setToken(fcmToken)
+                .build();
+        FirebaseMessaging.getInstance().sendAsync(message);
+    }
+
+    /**
+     * 스터디 그룹 초대,입장 등 알람 보내기
+     * @param studyGroupAlarmDto
+     */
+    @Async("threadPoolTaskExecutor")
+    public void sendStudyGroupAlarm(StudyGroupAlarmDto studyGroupAlarmDto) {
+        Message message = Message.builder()
+                .setNotification(Notification.builder()
+                        .setTitle(studyGroupAlarmDto.getTitle())
+                        .setBody(studyGroupAlarmDto.getMessage())
+                        .build())
+                .setToken(studyGroupAlarmDto.getFcmToken())
                 .build();
         FirebaseMessaging.getInstance().sendAsync(message);
     }
