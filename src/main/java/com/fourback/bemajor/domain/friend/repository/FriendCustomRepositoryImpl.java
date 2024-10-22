@@ -45,8 +45,12 @@ import static com.fourback.bemajor.domain.friend.entity.QFriendApply.friendApply
     @Override
     public Friend checkDuplicateFriend(Long userId, Long friendId) {
         Friend result = (Friend) jpaQueryFactory.from(friend)
-                .where(friend.id.accountId.eq(friendId))
-                .where(friend.id.friendAccountId.eq(userId))
+                .where(
+                        // 첫 번째 경우: accountId == friendId, friendAccountId == userId
+                        friend.id.accountId.eq(friendId).and(friend.id.friendAccountId.eq(userId))
+                                // 두 번째 경우: accountId == userId, friendAccountId == friendId
+                                .or(friend.id.accountId.eq(userId).and(friend.id.friendAccountId.eq(friendId)))
+                )
                 .fetchOne();
 
         if (result == null) {
