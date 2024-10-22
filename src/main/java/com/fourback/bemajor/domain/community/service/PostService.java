@@ -242,18 +242,22 @@ public class PostService {
         favoritePostRepository.deleteByPostId(postId);
         List<Comment> comments = commentRepository.findByPostId(postId);
         for (Comment comment : comments) {
-            Optional<FavoriteComment> byCommentId = favoriteCommentRepository.findByCommentId(comment.getId());
-            if (byCommentId.isPresent()) {
-                FavoriteComment favoriteComment = byCommentId.get();
-                favoriteCommentRepository.delete(favoriteComment);
+            List<FavoriteComment> byCommentIds1 = favoriteCommentRepository.findByCommentId(comment.getId());
+            if (!byCommentIds1.isEmpty()) {
+                for (FavoriteComment byComment1 : byCommentIds1) {
+                    favoriteCommentRepository.delete(byComment1);
+                }
             }
+
+
 
             List<Comment> byParentId = commentRepository.findByParentId(comment.getId());
             for (Comment comment1 : byParentId) {
-                Optional<FavoriteComment> byCommentId1 = favoriteCommentRepository.findByCommentId(comment1.getId());
-                if (byCommentId1.isPresent()) {
-                    FavoriteComment favoriteComment1 = byCommentId1.get();
-                    favoriteCommentRepository.delete(favoriteComment1);
+                List<FavoriteComment> byCommentId2 = favoriteCommentRepository.findByCommentId(comment1.getId());
+                if (!byCommentId2.isEmpty()) {
+                    for (FavoriteComment byComment2 : byCommentId2) {
+                        favoriteCommentRepository.delete(byComment2);
+                    }
                 }
                 commentRepository.delete(comment1);
             }
