@@ -34,8 +34,8 @@ public class UserService {
     @Transactional
     public List<Pair<String, String>> save(UserLoginRequestDto requestDto) {
         String oauth2Id = requestDto.getRegistrationId() + requestDto.getUserId();
-        UserEntity user = findOrCreateUser(oauth2Id);
-        restoreUserIfDeleted(user);
+        UserEntity user = this.findOrCreateUser(oauth2Id);
+        this.restoreUserIfDeleted(user);
 
         redisService.setValue(RedisKeyPrefixEnum.FCM, user.getId(), requestDto.getFcmToken());
 
@@ -59,7 +59,7 @@ public class UserService {
     @Transactional
     public void delete(Long userId) {
         UserEntity user = this.getUserById(userId);
-        deleteImageFromS3(user);
+        this.deleteImageFromS3(user);
 
         studyJoinedService.exitAll(userId);
 
@@ -96,7 +96,7 @@ public class UserService {
 
     private UserEntity findOrCreateUser(String oauth2Id) {
         return userRepository.findByOauth2Id(oauth2Id)
-                .orElseGet(() -> createUser(oauth2Id));
+                .orElseGet(() -> this.createUser(oauth2Id));
     }
 
     private UserEntity createUser(String oauth2Id) {

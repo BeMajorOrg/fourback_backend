@@ -16,8 +16,8 @@ import java.util.List;
 @Table(name = "user")
 @AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
-@SQLDelete(sql = "update user set is_deleted=true, name=null, email=null, birth=null, belong=null, " +
-        "department=null, hobby=null, objective=null, address=null, tech_stack=null where user_id = ?")
+@SQLDelete(sql = "update user set is_deleted=true, name='<알 수 없음>', email='', birth=''," +
+        " belong='', department='', hobby='', objective='', address='', tech_stack='' where user_id = ?")
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
