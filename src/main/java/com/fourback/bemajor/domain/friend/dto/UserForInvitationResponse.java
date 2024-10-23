@@ -13,11 +13,17 @@ import lombok.Setter;
 public class UserForInvitationResponse {
     private Long userId;
     private String userName;
+    private String imageUrl;
+    private String belong;
+    private String department;
 
     public static UserForInvitationResponse fromUser(UserEntity user) {
         return UserForInvitationResponse.builder()
                 .userId(user.getUserId())
                 .userName(user.getUserName())
+                .imageUrl(user.getImageUrl())
+                .belong(user.getBelong())
+                .department(user.getDepartment())
                 .build();
     }
 }
