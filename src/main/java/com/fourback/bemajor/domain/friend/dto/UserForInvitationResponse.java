@@ -16,7 +16,7 @@ public class UserForInvitationResponse {
 
     public static UserForInvitationResponse fromUser(UserEntity user) {
         return UserForInvitationResponse.builder()
-                .userId(user.getUserId())
+                .userId(user.getId())
                 .userName(user.getUserName())
                 .build();
     }

@@ -28,7 +28,7 @@ public class FriendService {
         UserEntity user = userRepo.findById(userId).orElse(null);
         UserEntity friend = userRepo.findById(request.friendId()).orElse(null);
 
-        if(friendApplyRepo.checkDuplicateFriendApply(user.getUserId(), friend.getUserId()) != null) {
+        if(friendApplyRepo.checkDuplicateFriendApply(user.getId(), friend.getId()) != null) {
             throw new IllegalArgumentException("");
         };
 
@@ -43,13 +43,13 @@ public class FriendService {
     public AcceptFriendApplyResponse acceptFriendApply(Long applyId) {
         FriendApply friendApply = friendApplyRepo.findById(applyId).orElseThrow(RuntimeException::new);
 
-        if(friendRepo.checkDuplicateFriend(friendApply.getUser().getUserId(), friendApply.getFriend().getUserId()) != null) {
+        if(friendRepo.checkDuplicateFriend(friendApply.getUser().getId(), friendApply.getFriend().getId()) != null) {
             throw new IllegalArgumentException("");
         };
 
         FriendId friendId = FriendId.builder()
-                .accountId(friendApply.getUser().getUserId())
-                .friendAccountId(friendApply.getFriend().getUserId())
+                .accountId(friendApply.getUser().getId())
+                .friendAccountId(friendApply.getFriend().getId())
                 .build();
 
         Friend friend = Friend.builder().id(friendId).build();
@@ -63,12 +63,12 @@ public class FriendService {
     @Transactional(readOnly = true)
     public CountFriendApplyResponse countApplies(Long userId) {
                 return CountFriendApplyResponse.builder()
-                        .count(friendApplyRepo.countAllByFriend_UserId(userId))
+                        .count(friendApplyRepo.countAllByFriend_Id(userId))
                         .build();
     }
 
     public GetFriendAppliesResponse getReceiveApplies(Long userId) {
-        List<FriendApply> Applies = friendApplyRepo.findAllByFriend_UserId(userId);
+        List<FriendApply> Applies = friendApplyRepo.findAllByFriend_Id(userId);
         List<GetFriendApplyResponse> FriendAppliesResult = new ArrayList<>();
 
         for(FriendApply c : Applies) {
@@ -89,13 +89,13 @@ public class FriendService {
             if(userId.equals(f.getId().getAccountId())) {
                 UserEntity friend = userRepo.getById(f.getId().getFriendAccountId());
                 FriendResponse result = FriendResponse.fromUser(friend);
-                result.setUserId(friend.getUserId());
+                result.setUserId(friend.getId());
                 friendResList.add(result);
 
             } else if (userId.equals(f.getId().getFriendAccountId())) {
                 UserEntity user = userRepo.getById(f.getId().getAccountId());
                 FriendResponse result = FriendResponse.fromUser(user);
-                result.setUserId(user.getUserId());
+                result.setUserId(user.getId());
                 friendResList.add(result);
             }
 
@@ -114,7 +114,7 @@ public class FriendService {
         List<UserForInvitationResponse> userList = new ArrayList<>();
 
         for(UserEntity user : users) {
-            if(userId.equals(user.getUserId()) == false) {
+            if(userId.equals(user.getId()) == false) {
                 UserForInvitationResponse result = UserForInvitationResponse.fromUser(user);
                 userList.add(result);
             }

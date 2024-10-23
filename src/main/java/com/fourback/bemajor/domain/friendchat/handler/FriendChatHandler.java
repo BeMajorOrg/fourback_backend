@@ -41,7 +41,7 @@ public class FriendChatHandler extends TextWebSocketHandler {
     @Override
     @Transactional
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        Long userId = (Long) session.getAttributes().get("userId");
+        Long userId = (Long) session.getAttributes().get("id");
         String chatRoomId = session.getUri().getQuery().split("=")[1];
         String[] ids = chatRoomId.split("_");
         Long userId1 = Long.parseLong(ids[0]);

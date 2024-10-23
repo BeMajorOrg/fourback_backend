@@ -24,12 +24,6 @@ public class ResponseUtil {
         return ResponseEntity.ok().headers(headers).build();
     }
 
-    public static ResponseEntity<?> onSuccess(Resource resource) {
-        return ResponseEntity.ok().header(
-                HttpHeaders.CONTENT_DISPOSITION,"inline; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
-    }
-
     public static <T> ResponseEntity<T> onSuccess(T body) {
         return ResponseEntity.ok(body);
     }

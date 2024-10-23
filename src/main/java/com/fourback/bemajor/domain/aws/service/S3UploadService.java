@@ -44,18 +44,21 @@ public class S3UploadService {
   }
 
   public void deleteFile(String imageUrl) {
-    String fileName = imageUrl.substring(imageUrl.lastIndexOf(SPLIT_STRING) + SPLIT_STRING.length());
-    amazonS3.deleteObject(bucket, fileName);
+    if(imageUrl!=null) {
+      String fileName = imageUrl.substring(imageUrl.lastIndexOf(SPLIT_STRING) + SPLIT_STRING.length());
+      amazonS3.deleteObject(bucket, fileName);
+    }
   }
 
   public void deleteFiles(List<String> imageUrls) {
-    List<KeyVersion> keyVersions = imageUrls.stream()
-            .map(url -> url.substring(url.lastIndexOf(SPLIT_STRING) + SPLIT_STRING.length()))
-            .map(KeyVersion::new).toList();
-    DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucket)
-            .withKeys(keyVersions);
-    amazonS3.deleteObjects(deleteObjectsRequest);
-
+    if(imageUrls!=null && !imageUrls.isEmpty()) {
+      List<KeyVersion> keyVersions = imageUrls.stream()
+              .map(url -> url.substring(url.lastIndexOf(SPLIT_STRING) + SPLIT_STRING.length()))
+              .map(KeyVersion::new).toList();
+      DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucket)
+              .withKeys(keyVersions);
+      amazonS3.deleteObjects(deleteObjectsRequest);
+    }
   }
 
   private String extractExtension(String originalFileName) {

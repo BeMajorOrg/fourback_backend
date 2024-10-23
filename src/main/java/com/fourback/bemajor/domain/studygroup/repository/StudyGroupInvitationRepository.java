@@ -11,9 +11,9 @@ import java.util.List;
  * 스터디 그룹 초대 리포지토리
  */
 public interface StudyGroupInvitationRepository extends JpaRepository<StudyGroupInvitation, Long> {
-  Integer countAllByUser_UserId(Long id);
+  Integer countAllByUser_Id(Long id);
 
-  List<StudyGroupInvitation> findAllByUser_UserId(Long id);
+  List<StudyGroupInvitation> findAllByUser_Id(Long id);
 
   void deleteByStudyGroup(StudyGroup studyGroup);
 }

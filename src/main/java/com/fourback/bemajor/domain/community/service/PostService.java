@@ -75,7 +75,7 @@ public class PostService {
         List<PostListDto> postListDtos = pagePost.stream()
                 .map(p -> {
                     boolean userCheck = false;
-                    if (p.getUser().getUserId().equals(userEntity.getUserId())) {
+                    if (p.getUser().getId().equals(userEntity.getId())) {
                         userCheck = true;
                     }
                     List<ImageEntity> imageList = imageRepository.findByPostId(p.getId());
@@ -112,11 +112,11 @@ public class PostService {
         Page<Post> pagePost = null;
 
         if (boardId == 1) {
-            pagePost = postRepository.findAllMyPost(userEntity.getUserId(), pageRequest);
+            pagePost = postRepository.findAllMyPost(userEntity.getId(), pageRequest);
         } else if (boardId == 2) {
-            pagePost = commentRepository.findCommentPosts(userEntity.getUserId(), pageRequest);
+            pagePost = commentRepository.findCommentPosts(userEntity.getId(), pageRequest);
         } else if (boardId == 3) {
-            pagePost = favoritePostRepository.findFavoritePosts(userEntity.getUserId(), pageRequest);
+            pagePost = favoritePostRepository.findFavoritePosts(userEntity.getId(), pageRequest);
         } else if (boardId == 4) {
             LocalDateTime startDate = LocalDateTime.now();
             LocalDateTime endDate = startDate.minusWeeks(1);
@@ -127,7 +127,7 @@ public class PostService {
         List<PostListDto> postListDtos = pagePost.stream()
                 .map(p -> {
                     boolean userCheck = false;
-                    if (p.getUser().getUserId().equals(userEntity.getUserId())) {
+                    if (p.getUser().getId().equals(userEntity.getId())) {
                         userCheck = true;
                     }
                     List<ImageEntity> imageList = imageRepository.findByPostId(p.getId());
@@ -166,7 +166,7 @@ public class PostService {
         List<PostListDto> postListDtos = posts.stream()
                 .map(p -> {
                     boolean userCheck = false;
-                    if (p.getUser().getUserId().equals(userEntity.getUserId())) {
+                    if (p.getUser().getId().equals(userEntity.getId())) {
                         userCheck = true;
                     }
                     List<ImageEntity> imageList = imageRepository.findByPostId(p.getId());
@@ -284,7 +284,7 @@ public class PostService {
     public void deleteImage(Long userId, List<String> imageUrls, Long postId) {
         Post post = postRepository.findByIdWithUser(postId)
                 .orElseThrow(() -> new NotFoundException("no such study group. can't delete"));
-        if(!post.getUser().getUserId().equals(userId))
+        if(!post.getUser().getId().equals(userId))
             throw new NotAuthorizedException("not authorized. can't delete in post image");
         List<ImageEntity> images = imageRepository.findAllByImageUrlsWithPost(imageUrls);
         if(!images.stream().allMatch(image -> image.getPost().getId().equals(postId))){

@@ -42,7 +42,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
     @Override
     @Transactional
     public void afterConnectionEstablished(WebSocketSession session) throws IOException {
-        Long userId = (Long) session.getAttributes().get("userId");
+        Long userId = (Long) session.getAttributes().get("id");
         Long studyGroupId = Long.valueOf(Objects.requireNonNull(session.getUri())
                 .getQuery().split("&")[0].split("=")[1]);
         sessionIdsMap.put(session, Pair.of(userId, studyGroupId));
@@ -56,7 +56,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
                     objectMapper.writeValueAsString(chatMessageResponseDto)));
         }
         if (!chatMessageResponseDtos.isEmpty())
-            groupChatMessageService.deleteMessages(userId, studyGroupId);
+            groupChatMessageService.deleteAll(userId, studyGroupId);
     }
 
     @Override
@@ -113,7 +113,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
             List<StudyJoined> joineds = studyJoinedRepository
                     .findAllByUserIdNotAndStudyGroupId(userId, studyGroupId);
             Map<Long, Boolean> joinedMap = joineds.stream().collect(
-                    Collectors.toMap(studyJoined ->studyJoined.getUser().getUserId(),
+                    Collectors.toMap(studyJoined ->studyJoined.getUser().getId(),
                             StudyJoined::getIsAlarmSet));
             redisService.putLongBooleanFields(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, joinedMap);
         }

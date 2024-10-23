@@ -12,7 +12,6 @@ import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
-import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.NotFoundException;
@@ -50,13 +49,13 @@ public class StudyGroupInvitationService {
     studyJoinedRepository.save(studyJoined);
     studyGroupInvitationRepository.delete(studyGroupInvitation);
     Long studyGroupId = studyJoined.getStudyGroup().getId();
-    Long userId = studyJoined.getUser().getUserId();
+    Long userId = studyJoined.getUser().getId();
     studyJoinedService.putDisConnectedUser(studyGroupId, userId);
 
     Long ownerUserId = studyJoined.getStudyGroup().getOwnerUserId();
     UserEntity userEntity = userRepository.findById(ownerUserId)
             .orElseThrow(() -> new NotFoundException("방장을 찾을 수 없는 그룹입니다."));
-    String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userEntity.getUserId());
+    String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userEntity.getId());
     if (fcmToken == null) return;
 
     fcmService.sendStudyGroupAlarm(StudyGroupAlarmDto.builder()
@@ -67,7 +66,7 @@ public class StudyGroupInvitationService {
 
   @Transactional(readOnly = true)
   public Integer countInvitations(Long userId) {
-    return studyGroupInvitationRepository.countAllByUser_UserId(userId);
+    return studyGroupInvitationRepository.countAllByUser_Id(userId);
   }
 
   //TODO : 나중에 쿼리 개수 최적화
@@ -79,7 +78,7 @@ public class StudyGroupInvitationService {
    * @return
    */
   public List<StudyGroupInvitationResponse> getInvitations(Long userId) {
-    List<StudyGroupInvitation> invitations = studyGroupInvitationRepository.findAllByUser_UserId(userId);
+    List<StudyGroupInvitation> invitations = studyGroupInvitationRepository.findAllByUser_Id(userId);
     return invitations.stream().map(StudyGroupInvitationResponse::from).toList();
   }
 
@@ -108,7 +107,7 @@ public class StudyGroupInvitationService {
     //TODO : 중복 참여 방지 로직 추가
     studyGroupInvitationRepository.save(new StudyGroupInvitation(studyGroup, userEntity));
 
-    String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userEntity.getUserId());
+    String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userEntity.getId());
     fcmService.sendStudyGroupAlarm(StudyGroupAlarmDto.builder()
                     .fcmToken(fcmToken)
                     .title(studyGroup.getStudyName())

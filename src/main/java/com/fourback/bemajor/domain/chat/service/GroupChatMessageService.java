@@ -23,8 +23,13 @@ public class GroupChatMessageService {
     }
 
     @Transactional
-    public void deleteMessages(Long userId, Long studyGroupId) {
+    public void deleteAll(Long userId, Long studyGroupId) {
         groupChatMessageRepository.deleteByReceiverIdAndStudyGroupId(userId, studyGroupId);
+    }
+
+    @Transactional
+    public void deleteAll(Long userId){
+        groupChatMessageRepository.deleteMessagesByReceiverId(userId);
     }
 
     @Transactional

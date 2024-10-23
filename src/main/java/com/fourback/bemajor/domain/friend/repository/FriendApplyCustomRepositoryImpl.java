@@ -21,8 +21,8 @@ import static com.fourback.bemajor.domain.friend.entity.QFriendApply.friendApply
     @Override
     public FriendApply checkDuplicateFriendApply(Long userId, Long friendId) {
         FriendApply result = (FriendApply) jpaQueryFactory.from(friendApply)
-                .where(friendApply.user.userId.eq(userId))
-                .where(friendApply.friend.userId.eq(friendId))
+                .where(friendApply.user.id.eq(userId))
+                .where(friendApply.friend.id.eq(friendId))
                 .fetchOne();
 
         // 결과가 null이면 아무것도 가져오지 않은 것

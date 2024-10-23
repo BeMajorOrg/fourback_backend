@@ -12,6 +12,6 @@ import java.util.Optional;
 
 public interface FavoriteBoardRepository extends JpaRepository<FavoriteBoard, Long> {
 
-    List<FavoriteBoard> findByUserUserId(Long id);
+    List<FavoriteBoard> findByUserId(Long id);
     Optional<FavoriteBoard> findByUserAndBoard(UserEntity userEntity, Board board);
 }
