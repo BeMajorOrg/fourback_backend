@@ -155,8 +155,8 @@ public class CommunityController {
 
     @DeleteMapping("/api/post/{id}/images")
     public ResponseEntity<?> deleteImage(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                         @RequestBody List<String> imageUrls, @PathVariable("id") Long id) {
-        postService.deleteImage(userDetails.getUserId(), imageUrls, id);
+                                         @RequestBody List<String> imageUrls, @PathVariable("id") Long postId) {
+        postService.deleteImages(userDetails.getUserId(), imageUrls, postId);
         return ResponseUtil.onSuccess();
     }
 }
