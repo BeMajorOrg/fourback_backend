@@ -1,6 +1,5 @@
 package com.fourback.bemajor.domain.friendchat.service;
 
-import com.fourback.bemajor.domain.chat.dto.OutgoingGroupChatMessageDto;
 import com.fourback.bemajor.domain.friendchat.dto.FriendChatMessageResponseDto;
 import com.fourback.bemajor.domain.friendchat.entity.FriendChatMessageEntity;
 import com.fourback.bemajor.domain.friendchat.repository.FriendChatMessageRepository;

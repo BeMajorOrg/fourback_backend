@@ -1,6 +1,5 @@
 package com.fourback.bemajor.domain.studygroup.service;
 
-import com.fourback.bemajor.domain.chat.service.GroupChatMessageService;
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
 import com.fourback.bemajor.domain.studygroup.dto.request.StudyGroupAlarmDto;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyGroupApplicationCountResponse;
@@ -40,7 +39,7 @@ public class StudyJoinedService {
     private final GroupChatMessageService groupChatMessageService;
     private final StudyJoinApplicationRepository studyJoinApplicationRepository;
     private final RedisService redisService;
-    private final Map<Long, Set<WebSocketSession>> websocketSessionsMap;
+    private final Map<Long, Set<WebSocketSession>> sessionsByStudyGroupId;
     private final FcmService fcmService;
 
     /**
@@ -138,7 +137,7 @@ public class StudyJoinedService {
     public void exitStudyGroup(Long studyGroupId, Long userId) {
         List<Long> idsByStudyGroupIdAndOauth2Id = studyJoinedRepository.findIdsByStudyGroupIdAndOauth2Id(studyGroupId, userId);
         studyJoinedRepository.deleteByIds(idsByStudyGroupIdAndOauth2Id);
-        if (!websocketSessionsMap.get(studyGroupId).isEmpty()) {
+        if (!sessionsByStudyGroupId.get(studyGroupId).isEmpty()) {
             redisService.deleteLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
         }
         groupChatMessageService.deleteAll(userId, studyGroupId);
@@ -168,7 +167,7 @@ public class StudyJoinedService {
         Boolean isAlarmSet = studyJoined.getIsAlarmSet();
         studyJoined.changeAlarmSet(!isAlarmSet);
         studyJoinedRepository.save(studyJoined);
-        if(!websocketSessionsMap.get(studyGroupId).isEmpty()){
+        if(!sessionsByStudyGroupId.get(studyGroupId).isEmpty()){
             redisService.putLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED,
                     studyGroupId, userId, !isAlarmSet);
         }
@@ -183,7 +182,7 @@ public class StudyJoinedService {
         studyJoinedRepository.deleteAllInBatch(joinedList);    }
 
     protected void putDisConnectedUser(Long studyGroupId, Long userId) {
-        if(!websocketSessionsMap.get(studyGroupId).isEmpty()){
+        if(!sessionsByStudyGroupId.get(studyGroupId).isEmpty()){
             redisService.putLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId, true);
         }
     }

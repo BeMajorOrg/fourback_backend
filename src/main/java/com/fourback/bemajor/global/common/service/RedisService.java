@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RedisService {
     private final StringRedisTemplate stringRedisTemplate;
-    private final Map<Long, Set<WebSocketSession>> studyGrupIdSessionsMap;
+    private final Map<Long, Set<WebSocketSession>> sessionsByStudyGroupId;
     private final RedisTemplate<String, Long> stringLongRedisTemplate;
 
     public void setValueWithExpiredTime(RedisKeyPrefixEnum prefixEnum, Long id,
@@ -74,7 +74,7 @@ public class RedisService {
 //            byte[] valueByte = ByteBuffer.allocate(Long.BYTES)
 //                    .putLong(valueId).array();
 //            keyIds.forEach(keyId -> {
-//                if (!studyGrupIdSessionsMap.get(keyId).isEmpty()) {
+//                if (!sessionsByStudyGroupId.get(keyId).isEmpty()) {
 //                    byte[] keyByte = (RedisKeyPrefixEnum.DISCONNECTED.getDescription() + keyId)
 //                            .getBytes();
 //                    redisConnection.setCommands().sRem(keyByte, valueByte);
@@ -91,7 +91,7 @@ public class RedisService {
 //        if (keys != null) {
 //            List<byte[]> byteKeys = keys.stream().filter(key -> {
 //                Long baseKey = Long.valueOf(key.split(":")[1]);
-//                return studyGrupIdSessionsMap.get(baseKey).isEmpty();
+//                return sessionsByStudyGroupId.get(baseKey).isEmpty();
 //            }).map(String::getBytes).toList();
 //            int batchSize = 100;
 //            int keySize = byteKeys.size();

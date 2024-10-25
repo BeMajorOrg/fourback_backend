@@ -1,7 +1,7 @@
 package com.fourback.bemajor.domain.user.service;
 
 import com.fourback.bemajor.domain.aws.service.S3UploadService;
-import com.fourback.bemajor.domain.chat.service.GroupChatMessageService;
+import com.fourback.bemajor.domain.studygroup.service.GroupChatMessageService;
 import com.fourback.bemajor.domain.studygroup.service.StudyJoinedService;
 import com.fourback.bemajor.domain.user.dto.request.UserLoginRequestDto;
 import com.fourback.bemajor.domain.user.dto.request.UserUpdateRequestDto;

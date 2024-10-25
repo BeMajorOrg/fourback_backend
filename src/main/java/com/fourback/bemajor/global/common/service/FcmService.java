@@ -1,7 +1,7 @@
 package com.fourback.bemajor.global.common.service;
 
-import com.fourback.bemajor.domain.chat.dto.ChatMessageResponseDto;
 import com.fourback.bemajor.domain.friendchat.dto.FriendChatMessageResponseDto;
+import com.fourback.bemajor.domain.studygroup.dto.IncomingGroupChatMessageDto;
 import com.fourback.bemajor.domain.studygroup.dto.request.StudyGroupAlarmDto;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
@@ -24,15 +24,12 @@ public class FcmService {
     private String googleCredentials;
 
     @Async("threadPoolTaskExecutor")
-    public void sendalarm(ChatMessageResponseDto chatMessageDto,
-                          String fcmToken, String StudyGroupName) {
+    public void sendGroupChatAlarm(IncomingGroupChatMessageDto incomingMessageDto, String fcmToken) {
         Message message = Message.builder()
                 .setNotification(Notification.builder()
-                        .setTitle(StudyGroupName)
-                        .setBody(chatMessageDto.getSenderName() + ":"
-                                + chatMessageDto.getContent())
+                        .setTitle(incomingMessageDto.getStudyGroupName())
+                        .setBody(incomingMessageDto.getSenderName() + ": " + incomingMessageDto.getContent())
                         .build())
-                .putData("senderId", chatMessageDto.getSenderId().toString())
                 .setToken(fcmToken)
                 .build();
         FirebaseMessaging.getInstance().sendAsync(message);

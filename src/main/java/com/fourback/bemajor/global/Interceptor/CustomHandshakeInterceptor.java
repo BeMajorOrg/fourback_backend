@@ -1,7 +1,6 @@
-package com.fourback.bemajor.domain.chat.Interceptor;
+package com.fourback.bemajor.global.Interceptor;
 
 import com.fourback.bemajor.global.security.custom.CustomUserDetails;
-import com.fourback.bemajor.global.security.jwt.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
@@ -14,22 +13,25 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.util.Map;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class CustomHandshakeInterceptor implements HandshakeInterceptor {
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        attributes.put("userId", customUserDetails.getUserId());
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        attributes.put("userId", userDetails.getUserId());
         return true;
     }
 
     @Override
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                WebSocketHandler wsHandler, Exception exception) {
+        if (exception != null) {
+            log.error("Handshake failed: ", exception);
+        }
     }
 }

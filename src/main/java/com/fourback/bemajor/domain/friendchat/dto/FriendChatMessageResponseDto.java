@@ -1,7 +1,5 @@
 package com.fourback.bemajor.domain.friendchat.dto;
 
-import com.fourback.bemajor.domain.chat.entitiy.GroupChatMessageEntity;
-import com.fourback.bemajor.domain.friendchat.entity.FriendChatMessageEntity;
 import lombok.*;
 
 import java.time.LocalDateTime;

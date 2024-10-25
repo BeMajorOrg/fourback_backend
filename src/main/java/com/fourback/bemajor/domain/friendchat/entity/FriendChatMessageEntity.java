@@ -1,5 +1,4 @@
 package com.fourback.bemajor.domain.friendchat.entity;
-import com.fourback.bemajor.domain.chat.dto.OutgoingGroupChatMessageDto;
 import com.fourback.bemajor.domain.friendchat.dto.FriendChatMessageResponseDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
