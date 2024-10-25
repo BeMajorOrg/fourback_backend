@@ -1,5 +1,6 @@
 package com.fourback.bemajor.domain.friendchat.entity;
-import com.fourback.bemajor.domain.chat.dto.ChatMessageResponseDto;
+import com.fourback.bemajor.domain.chat.dto.OutgoingGroupChatMessageDto;
+import com.fourback.bemajor.domain.friendchat.dto.FriendChatMessageResponseDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,8 +35,8 @@ public class FriendChatMessageEntity {
     @Column(name = "sender_name")
     private String senderName;
 
-    public ChatMessageResponseDto toResponseDto() {
-        return ChatMessageResponseDto.builder()
+    public FriendChatMessageResponseDto toResponseDto() {
+        return FriendChatMessageResponseDto.builder()
                 .senderId(this.senderId)
                 .content(this.message)
                 .senderName(this.senderName)

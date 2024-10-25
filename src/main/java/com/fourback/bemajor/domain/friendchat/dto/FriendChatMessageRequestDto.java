@@ -1,10 +1,7 @@
 package com.fourback.bemajor.domain.friendchat.dto;
 
-import com.fourback.bemajor.domain.chat.dto.ChatMessageResponseDto;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
