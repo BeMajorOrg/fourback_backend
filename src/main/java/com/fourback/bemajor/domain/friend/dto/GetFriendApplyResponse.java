@@ -19,6 +19,8 @@ public class GetFriendApplyResponse {
   private Long friendId;
   private String friendName;
   private String friendImage;
+  private String belong;
+  private String department;
 
   public static GetFriendApplyResponse from(FriendApply friendApply) {
     return new GetFriendApplyResponse(
@@ -26,6 +28,10 @@ public class GetFriendApplyResponse {
             friendApply.getFriend().getUserId(),
             friendApply.getUser().getUserId(),
             friendApply.getUser().getUserName(),
-            friendApply.getUser().getImageUrl());
+            friendApply.getUser().getImageUrl(),
+            friendApply.getUser().getBelong(),
+            friendApply.getUser().getDepartment()
+    );
+
   }
 }

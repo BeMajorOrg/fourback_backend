@@ -13,8 +13,12 @@ import lombok.Getter;
 public class StudyGroupApplicationResponse {
     private Long id;
     private String userName;
+    private String imageUrl;
+    private String belong;
+    private String department;
 
     public static StudyGroupApplicationResponse fromEntity(StudyJoinApplication application){
-        return new StudyGroupApplicationResponse(application.getId(), application.getUser().getUserName());
+        return new StudyGroupApplicationResponse(application.getId(), application.getUser().getUserName(),
+                application.getUser().getImageUrl(),application.getUser().getBelong(),application.getUser().getDepartment());
     }
 }
