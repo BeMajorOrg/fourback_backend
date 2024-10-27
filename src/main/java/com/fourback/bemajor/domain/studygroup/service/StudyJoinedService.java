@@ -1,6 +1,5 @@
 package com.fourback.bemajor.domain.studygroup.service;
 
-import com.fourback.bemajor.domain.chat.service.GroupChatMessageService;
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
 import com.fourback.bemajor.domain.studygroup.dto.request.StudyGroupAlarmDto;
 import com.fourback.bemajor.domain.studygroup.dto.response.StudyGroupApplicationCountResponse;
@@ -13,11 +12,9 @@ import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
 import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinApplicationRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
-import com.fourback.bemajor.domain.user.dto.response.UserResponseDto;
+import com.fourback.bemajor.domain.user.dto.response.UserInquiryResponseDto;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
-import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
-import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
@@ -42,7 +39,7 @@ public class StudyJoinedService {
     private final GroupChatMessageService groupChatMessageService;
     private final StudyJoinApplicationRepository studyJoinApplicationRepository;
     private final RedisService redisService;
-    private final Map<Long, Set<WebSocketSession>> websocketSessionsMap;
+    private final Map<Long, Set<WebSocketSession>> sessionsByStudyGroupId;
     private final FcmService fcmService;
 
     /**
@@ -81,12 +78,15 @@ public class StudyJoinedService {
         StudyGroup studyGroup = studyJoinApplication.getStudyGroup();
         UserEntity user = studyJoinApplication.getUser();
         studyJoinedRepository.save(new StudyJoined(studyGroup,user, true));
+
         Long studyGroupId = studyGroup.getId();
-        Long userId = user.getUserId();
-        putDisConnectedUser(studyGroupId, userId);
+        Long userId = user.getId();
+
+        this.putDisConnectedUserIfActiveChat(userId, studyGroupId);
+
         studyJoinApplicationRepository.deleteById(studyJoinApplicationId);
 
-        String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, user.getUserId());
+        String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, user.getId());
         fcmService.sendStudyGroupAlarm(StudyGroupAlarmDto.builder()
                 .fcmToken(fcmToken)
                 .title(studyGroup.getStudyName())
@@ -100,7 +100,7 @@ public class StudyJoinedService {
      * @return
      */
     public StudyGroupRoleResponse getRole(Long userId, Long studyGroupId){
-        Optional<StudyJoined> joined = studyJoinedRepository.findByUser_UserIdAndStudyGroup_Id(userId, studyGroupId);
+        Optional<StudyJoined> joined = studyJoinedRepository.findByUser_IdAndStudyGroup_Id(userId, studyGroupId);
         if (joined.isEmpty()){ //참여 안한 관계
             return new StudyGroupRoleResponse("NONE");
         }
@@ -140,19 +140,25 @@ public class StudyJoinedService {
     public void exitStudyGroup(Long studyGroupId, Long userId) {
         List<Long> idsByStudyGroupIdAndOauth2Id = studyJoinedRepository.findIdsByStudyGroupIdAndOauth2Id(studyGroupId, userId);
         studyJoinedRepository.deleteByIds(idsByStudyGroupIdAndOauth2Id);
-        if (!websocketSessionsMap.get(studyGroupId).isEmpty()) {
+
+        if (!sessionsByStudyGroupId.get(studyGroupId).isEmpty()) {
             redisService.deleteLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
         }
-        groupChatMessageService.deleteMessages(userId, studyGroupId);
+
+        groupChatMessageService.deleteAll(userId, studyGroupId);
     }
 
     public StudyGroupDetailsResponseDto getDetails(Long studyGroupId, Long userId) {
-        List<StudyJoined> studyJoined = studyJoinedRepository.findByStudyGroupId(studyGroupId);
-        List<UserResponseDto> userResponses = studyJoined.stream().map(StudyJoined::getUser)
-                .map(UserEntity::toUserResponseDto).toList();
-        Boolean isAlarmSet = studyJoined.stream().filter(joined -> joined.getUser().getUserId().equals(userId))
+        List<StudyJoined> joinedList = studyJoinedRepository.findAllByStudyGroupIdWithUser(studyGroupId);
+
+        //성능상 이점을 얻고 싶으면 for문 하나로 만들기
+        List<UserInquiryResponseDto> userResponseDtoList = joinedList.stream().map(StudyJoined::getUser)
+                .map(UserEntity::toInquiryResponseDto).toList();
+
+        Boolean isAlarmSet = joinedList.stream().filter(joined -> joined.getUser().getId().equals(userId))
                 .map(StudyJoined::getIsAlarmSet).findFirst().orElse(false);
-        return StudyGroupDetailsResponseDto.of(userResponses, isAlarmSet);
+
+        return StudyGroupDetailsResponseDto.of(isAlarmSet, userResponseDtoList);
     }
 
     public List<StudyGroupDto> getAllMyGroups(Long userId) {
@@ -160,24 +166,36 @@ public class StudyJoinedService {
         if (userOptional.isEmpty()) {
             throw new NotFoundException("no such user.");
         }
-        return userOptional.get().getStudyJoineds().stream().map(StudyJoined::getStudyGroup).map(StudyGroupDto::toDto).collect(Collectors.toList());
+        return userOptional.get().getStudyJoinedList().stream().map(StudyJoined::getStudyGroup).map(StudyGroupDto::toDto).collect(Collectors.toList());
     }
 
+    @Transactional
     public void update(Long studyGroupId, Long userId) {
-        StudyJoined studyJoined = studyJoinedRepository
-                .findByUser_UserIdAndStudyGroup_Id(userId, studyGroupId)
+        StudyJoined studyJoined = studyJoinedRepository.findByUser_IdAndStudyGroup_Id(userId, studyGroupId)
                 .orElseThrow(() -> new NotFoundException("no such study joined."));
+
         Boolean isAlarmSet = studyJoined.getIsAlarmSet();
-        studyJoined.changeAlarmSet(!isAlarmSet);
+        Boolean changedAlarmSet = !isAlarmSet;
+
+        studyJoined.changeAlarmSet(changedAlarmSet);
         studyJoinedRepository.save(studyJoined);
-        if(!websocketSessionsMap.get(studyGroupId).isEmpty()){
+
+        if (!sessionsByStudyGroupId.get(studyGroupId).isEmpty()) {
             redisService.putLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED,
-                    studyGroupId, userId, !isAlarmSet);
+                    studyGroupId, userId, changedAlarmSet);
         }
     }
 
-    protected void putDisConnectedUser(Long studyGroupId, Long userId) {
-        if(!websocketSessionsMap.get(studyGroupId).isEmpty()){
+    @Transactional
+    public void exitAll(Long userId){
+        List<StudyJoined> joinedList = studyJoinedRepository.findByUserId(userId);
+        List<Long> studyGroupIds = joinedList.stream()
+                .map(studyJoined -> studyJoined.getStudyGroup().getId()).toList();
+//        redisService.removeUserInGroupSession(studyGroupIds, userId);
+        studyJoinedRepository.deleteAllInBatch(joinedList);    }
+
+    protected void putDisConnectedUserIfActiveChat(Long userId, Long studyGroupId) {
+        if(!sessionsByStudyGroupId.get(studyGroupId).isEmpty()){
             redisService.putLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId, true);
         }
     }

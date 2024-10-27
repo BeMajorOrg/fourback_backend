@@ -1,6 +1,5 @@
 package com.fourback.bemajor.domain.friendchat.service;
 
-import com.fourback.bemajor.domain.chat.dto.ChatMessageResponseDto;
 import com.fourback.bemajor.domain.friendchat.dto.FriendChatMessageResponseDto;
 import com.fourback.bemajor.domain.friendchat.entity.FriendChatMessageEntity;
 import com.fourback.bemajor.domain.friendchat.repository.FriendChatMessageRepository;
@@ -31,7 +30,7 @@ public class FriendChatMessageService {
 
     }
 
-    public List<ChatMessageResponseDto> getMessages(Long senderId,Long receiverId) {
+    public List<FriendChatMessageResponseDto> getMessages(Long senderId, Long receiverId) {
         List<FriendChatMessageEntity> messages = friendChatMessageRepository.findBySenderIdAndReceiverId(senderId, receiverId);
         return messages.stream()
                 .map(FriendChatMessageEntity::toResponseDto)

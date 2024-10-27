@@ -5,8 +5,8 @@ import lombok.*;
 
 @Entity
 @Getter
-@Table(name = "image")
 @Builder
+@Table(name = "image")
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class ImageEntity {
@@ -24,6 +24,8 @@ public class ImageEntity {
 
     public static ImageEntity of(Post post, String imageUrl) {
         return ImageEntity.builder()
-                .post(post).imageUrl(imageUrl).build();
+                .post(post)
+                .imageUrl(imageUrl)
+                .build();
     }
 }

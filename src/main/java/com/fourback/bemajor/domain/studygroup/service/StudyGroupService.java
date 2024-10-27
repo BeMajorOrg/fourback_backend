@@ -13,6 +13,7 @@ import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.NotAuthorizedException;
 import com.fourback.bemajor.global.exception.kind.NotFoundException;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,7 +35,7 @@ public class StudyGroupService {
     private final StudyJoinedRepository studyJoinedRepository;
     private final StudyGroupInvitationRepository studyGroupInvitationRepository;
     private final StudyJoinApplicationRepository studyJoinApplicationRepository;
-    private final Map<Long, Set<WebSocketSession>> websocketSessionsMap;
+    private final Map<Long, Set<WebSocketSession>> sessionsByStudyGroupId;
     private final RedisService redisService;
 
     public List<StudyGroupDto> getAllStudyGroup(int page, String category){
@@ -60,8 +61,9 @@ public class StudyGroupService {
         StudyJoined studyJoined = new StudyJoined(savedGroup, userEntity,true);
         studyJoinedRepository.save(studyJoined);
         studyGroupRepository.save(studyGroup);
+
         Long studyGroupId = studyGroup.getId();
-        websocketSessionsMap.put(studyGroupId, Collections.newSetFromMap(new ConcurrentHashMap<>()));
+        sessionsByStudyGroupId.put(studyGroupId, Collections.newSetFromMap(new ConcurrentHashMap<>()));
     }
 
     @Transactional
@@ -86,9 +88,18 @@ public class StudyGroupService {
         studyGroupInvitationRepository.deleteByStudyGroup(studyGroupOp.get());
         studyJoinApplicationRepository.deleteByStudyGroup(studyGroupOp.get());
         studyGroupRepository.deleteById(studyGroupId);
-        if(!websocketSessionsMap.get(studyGroupId).isEmpty()){
+
+        if(!sessionsByStudyGroupId.get(studyGroupId).isEmpty()){
             redisService.deleteKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId);
         }
-        websocketSessionsMap.remove(studyGroupId);
+
+        sessionsByStudyGroupId.remove(studyGroupId);
+    }
+
+    @PostConstruct
+    protected void setupStudyGroupChatRoom() {
+        List<StudyGroup> studyGroups = studyGroupRepository.findAll();
+        studyGroups.forEach(studyGroup -> sessionsByStudyGroupId.put(studyGroup.getId(),
+                Collections.newSetFromMap(new ConcurrentHashMap<>())));
     }
 }

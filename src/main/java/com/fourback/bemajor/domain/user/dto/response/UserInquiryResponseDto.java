@@ -1,13 +1,11 @@
 package com.fourback.bemajor.domain.user.dto.response;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
-@Setter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class UserResponseDto {
+public class UserInquiryResponseDto {
     private Long userId;
     private String userName;
     private String email;

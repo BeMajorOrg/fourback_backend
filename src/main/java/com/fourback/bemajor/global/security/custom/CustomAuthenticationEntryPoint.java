@@ -12,16 +12,19 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import java.io.IOException;
 
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+    private final ObjectMapper objectMapper;
+
+    public CustomAuthenticationEntryPoint(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
         response.setCharacterEncoding("utf-8");
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.getWriter().write(objectMapper.writeValueAsString(
-                new ExceptionDto(5, "인증되지 않은 사용자 접근")));
+        response.getWriter().write(objectMapper.writeValueAsString(ExceptionDto.of(5, "인증되지 않은 사용자 접근")));
 
     }
 }

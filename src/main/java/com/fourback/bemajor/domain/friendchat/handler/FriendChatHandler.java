@@ -1,8 +1,6 @@
 package com.fourback.bemajor.domain.friendchat.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourback.bemajor.domain.chat.dto.ChatMessageRequestDto;
-import com.fourback.bemajor.domain.chat.dto.ChatMessageResponseDto;
 import com.fourback.bemajor.domain.friendchat.dto.FriendChatMessageRequestDto;
 import com.fourback.bemajor.domain.friendchat.dto.FriendChatMessageResponseDto;
 import com.fourback.bemajor.domain.friendchat.service.FriendChatMessageService;
@@ -11,7 +9,6 @@ import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.socket.CloseStatus;
@@ -24,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 @Component
@@ -36,7 +34,7 @@ public class FriendChatHandler extends TextWebSocketHandler {
     private final RedisService redisService;
     private final FcmService fcmService;
     private final Map<Long, Set<WebSocketSession>> chatRoomSessionsMap;
-    private final Map<WebSocketSession, Pair<Long, Long>> sessionIdsMap;
+    private final Map<WebSocketSession, Pair<Long, Long>> sessionIdsMap = new ConcurrentHashMap<>();
 
     @Override
     @Transactional
@@ -50,10 +48,10 @@ public class FriendChatHandler extends TextWebSocketHandler {
         Long chatRoomIdLong  = Math.min(userId1, userId2) * 1_000_000 + Math.max(userId1, userId2);
         sessionIdsMap.put(session, Pair.of(userId, chatRoomIdLong));
         chatRoomSessionsMap.computeIfAbsent(chatRoomIdLong , k -> new HashSet<>()).add(session);
-        List<ChatMessageResponseDto> storedMessages = friendChatMessageService.getMessages(otherUserId,userId);
+        List<FriendChatMessageResponseDto> storedMessages = friendChatMessageService.getMessages(otherUserId,userId);
         if (!storedMessages.isEmpty()) {
             try {
-                for (ChatMessageResponseDto message : storedMessages) {
+                for (FriendChatMessageResponseDto message : storedMessages) {
                     session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
                 }
                 friendChatMessageService.deleteMessages(otherUserId, userId);

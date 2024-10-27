@@ -1,7 +1,6 @@
 package com.fourback.bemajor.global.exception;
 
 import com.fourback.bemajor.global.common.util.ResponseUtil;
-import com.fourback.bemajor.global.exception.kind.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -13,16 +12,17 @@ import java.io.IOException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ExceptionDto> handleCustomException(CustomException ex) {
-        ExceptionDto body = new ExceptionDto(ex.getCode(), ex.getMessage());
+        ExceptionDto body = ExceptionDto.of(ex.getCode(), ex.getMessage());
+
         return this.handleExceptionInternal(body, ex.getStatusCode());
     }
 
     @ExceptionHandler(IOException.class)
     public ResponseEntity<ExceptionDto> handleIOException(IOException ex) {
-        ExceptionDto body = new ExceptionDto(4, ex.getMessage());
+        ExceptionDto body = ExceptionDto.of(4, ex.getMessage());
+
         return this.handleExceptionInternal(body, HttpStatus.LOCKED);
     }
 

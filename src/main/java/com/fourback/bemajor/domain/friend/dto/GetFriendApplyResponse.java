@@ -25,8 +25,8 @@ public class GetFriendApplyResponse {
   public static GetFriendApplyResponse from(FriendApply friendApply) {
     return new GetFriendApplyResponse(
             friendApply.getId(),
-            friendApply.getFriend().getUserId(),
-            friendApply.getUser().getUserId(),
+            friendApply.getFriend().getId(),
+            friendApply.getUser().getId(),
             friendApply.getUser().getUserName(),
             friendApply.getUser().getImageUrl(),
             friendApply.getUser().getBelong(),

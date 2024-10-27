@@ -10,8 +10,7 @@ public enum RedisKeyPrefixEnum {
 
     private final String description;
 
-    RedisKeyPrefixEnum(String description){
+    RedisKeyPrefixEnum(String description) {
         this.description = description;
     }
-
 }

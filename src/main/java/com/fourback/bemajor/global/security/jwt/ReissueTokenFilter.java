@@ -31,6 +31,7 @@ public class ReissueTokenFilter extends OncePerRequestFilter {
             if (refresh == null) {
                 throw new InvalidTokenException("Refresh Token is empty");
             }
+
             try {
                 jwtUtil.isExpired(refresh);
             } catch (ExpiredJwtException e) {
@@ -38,9 +39,7 @@ public class ReissueTokenFilter extends OncePerRequestFilter {
             }
 
             String category = jwtUtil.getCategory(refresh);
-
             if (!category.equals("refresh")) {
-
                 throw new InvalidTokenException("Unmatched Refresh Token Category");
             }
 
@@ -49,9 +48,10 @@ public class ReissueTokenFilter extends OncePerRequestFilter {
 
             List<Pair<String, String>> pairs = jwtUtil.createTokens(userId, role);
             pairs.forEach(pair -> response.setHeader(pair.getLeft(), pair.getRight()));
+
             response.setStatus(HttpServletResponse.SC_OK);
-        } else {
-            filterChain.doFilter(request, response);
+            return;
         }
+        filterChain.doFilter(request, response);
     }
 }

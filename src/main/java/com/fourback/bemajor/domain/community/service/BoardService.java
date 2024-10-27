@@ -28,7 +28,7 @@ public class BoardService {
         UserEntity userEntity = optionalUser.orElse(null);
 
         List<Board> boards = boardRepository.findAll();
-        List<FavoriteBoard> favoriteBoards = favoriteBoardRepository.findByUserUserId(userEntity.getUserId());
+        List<FavoriteBoard> favoriteBoards = favoriteBoardRepository.findByUserId(userEntity.getId());
         Set<Long> favoriteBoardIds = new HashSet<>();
         for (FavoriteBoard favoriteBoard : favoriteBoards) {
             Board board = favoriteBoard.getBoard();

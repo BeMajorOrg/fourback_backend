@@ -78,11 +78,11 @@ public class StudyGroupController {
   }
 
   @GetMapping("/studygroup/details/{studyGroupId}")
-  public ResponseEntity<?> getGroupDetails(@PathVariable("studyGroupId") Long studyGroupID,
+  public ResponseEntity<?> getGroupDetails(@PathVariable("studyGroupId") Long studyGroupId,
                                            @AuthenticationPrincipal CustomUserDetails userDetails) {
-    StudyGroupDetailsResponseDto response = studyJoinedService.getDetails(
-            studyGroupID, userDetails.getUserId());
-    return ResponseEntity.ok(response);
+    StudyGroupDetailsResponseDto responseDto = studyJoinedService.getDetails(
+            studyGroupId, userDetails.getUserId());
+    return ResponseEntity.ok(responseDto);
   }
 
   /**
