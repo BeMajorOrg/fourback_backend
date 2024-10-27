@@ -41,6 +41,7 @@ public class StudyJoinedService {
     private final RedisService redisService;
     private final Map<Long, Set<WebSocketSession>> sessionsByStudyGroupId;
     private final FcmService fcmService;
+    private final GroupRedisService groupRedisService;
 
     /**
      * 스터디 그룹 참여 신청
@@ -187,15 +188,19 @@ public class StudyJoinedService {
     }
 
     @Transactional
-    public void exitAll(Long userId){
+    public void exitAll(Long userId) {
         List<StudyJoined> joinedList = studyJoinedRepository.findByUserId(userId);
+
         List<Long> studyGroupIds = joinedList.stream()
                 .map(studyJoined -> studyJoined.getStudyGroup().getId()).toList();
-//        redisService.removeUserInGroupSession(studyGroupIds, userId);
-        studyJoinedRepository.deleteAllInBatch(joinedList);    }
+
+        groupRedisService.deleteDisconnectedUserFromActiveChats(studyGroupIds, userId);
+
+        studyJoinedRepository.deleteAllInBatch(joinedList);
+    }
 
     protected void putDisConnectedUserIfActiveChat(Long userId, Long studyGroupId) {
-        if(!sessionsByStudyGroupId.get(studyGroupId).isEmpty()){
+        if (!sessionsByStudyGroupId.get(studyGroupId).isEmpty()) {
             redisService.putLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId, true);
         }
     }

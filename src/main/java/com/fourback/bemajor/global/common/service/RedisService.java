@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RedisService {
     private final StringRedisTemplate stringRedisTemplate;
-    private final Map<Long, Set<WebSocketSession>> sessionsByStudyGroupId;
     private final RedisTemplate<String, Long> stringLongRedisTemplate;
 
     public void setValueWithExpiredTime(RedisKeyPrefixEnum prefixEnum, Long id,
@@ -64,42 +63,4 @@ public class RedisService {
         HashOperations<String, Long, Boolean> operation = stringLongRedisTemplate.opsForHash();
         operation.delete(prefixEnum.getDescription() + keyId, valueId);
     }
-
-//    public void removeUserInGroupSession(List<Long> keyIds, Long valueId) {
-//        stringRedisTemplate.executePipelined((RedisCallback<?>) redisConnection -> {
-//            byte[] valueByte = ByteBuffer.allocate(Long.BYTES)
-//                    .putLong(valueId).array();
-//            keyIds.forEach(keyId -> {
-//                if (!sessionsByStudyGroupId.get(keyId).isEmpty()) {
-//                    byte[] keyByte = (RedisKeyPrefixEnum.DISCONNECTED.getDescription() + keyId)
-//                            .getBytes();
-//                    redisConnection.setCommands().sRem(keyByte, valueByte);
-//                }
-//            });
-//            return null;
-//        });
-//    }
-
-//    @Scheduled(fixedDelay = 300000)
-//    public void removeDisConnectedKey() {
-//        Set<String> keys = stringRedisTemplate.keys(
-//                RedisKeyPrefixEnum.DISCONNECTED + "*");
-//        if (keys != null) {
-//            List<byte[]> byteKeys = keys.stream().filter(key -> {
-//                Long baseKey = Long.valueOf(key.split(":")[1]);
-//                return sessionsByStudyGroupId.get(baseKey).isEmpty();
-//            }).map(String::getBytes).toList();
-//            int batchSize = 100;
-//            int keySize = byteKeys.size();
-//            for (int i = 0; i < (keySize + batchSize - 1) / batchSize; i++) {
-//                List<byte[]> tempByteKeys = byteKeys.subList(
-//                        i, i += i + batchSize < keySize ? batchSize : keySize % batchSize);
-//                stringRedisTemplate.executePipelined(
-//                        (RedisCallback<?>) redisConnection -> {
-//                            tempByteKeys.forEach(key -> redisConnection.keyCommands().del(key));
-//                            return null;
-//                        });
-//            }
-//        }
-//    }
 }
