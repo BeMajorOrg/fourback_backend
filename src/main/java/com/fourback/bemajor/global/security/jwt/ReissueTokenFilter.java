@@ -1,5 +1,8 @@
 package com.fourback.bemajor.global.security.jwt;
 
+import com.fourback.bemajor.global.common.enums.ExpiredTimeEnum;
+import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.InvalidTokenException;
 import com.fourback.bemajor.global.exception.kind.TokenExpiredException;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -17,9 +20,11 @@ import java.util.List;
 @Slf4j
 public class ReissueTokenFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
+    private final RedisService redisService;
 
-    public ReissueTokenFilter(final JWTUtil jwtUtil) {
+    public ReissueTokenFilter(final JWTUtil jwtUtil, RedisService redisService) {
         this.jwtUtil = jwtUtil;
+        this.redisService = redisService;
     }
 
     @Override
@@ -48,6 +53,9 @@ public class ReissueTokenFilter extends OncePerRequestFilter {
 
             List<Pair<String, String>> pairs = jwtUtil.createTokens(userId, role);
             pairs.forEach(pair -> response.setHeader(pair.getLeft(), pair.getRight()));
+
+            redisService.extendExpiration(
+                    RedisKeyPrefixEnum.FCM, userId, ExpiredTimeEnum.FCM.getExpiredTime());
 
             response.setStatus(HttpServletResponse.SC_OK);
             return;

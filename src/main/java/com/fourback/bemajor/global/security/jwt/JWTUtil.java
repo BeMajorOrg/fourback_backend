@@ -1,5 +1,6 @@
 package com.fourback.bemajor.global.security.jwt;
 
+import com.fourback.bemajor.global.common.enums.ExpiredTimeEnum;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
 import io.jsonwebtoken.Jwts;
@@ -49,16 +50,17 @@ public class JWTUtil {
         String access = "access";
         String refresh = "refresh";
 
-        long expiredTime = 86400000L;
-
         List<Pair<String, String>> tokens = new ArrayList<>(2);
 
-        tokens.add(Pair.of(access, this.createToken(access, userId, role, 600000L)));
+        tokens.add(Pair.of(access, this.createToken(
+                access, userId, role, ExpiredTimeEnum.ACCESS.getExpiredTime())));
 
-        String refreshToken = this.createToken(refresh, userId, role, expiredTime);
+        String refreshToken = this.createToken(refresh, userId, role, ExpiredTimeEnum.REFRESH.getExpiredTime());
+
         tokens.add(Pair.of(refresh, refreshToken));
 
-        redisService.setValueWithExpiredTime(RedisKeyPrefixEnum.REFRESH, userId, refreshToken, expiredTime);
+        redisService.setValueWithExpiredTime(
+                RedisKeyPrefixEnum.REFRESH, userId, refreshToken, ExpiredTimeEnum.REFRESH.getExpiredTime());
 
         return tokens;
     }

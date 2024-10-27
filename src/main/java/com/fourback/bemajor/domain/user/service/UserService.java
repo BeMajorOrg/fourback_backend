@@ -8,6 +8,7 @@ import com.fourback.bemajor.domain.user.dto.request.UserUpdateRequestDto;
 import com.fourback.bemajor.domain.user.dto.response.UserInquiryResponseDto;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
+import com.fourback.bemajor.global.common.enums.ExpiredTimeEnum;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.NotFoundException;
@@ -37,7 +38,8 @@ public class UserService {
         UserEntity user = this.findOrCreateUser(oauth2Id);
         this.restoreUserIfDeleted(user);
 
-        redisService.setValue(RedisKeyPrefixEnum.FCM, user.getId(), requestDto.getFcmToken());
+        redisService.setValueWithExpiredTime(RedisKeyPrefixEnum.FCM, user.getId(),
+                requestDto.getFcmToken(), ExpiredTimeEnum.FCM.getExpiredTime());
 
         return jwtUtil.createTokens(user.getId(), user.getRole());
     }

@@ -67,7 +67,7 @@ public class SecurityConfig {
                 .addFilterBefore(new JWTExceptionFilter(objectMapper), CustomLogoutFilter.class);
 
         http
-                .addFilterAfter(new ReissueTokenFilter(jwtUtil), JWTFilter.class);
+                .addFilterAfter(new ReissueTokenFilter(jwtUtil, redisService), JWTFilter.class);
 
         return http.build();
     }

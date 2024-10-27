@@ -6,10 +6,8 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.WebSocketSession;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -24,8 +22,8 @@ public class RedisService {
                 value, expiredTime, TimeUnit.MILLISECONDS);
     }
 
-    public void setValue(RedisKeyPrefixEnum prefixEnum, Long id, String value) {
-        stringRedisTemplate.opsForValue().set(prefixEnum.getDescription() + id, value);
+    public void extendExpiration(RedisKeyPrefixEnum prefixEnum, Long id, long expiredTime) {
+        stringRedisTemplate.expire(prefixEnum.getDescription() + id, expiredTime, TimeUnit.MILLISECONDS);
     }
 
     public void deleteKey(RedisKeyPrefixEnum prefixEnum, Long id) {
