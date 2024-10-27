@@ -50,7 +50,8 @@ public class StudyGroupInvitationService {
     studyGroupInvitationRepository.delete(studyGroupInvitation);
     Long studyGroupId = studyJoined.getStudyGroup().getId();
     Long userId = studyJoined.getUser().getId();
-    studyJoinedService.putDisConnectedUser(studyGroupId, userId);
+
+    studyJoinedService.putDisConnectedUserIfActiveChat(userId, studyGroupId);
 
     Long ownerUserId = studyJoined.getStudyGroup().getOwnerUserId();
     UserEntity userEntity = userRepository.findById(ownerUserId)

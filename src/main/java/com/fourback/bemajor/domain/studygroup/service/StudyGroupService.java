@@ -61,6 +61,7 @@ public class StudyGroupService {
         StudyJoined studyJoined = new StudyJoined(savedGroup, userEntity,true);
         studyJoinedRepository.save(studyJoined);
         studyGroupRepository.save(studyGroup);
+
         Long studyGroupId = studyGroup.getId();
         sessionsByStudyGroupId.put(studyGroupId, Collections.newSetFromMap(new ConcurrentHashMap<>()));
     }
@@ -87,9 +88,11 @@ public class StudyGroupService {
         studyGroupInvitationRepository.deleteByStudyGroup(studyGroupOp.get());
         studyJoinApplicationRepository.deleteByStudyGroup(studyGroupOp.get());
         studyGroupRepository.deleteById(studyGroupId);
+
         if(!sessionsByStudyGroupId.get(studyGroupId).isEmpty()){
             redisService.deleteKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId);
         }
+
         sessionsByStudyGroupId.remove(studyGroupId);
     }
 

@@ -12,8 +12,8 @@ public class StudyGroupDetailsResponseDto {
     private List<UserInquiryResponseDto> users;
     private Boolean isEnableNotification;
 
-    public static StudyGroupDetailsResponseDto of(
-            List<UserInquiryResponseDto> users, Boolean isEnableNotification ) {
+    public static StudyGroupDetailsResponseDto of(Boolean isEnableNotification,
+                                                  List<UserInquiryResponseDto> users) {
         return StudyGroupDetailsResponseDto.builder()
                 .users(users)
                 .isEnableNotification(isEnableNotification)

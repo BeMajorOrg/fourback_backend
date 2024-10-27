@@ -23,7 +23,7 @@ public interface StudyJoinedRepository extends JpaRepository<StudyJoined, Long> 
     List<StudyJoined> findByUserId(Long userId);
 
     @Query("select j from StudyJoined j join fetch j.user where j.studyGroup.id=?1")
-    List<StudyJoined> findByStudyGroupId(Long studyGroupId);
+    List<StudyJoined> findAllByStudyGroupIdWithUser(Long studyGroupId);
 
     @Query("select j from StudyJoined  j join fetch j.user where j.user.id!=?1 and j.studyGroup.id=?2")
     List<StudyJoined> findAllByUserIdNotAndStudyGroupIdWithUser(Long userId, Long studyGroupId);
