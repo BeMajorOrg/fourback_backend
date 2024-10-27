@@ -32,11 +32,13 @@ public class FcmService {
                         .build())
                 .setToken(fcmToken)
                 .build();
+
         FirebaseMessaging.getInstance().sendAsync(message);
     }
 
     /**
      * 스터디 그룹 초대,입장 등 알람 보내기
+     *
      * @param studyGroupAlarmDto
      */
     @Async("threadPoolTaskExecutor")
@@ -66,12 +68,14 @@ public class FcmService {
     }
 
     @PostConstruct
-    public void init() throws IOException {
+    protected void init() throws IOException {
         ClassPathResource resource = new ClassPathResource(googleCredentials);
+
         try (InputStream in = resource.getInputStream()) {
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(in))
                     .build();
+
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
             }

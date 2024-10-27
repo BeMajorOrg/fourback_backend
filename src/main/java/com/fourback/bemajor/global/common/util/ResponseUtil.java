@@ -4,13 +4,8 @@ import com.fourback.bemajor.global.exception.ExceptionDto;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 public class ResponseUtil {
@@ -21,6 +16,7 @@ public class ResponseUtil {
     public static ResponseEntity<?> onSuccess(List<Pair<String, String>> pairs) {
         HttpHeaders headers = new HttpHeaders();
         pairs.forEach(pair -> headers.add(pair.getLeft(), pair.getRight()));
+
         return ResponseEntity.ok().headers(headers).build();
     }
 

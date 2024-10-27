@@ -20,8 +20,8 @@ public class JWTUtil {
     private final RedisService redisService;
 
     public JWTUtil(@Value("${spring.jwt.secret}") String secret, RedisService redisService) {
-        this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8),
-                Jwts.SIG.HS256.key().build().getAlgorithm());
+        this.secretKey = new SecretKeySpec(
+                secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
         this.redisService = redisService;
     }
 
@@ -48,12 +48,18 @@ public class JWTUtil {
     public List<Pair<String, String>> createTokens(Long userId, String role) {
         String access = "access";
         String refresh = "refresh";
+
         long expiredTime = 86400000L;
+
         List<Pair<String, String>> tokens = new ArrayList<>(2);
+
         tokens.add(Pair.of(access, this.createToken(access, userId, role, 600000L)));
+
         String refreshToken = this.createToken(refresh, userId, role, expiredTime);
         tokens.add(Pair.of(refresh, refreshToken));
+
         redisService.setValueWithExpiredTime(RedisKeyPrefixEnum.REFRESH, userId, refreshToken, expiredTime);
+
         return tokens;
     }
 

@@ -17,13 +17,14 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class CustomHandshakeInterceptor implements HandshakeInterceptor {
-
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
         attributes.put("userId", userDetails.getUserId());
+
         return true;
     }
 

@@ -21,30 +21,36 @@ public class CustomLogoutFilter extends GenericFilterBean {
     private final JWTUtil jwtUtil;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
     }
 
     private void doFilter(HttpServletRequest request, HttpServletResponse response,
                           FilterChain filterChain) throws IOException, ServletException {
-        String requestUri = request.getRequestURI();
-        if (!requestUri.matches("/logout")) {
+        if (isNotLogoutRequest(request)) {
             filterChain.doFilter(request, response);
             return;
         }
-        String requestMethod = request.getMethod();
-        if (!requestMethod.equals("POST")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+
         String refreshToken = request.getHeader("refresh");
+
         Long userId = jwtUtil.getUserId(refreshToken);
+
         redisService.deleteKey(RedisKeyPrefixEnum.REFRESH, userId);
         redisService.deleteKey(RedisKeyPrefixEnum.FCM, userId);
+
         SecurityContextHolder.clearContext();
+
         response.setHeader("refresh", null);
         response.setHeader("access", null);
+
         response.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    private boolean isNotLogoutRequest(HttpServletRequest request) {
+        String requestUri = request.getRequestURI();
+        String requestMethod = request.getMethod();
+
+        return !requestUri.matches("/logout") || !requestMethod.equals("POST");
     }
 }

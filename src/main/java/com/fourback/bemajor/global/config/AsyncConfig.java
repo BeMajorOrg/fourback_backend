@@ -8,20 +8,20 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
-@Configuration
 @EnableAsync
+@Configuration
 public class AsyncConfig {
     @Bean(name = "threadPoolTaskExecutor")
-    public Executor asyncExecutor(){
+    public Executor asyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);
         executor.setMaxPoolSize(50);
         executor.setQueueCapacity(100);
         executor.setKeepAliveSeconds(120);
+        executor.setAwaitTerminationSeconds(20);
         executor.setAllowCoreThreadTimeOut(true);
         executor.setPrestartAllCoreThreads(true);
         executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAwaitTerminationSeconds(20);
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
         executor.initialize();
         return executor;

@@ -2,14 +2,12 @@ package com.fourback.bemajor.global.common.service;
 
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.*;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.WebSocketSession;
 
-
-import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -27,8 +25,7 @@ public class RedisService {
                 value, expiredTime, TimeUnit.MILLISECONDS);
     }
 
-    public void setValue(RedisKeyPrefixEnum prefixEnum,
-                         Long id, String value) {
+    public void setValue(RedisKeyPrefixEnum prefixEnum, Long id, String value) {
         stringRedisTemplate.opsForValue().set(prefixEnum.getDescription() + id, value);
     }
 
@@ -40,9 +37,8 @@ public class RedisService {
         return stringRedisTemplate.opsForValue().get(prefixEnum.getDescription() + id);
     }
 
-    public boolean checkKey(RedisKeyPrefixEnum prefixEnum, Long id) {
-        return Boolean.TRUE.equals(stringRedisTemplate.hasKey(
-                prefixEnum.getDescription() + id));
+    public boolean hasKey(RedisKeyPrefixEnum prefixEnum, Long id) {
+        return Boolean.TRUE.equals(stringRedisTemplate.hasKey(prefixEnum.getDescription() + id));
     }
 
     public void putLongBooleanField(RedisKeyPrefixEnum prefixEnum,
@@ -53,13 +49,13 @@ public class RedisService {
 
     public void putLongBooleanFields(RedisKeyPrefixEnum prefixEnum,
                                      Long keyId, Map<Long, Boolean> values) {
-        if(values !=null && values.isEmpty()) {
+        if (values != null && values.isEmpty()) {
             HashOperations<String, Long, Boolean> operations = stringLongRedisTemplate.opsForHash();
             operations.putAll(prefixEnum.getDescription() + keyId, values);
         }
     }
 
-    public Map<Long, Boolean> EntriesLongBoolean(RedisKeyPrefixEnum prefixEnum, Long id) {
+    public Map<Long, Boolean> getEntriesLongBoolean(RedisKeyPrefixEnum prefixEnum, Long id) {
         HashOperations<String, Long, Boolean> operations = stringLongRedisTemplate.opsForHash();
         return operations.entries(prefixEnum.getDescription() + id);
     }

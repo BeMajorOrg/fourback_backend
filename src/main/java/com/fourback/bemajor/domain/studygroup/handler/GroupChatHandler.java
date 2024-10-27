@@ -4,16 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourback.bemajor.domain.studygroup.dto.IncomingGroupChatMessageDto;
 import com.fourback.bemajor.domain.studygroup.dto.OutgoingGroupChatMessageDto;
 import com.fourback.bemajor.domain.studygroup.entity.GroupChatMessageEntity;
-import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
 import com.fourback.bemajor.domain.studygroup.repository.GroupChatMessageRepository;
-import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.studygroup.service.GroupChatMessageService;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
@@ -111,7 +108,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
     }
 
     private void updateDisConnectedUserInRedis(Long userId, Long studyGroupId) {
-        if (!redisService.checkKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId)) {
+        if (!redisService.hasKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId)) {
             List<StudyJoined> joinedList = studyJoinedRepository
                     .findAllByUserIdNotAndStudyGroupIdWithUser(userId, studyGroupId);
 
@@ -135,7 +132,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
 
     private void saveAndNotifyDisconnectedUsers(Long studyGroupId, OutgoingGroupChatMessageDto outgoingMessageDto,
                                                 IncomingGroupChatMessageDto incomingMessageDto) {
-        Map<Long, Boolean> alarmSetByReceiverId = redisService.EntriesLongBoolean(
+        Map<Long, Boolean> alarmSetByReceiverId = redisService.getEntriesLongBoolean(
                 RedisKeyPrefixEnum.DISCONNECTED, studyGroupId);
 
         alarmSetByReceiverId.forEach((receiverId, isAlarm) -> {

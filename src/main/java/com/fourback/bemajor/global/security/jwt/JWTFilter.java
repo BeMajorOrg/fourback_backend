@@ -1,7 +1,7 @@
 package com.fourback.bemajor.global.security.jwt;
 
-import com.fourback.bemajor.global.exception.kind.TokenExpiredException;
 import com.fourback.bemajor.global.exception.kind.InvalidTokenException;
+import com.fourback.bemajor.global.exception.kind.TokenExpiredException;
 import com.fourback.bemajor.global.security.custom.CustomUserDetails;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -36,29 +36,35 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
             jwtUtil.isExpired(accessToken);
         } catch (ExpiredJwtException e) {
-            String path = request.getServletPath();
-            String method = request.getMethod();
-            if (path.equals("/reissue") && method.equals("POST")) {
+            if (isReissueRequest(request)) {
                 request.setAttribute("reissue", true);
                 filterChain.doFilter(request, response);
-            } else {
-                throw new TokenExpiredException("Access token expired");
+                return;
             }
-            return;
+            throw new TokenExpiredException("Access token expired");
         }
 
         String category = jwtUtil.getCategory(accessToken);
         if (!category.equals("access")) {
-            log.debug("invalid access token");
             throw new InvalidTokenException("Unmatched Access Token Category");
         }
 
         Long userId = jwtUtil.getUserId(accessToken);
         String role = jwtUtil.getRole(accessToken);
-        CustomUserDetails customOAuth2User = new CustomUserDetails(userId, role);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(customOAuth2User,
-                null, customOAuth2User.getAuthorities());
+
+        CustomUserDetails userDetails = new CustomUserDetails(userId, role);
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isReissueRequest(HttpServletRequest request) {
+        String path = request.getServletPath();
+        String method = request.getMethod();
+        return path.equals("/reissue") && method.equals("POST");
     }
 }

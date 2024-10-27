@@ -1,10 +1,10 @@
 package com.fourback.bemajor.global.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourback.bemajor.global.exception.ExceptionDto;
-import com.fourback.bemajor.global.exception.kind.TokenExpiredException;
 import com.fourback.bemajor.global.exception.CustomException;
+import com.fourback.bemajor.global.exception.ExceptionDto;
 import com.fourback.bemajor.global.exception.kind.InvalidTokenException;
+import com.fourback.bemajor.global.exception.kind.TokenExpiredException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +15,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 public class JWTExceptionFilter extends OncePerRequestFilter {
+    private final ObjectMapper objectMapper;
+
+    public JWTExceptionFilter(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
@@ -25,14 +31,15 @@ public class JWTExceptionFilter extends OncePerRequestFilter {
         }
     }
 
-    private void setExceptionResponse(HttpServletResponse response, CustomException exception)
-            throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
+    private void setExceptionResponse(HttpServletResponse response, CustomException exception) throws IOException {
         response.setStatus(exception.getStatusCode().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
-        ExceptionDto exceptionDto = new ExceptionDto(exception.getCode(), exception.getMessage());
-        String jsonResponse = mapper.writeValueAsString(exceptionDto);
+
+        ExceptionDto exceptionDto = ExceptionDto.of(exception.getCode(), exception.getMessage());
+
+        String jsonResponse = objectMapper.writeValueAsString(exceptionDto);
+
         response.getWriter().write(jsonResponse);
     }
 }
