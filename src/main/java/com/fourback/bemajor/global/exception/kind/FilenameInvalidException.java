@@ -9,6 +9,6 @@ import org.springframework.http.HttpStatus;
 public class FilenameInvalidException extends CustomException {
 
     public FilenameInvalidException(String message) {
-        super(400, message, HttpStatus.BAD_REQUEST);
+        super(4, message, HttpStatus.BAD_REQUEST);
     }
 }
