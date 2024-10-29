@@ -8,6 +8,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class GroupChatMessageService {
@@ -18,6 +20,10 @@ public class GroupChatMessageService {
     public void asyncSave(Long receiverId, Long studyGroupId, OutgoingGroupChatMessageDto outgoingMessageDto) {
         GroupChatMessageEntity message = outgoingMessageDto.toMessageEntity(receiverId, studyGroupId);
         groupChatMessageRepository.save(message);
+    }
+
+    public List<GroupChatMessageEntity> findAll(Long userId, Long studyGroupId) {
+        return groupChatMessageRepository.findAllByReceiverIdAndStudyGroupId(userId, studyGroupId);
     }
 
     @Transactional

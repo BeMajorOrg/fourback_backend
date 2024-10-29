@@ -37,10 +37,8 @@ public class GroupChatHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper;
     private final StudyJoinedRepository studyJoinedRepository;
     private final GroupChatMessageService groupChatMessageService;
-    private final GroupChatMessageRepository groupChatMessageRepository;
     private final Map<Long, Set<WebSocketSession>> sessionsByStudyGroupId;
     private final Map<WebSocketSession, Pair<Long, Long>> UserGroupIdsBySession = new ConcurrentHashMap<>();
-
 
     @Override
     @Transactional
@@ -96,8 +94,8 @@ public class GroupChatHandler extends TextWebSocketHandler {
     }
 
     private void sendPendingMessages(WebSocketSession session, Long userId, Long studyGroupId) throws IOException {
-        List<GroupChatMessageEntity> groupChatMessages = groupChatMessageRepository
-                .findAllByReceiverIdAndStudyGroupId(userId, studyGroupId);
+        List<GroupChatMessageEntity> groupChatMessages =
+                groupChatMessageService.findAll(userId, studyGroupId);
 
         List<OutgoingGroupChatMessageDto> outgoingMessageDtoList = groupChatMessages.stream().map(
                 GroupChatMessageEntity::toOutgoingMessageDto).toList();
@@ -107,7 +105,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
                 sendMessage(session, outgoingMessageDto);
             }
 
-            groupChatMessageRepository.deleteAllInBatch(groupChatMessages);
+            groupChatMessageService.deleteAll(userId, studyGroupId);
         }
     }
 
