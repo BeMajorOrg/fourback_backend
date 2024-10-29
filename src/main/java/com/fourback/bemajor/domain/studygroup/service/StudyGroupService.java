@@ -3,16 +3,14 @@ package com.fourback.bemajor.domain.studygroup.service;
 import com.fourback.bemajor.domain.studygroup.dto.StudyGroupDto;
 import com.fourback.bemajor.domain.studygroup.entity.StudyGroup;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
-import com.fourback.bemajor.domain.studygroup.repository.StudyGroupInvitationRepository;
-import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
-import com.fourback.bemajor.domain.studygroup.repository.StudyJoinApplicationRepository;
-import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
+import com.fourback.bemajor.domain.studygroup.repository.*;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.NotAuthorizedException;
 import com.fourback.bemajor.global.exception.kind.NotFoundException;
+import com.fourback.bemajor.global.exception.kind.UnableToDeleteException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -37,6 +35,7 @@ public class StudyGroupService {
     private final StudyJoinApplicationRepository studyJoinApplicationRepository;
     private final Map<Long, Set<WebSocketSession>> sessionsByStudyGroupId;
     private final RedisService redisService;
+    private final GroupChatMessageService groupChatMessageService;
 
     public List<StudyGroupDto> getAllStudyGroup(int page, String category){
         PageRequest pageable = PageRequest.of(page, 10, Sort.by("startDate").descending());
@@ -85,13 +84,18 @@ public class StudyGroupService {
         if (!studyGroupOp.get().getOwnerUserId().equals(userId)){
             throw new NotAuthorizedException("not authorized. can't delete in studyGroup");
         }
+
+        if (!sessionsByStudyGroupId.get(studyGroupId).isEmpty()) {
+            throw new UnableToDeleteException("don't delete because of active session");
+        }
+
         studyGroupInvitationRepository.deleteByStudyGroup(studyGroupOp.get());
         studyJoinApplicationRepository.deleteByStudyGroup(studyGroupOp.get());
         studyGroupRepository.deleteById(studyGroupId);
 
-        if(!sessionsByStudyGroupId.get(studyGroupId).isEmpty()){
-            redisService.deleteKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId);
-        }
+        groupChatMessageService.deleteAllFromStudyGroup(studyGroupId);
+
+        redisService.deleteKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId);
 
         sessionsByStudyGroupId.remove(studyGroupId);
     }

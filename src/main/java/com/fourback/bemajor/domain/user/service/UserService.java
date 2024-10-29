@@ -65,7 +65,7 @@ public class UserService {
 
         studyJoinedService.exitAll(userId);
 
-        groupChatMessageService.deleteAll(userId);
+        groupChatMessageService.deleteAllFromUser(userId);
 
         userRepository.delete(user);
 
