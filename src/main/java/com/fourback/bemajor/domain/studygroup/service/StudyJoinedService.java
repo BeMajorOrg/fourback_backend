@@ -18,6 +18,7 @@ import com.fourback.bemajor.domain.user.repository.UserRepository;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
+import com.fourback.bemajor.global.exception.kind.NoSpaceException;
 import com.fourback.bemajor.global.exception.kind.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -77,6 +78,10 @@ public class StudyJoinedService {
         //TODO - 유저가 어드민인지 확인
         StudyJoinApplication studyJoinApplication = studyJoinApplicationRepository.findById(studyJoinApplicationId).orElseThrow(() -> new RuntimeException("TODO - 예외처리"));
         StudyGroup studyGroup = studyJoinApplication.getStudyGroup();
+        Integer joinedUserCount = studyJoinedRepository.countByStudyGroup_Id(studyGroup.getId());
+
+        if (studyGroup.getTeamSize() >= joinedUserCount) throw new NoSpaceException("이미 가득 찬 그룹입니다..");
+
         UserEntity user = studyJoinApplication.getUser();
         studyJoinedRepository.save(new StudyJoined(studyGroup,user, true));
 
