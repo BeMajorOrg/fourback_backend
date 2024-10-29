@@ -6,6 +6,7 @@ import com.fourback.bemajor.domain.user.dto.response.UserInquiryResponseDto;
 import com.fourback.bemajor.domain.user.service.UserService;
 import com.fourback.bemajor.global.common.util.ResponseUtil;
 import com.fourback.bemajor.global.security.custom.CustomUserDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<?> saveUser(@RequestBody UserLoginRequestDto requestDto) {
+    public ResponseEntity<?> saveUser(@RequestBody @Valid UserLoginRequestDto requestDto) {
         List<Pair<String, String>> tokens = userService.save(requestDto);
         return ResponseUtil.onSuccess(tokens);
 
@@ -36,7 +37,7 @@ public class UserController {
     }
 
     @PutMapping
-    public ResponseEntity<?> updateUser(@RequestBody UserUpdateRequestDto requestDto,
+    public ResponseEntity<?> updateUser(@RequestBody @Valid UserUpdateRequestDto requestDto,
                                         @AuthenticationPrincipal CustomUserDetails userDetails) {
         userService.update(requestDto, userDetails.getUserId());
         return ResponseUtil.onSuccess();
