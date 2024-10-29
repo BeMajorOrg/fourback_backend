@@ -23,12 +23,9 @@ import com.fourback.bemajor.global.exception.kind.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.socket.WebSocketSession;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,7 +37,6 @@ public class StudyJoinedService {
     private final GroupChatMessageService groupChatMessageService;
     private final StudyJoinApplicationRepository studyJoinApplicationRepository;
     private final RedisService redisService;
-    private final Map<Long, Set<WebSocketSession>> sessionsByStudyGroupId;
     private final FcmService fcmService;
     private final GroupRedisService groupRedisService;
 
@@ -83,7 +79,7 @@ public class StudyJoinedService {
         if (studyGroup.getTeamSize() >= joinedUserCount) throw new NoSpaceException("이미 가득 찬 그룹입니다..");
 
         UserEntity user = studyJoinApplication.getUser();
-        studyJoinedRepository.save(new StudyJoined(studyGroup,user, true));
+        studyJoinedRepository.save(new StudyJoined(studyGroup, user, true));
 
         Long studyGroupId = studyGroup.getId();
         Long userId = user.getId();
@@ -111,7 +107,7 @@ public class StudyJoinedService {
             return new StudyGroupRoleResponse("NONE");
         }
         StudyGroup studyGroup = studyGroupRepository.findById(studyGroupId).orElseThrow(() -> new NotFoundException("no such study group."));
-        if (studyGroup.getOwnerUserId().equals(userId)){
+        if (studyGroup.getOwnerUserId().equals(userId)) {
             return new StudyGroupRoleResponse("ADMIN");
         }
         return new StudyGroupRoleResponse("MEMBER");
@@ -147,9 +143,7 @@ public class StudyJoinedService {
         List<Long> idsByStudyGroupIdAndOauth2Id = studyJoinedRepository.findIdsByStudyGroupIdAndOauth2Id(studyGroupId, userId);
         studyJoinedRepository.deleteByIds(idsByStudyGroupIdAndOauth2Id);
 
-        if (!sessionsByStudyGroupId.get(studyGroupId).isEmpty()) {
-            redisService.deleteLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
-        }
+        redisService.deleteField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
 
         groupChatMessageService.deleteAll(userId, studyGroupId);
     }
@@ -184,12 +178,11 @@ public class StudyJoinedService {
         Boolean changedAlarmSet = !isAlarmSet;
 
         studyJoined.changeAlarmSet(changedAlarmSet);
+
         studyJoinedRepository.save(studyJoined);
 
-        if (!sessionsByStudyGroupId.get(studyGroupId).isEmpty()) {
-            redisService.putLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED,
-                    studyGroupId, userId, changedAlarmSet);
-        }
+        redisService.putFieldIfPresence(
+                RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId, changedAlarmSet);
     }
 
     @Transactional
@@ -205,8 +198,7 @@ public class StudyJoinedService {
     }
 
     protected void putDisConnectedUserIfActiveChat(Long userId, Long studyGroupId) {
-        if (!sessionsByStudyGroupId.get(studyGroupId).isEmpty()) {
-            redisService.putLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId, true);
-        }
+        redisService.putFieldIfPresence(
+                RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId, true);
     }
 }

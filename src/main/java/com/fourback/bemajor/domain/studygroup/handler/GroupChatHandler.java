@@ -22,7 +22,10 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -34,10 +37,8 @@ public class GroupChatHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper;
     private final StudyJoinedRepository studyJoinedRepository;
     private final GroupChatMessageService groupChatMessageService;
-    private final GroupChatMessageRepository groupChatMessageRepository;
     private final Map<Long, Set<WebSocketSession>> sessionsByStudyGroupId;
     private final Map<WebSocketSession, Pair<Long, Long>> UserGroupIdsBySession = new ConcurrentHashMap<>();
-
 
     @Override
     @Transactional
@@ -49,7 +50,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
         UserGroupIdsBySession.put(session, Pair.of(userId, studyGroupId));
         sessionsByStudyGroupId.get(studyGroupId).add(session);
 
-        updateDisConnectedUserInRedis(userId, studyGroupId);
+        redisService.deleteField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
 
         sendPendingMessages(session, userId, studyGroupId);
     }
@@ -62,6 +63,8 @@ public class GroupChatHandler extends TextWebSocketHandler {
 
         Long senderId = ids.getLeft();
         Long studyGroupId = ids.getRight();
+
+        fetchDisConnectedUsers(senderId, studyGroupId);
 
         IncomingGroupChatMessageDto incomingMessageDto =
                 objectMapper.readValue(payload, IncomingGroupChatMessageDto.class);
@@ -84,16 +87,15 @@ public class GroupChatHandler extends TextWebSocketHandler {
         Boolean isAlarmSet = Boolean.valueOf(Objects.requireNonNull(session.getUri())
                 .getQuery().split("&")[1].split("=")[1]);
 
-        redisService.putLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED,
-                studyGroupId, userId, isAlarmSet);
+        redisService.putField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId, isAlarmSet);
 
         sessionsByStudyGroupId.get(studyGroupId).remove(session);
         UserGroupIdsBySession.remove(session);
     }
 
     private void sendPendingMessages(WebSocketSession session, Long userId, Long studyGroupId) throws IOException {
-        List<GroupChatMessageEntity> groupChatMessages = groupChatMessageRepository
-                .findAllByReceiverIdAndStudyGroupId(userId, studyGroupId);
+        List<GroupChatMessageEntity> groupChatMessages =
+                groupChatMessageService.findAll(userId, studyGroupId);
 
         List<OutgoingGroupChatMessageDto> outgoingMessageDtoList = groupChatMessages.stream().map(
                 GroupChatMessageEntity::toOutgoingMessageDto).toList();
@@ -103,22 +105,20 @@ public class GroupChatHandler extends TextWebSocketHandler {
                 sendMessage(session, outgoingMessageDto);
             }
 
-            groupChatMessageRepository.deleteAllInBatch(groupChatMessages);
+            groupChatMessageService.deleteAll(userId, studyGroupId);
         }
     }
 
-    private void updateDisConnectedUserInRedis(Long userId, Long studyGroupId) {
+    private void fetchDisConnectedUsers(Long userId, Long studyGroupId) {
         if (!redisService.hasKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId)) {
             List<StudyJoined> joinedList = studyJoinedRepository
                     .findAllByUserIdNotAndStudyGroupIdWithUser(userId, studyGroupId);
 
-            Map<Long, Boolean> alarmSetByUserId = joinedList.stream().collect(Collectors.toMap(
-                    studyJoined -> studyJoined.getUser().getId(), StudyJoined::getIsAlarmSet));
+            Map<String, String> alarmSetByUserId = joinedList.stream().collect(Collectors.toMap(
+                    studyJoined -> studyJoined.getUser().getId().toString(),
+                    studyJoined -> studyJoined.getIsAlarmSet().toString()));
 
-            redisService.putLongBooleanFields(
-                    RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, alarmSetByUserId);
-        } else {
-            redisService.deleteLongBooleanField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
+            redisService.putFields(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, alarmSetByUserId);
         }
     }
 
@@ -130,16 +130,18 @@ public class GroupChatHandler extends TextWebSocketHandler {
         }
     }
 
-    private void saveAndNotifyDisconnectedUsers(Long studyGroupId, OutgoingGroupChatMessageDto outgoingMessageDto,
+    private void saveAndNotifyDisconnectedUsers(Long studyGroupId,
+                                                OutgoingGroupChatMessageDto outgoingMessageDto,
                                                 IncomingGroupChatMessageDto incomingMessageDto) {
-        Map<Long, Boolean> alarmSetByReceiverId = redisService.getEntriesLongBoolean(
+        Map<String, String> alarmSetByReceiverId = redisService.getEntries(
                 RedisKeyPrefixEnum.DISCONNECTED, studyGroupId);
 
         alarmSetByReceiverId.forEach((receiverId, isAlarm) -> {
-            groupChatMessageService.asyncSave(receiverId, studyGroupId, outgoingMessageDto);
+            Long longReceiverId = Long.valueOf(receiverId);
+            groupChatMessageService.asyncSave(longReceiverId, studyGroupId, outgoingMessageDto);
 
-            String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, receiverId);
-            if (isAlarm && fcmToken != null) {
+            String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, longReceiverId);
+            if (Boolean.parseBoolean(isAlarm) && fcmToken != null) {
                 fcmService.sendGroupChatAlarm(incomingMessageDto, fcmToken);
             }
         });

@@ -32,7 +32,7 @@ public class FriendService {
             throw new IllegalArgumentException("");
         };
 
-        if(friendRepo.checkDuplicateFriend(user.getUserId(), friend.getUserId()) != null) {
+        if(friendRepo.checkDuplicateFriend(user.getId(), friend.getId()) != null) {
             throw new IllegalArgumentException("");
         };
 

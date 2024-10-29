@@ -53,6 +53,7 @@ public class StudyGroupInvitationService {
     StudyJoined studyJoined = studyGroupInvitation.acceptInvitation();
     studyJoinedRepository.save(studyJoined);
     studyGroupInvitationRepository.delete(studyGroupInvitation);
+
     Long studyGroupId = studyJoined.getStudyGroup().getId();
     Long userId = studyJoined.getUser().getId();
 

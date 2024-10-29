@@ -8,6 +8,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class GroupChatMessageService {
@@ -20,13 +22,22 @@ public class GroupChatMessageService {
         groupChatMessageRepository.save(message);
     }
 
-    @Transactional
-    public void deleteAll(Long userId, Long studyGroupId) {
-        groupChatMessageRepository.deleteByReceiverIdAndStudyGroupId(userId, studyGroupId);
+    public List<GroupChatMessageEntity> findAll(Long userId, Long studyGroupId) {
+        return groupChatMessageRepository.findAllByReceiverIdAndStudyGroupId(userId, studyGroupId);
     }
 
     @Transactional
-    public void deleteAll(Long userId) {
-        groupChatMessageRepository.deleteMessagesByReceiverId(userId);
+    public void deleteAll(Long userId, Long studyGroupId) {
+        groupChatMessageRepository.deleteAllByReceiverIdAndStudyGroupId(userId, studyGroupId);
+    }
+
+    @Transactional
+    public void deleteAllFromUser(Long userId) {
+        groupChatMessageRepository.deleteAllByReceiverId(userId);
+    }
+
+    @Transactional
+    public void deleteAllFromStudyGroup(Long studyGroupId){
+        groupChatMessageRepository.deleteAllByStudyGroupId(studyGroupId);
     }
 }
