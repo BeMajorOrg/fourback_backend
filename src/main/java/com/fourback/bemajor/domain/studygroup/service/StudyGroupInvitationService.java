@@ -14,6 +14,7 @@ import com.fourback.bemajor.domain.user.repository.UserRepository;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
+import com.fourback.bemajor.global.exception.kind.NoSpaceException;
 import com.fourback.bemajor.global.exception.kind.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,10 @@ public class StudyGroupInvitationService {
   public void acceptInvitation(Long invitationId) {
     StudyGroupInvitation studyGroupInvitation =
         studyGroupInvitationRepository.findById(invitationId).orElseThrow(RuntimeException::new);
+    StudyGroup studyGroup = studyGroupInvitation.getStudyGroup();
+    Integer joinedCount = studyJoinedRepository.countByStudyGroup_Id(studyGroup.getId());
+    if (studyGroup.getTeamSize() >= joinedCount) throw new NoSpaceException("이미 가득찬 스터디 그룹입니다.");
+
     StudyJoined studyJoined = studyGroupInvitation.acceptInvitation();
     studyJoinedRepository.save(studyJoined);
     studyGroupInvitationRepository.delete(studyGroupInvitation);
