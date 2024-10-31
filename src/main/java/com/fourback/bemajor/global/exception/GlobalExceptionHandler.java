@@ -12,7 +12,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.io.IOException;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<?> handleCustomException(CustomException ex) {
         ExceptionDto body = ExceptionDto.of(ex.getCode(), ex.getMessage());
