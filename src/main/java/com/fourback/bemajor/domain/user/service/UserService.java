@@ -39,7 +39,7 @@ public class UserService {
         this.restoreUserIfDeleted(user);
 
         redisService.setValueWithExpiredTime(RedisKeyPrefixEnum.FCM, user.getId(),
-                requestDto.getFcmToken(), ExpiredTimeEnum.FCM.getExpiredTime());
+                requestDto.getFcmToken(), ExpiredTimeEnum.FCM);
 
         return jwtUtil.createTokens(user.getId(), user.getRole());
     }

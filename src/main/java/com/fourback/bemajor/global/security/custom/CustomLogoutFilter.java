@@ -27,15 +27,19 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
     private void doFilter(HttpServletRequest request, HttpServletResponse response,
                           FilterChain filterChain) throws IOException, ServletException {
-        if (isNotLogoutRequest(request)) {
+        String requestUri = request.getRequestURI();
+        String requestMethod = request.getMethod();
+        if (!requestUri.matches("/logout") || !requestMethod.equals("POST")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String refreshToken = request.getHeader("refresh");
+        String accessToken = request.getHeader("access");
 
-        Long userId = jwtUtil.getUserId(refreshToken);
+        Long userId = jwtUtil.getUserId(accessToken);
 
+        redisService.setValueWithExpiredTime(
+            RedisKeyPrefixEnum.LOGOUT_ACCESS, userId, accessToken, jwtUtil.getExpirationInMillis(accessToken));
         redisService.deleteKey(RedisKeyPrefixEnum.REFRESH, userId);
         redisService.deleteKey(RedisKeyPrefixEnum.FCM, userId);
 
@@ -45,12 +49,5 @@ public class CustomLogoutFilter extends GenericFilterBean {
         response.setHeader("access", null);
 
         response.setStatus(HttpServletResponse.SC_OK);
-    }
-
-    private boolean isNotLogoutRequest(HttpServletRequest request) {
-        String requestUri = request.getRequestURI();
-        String requestMethod = request.getMethod();
-
-        return !requestUri.matches("/logout") || !requestMethod.equals("POST");
     }
 }

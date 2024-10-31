@@ -24,8 +24,7 @@ public class ResponseUtil {
         return ResponseEntity.ok(body);
     }
 
-    public static ResponseEntity<ExceptionDto> onFailed(
-            HttpStatusCode httpStatusCode, ExceptionDto body) {
+    public static ResponseEntity<ExceptionDto> onFailed(HttpStatusCode httpStatusCode, ExceptionDto body) {
         return ResponseEntity.status(httpStatusCode).body(body);
     }
 

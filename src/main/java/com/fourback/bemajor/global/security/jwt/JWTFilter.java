@@ -1,5 +1,7 @@
 package com.fourback.bemajor.global.security.jwt;
 
+import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.InvalidTokenException;
 import com.fourback.bemajor.global.exception.kind.TokenExpiredException;
 import com.fourback.bemajor.global.security.custom.CustomUserDetails;
@@ -19,9 +21,11 @@ import java.io.IOException;
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
+    private final RedisService redisService;
 
-    public JWTFilter(JWTUtil jwtUtil) {
+    public JWTFilter(JWTUtil jwtUtil, RedisService redisService) {
         this.jwtUtil = jwtUtil;
+        this.redisService = redisService;
     }
 
     @Override
@@ -36,11 +40,6 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
             jwtUtil.isExpired(accessToken);
         } catch (ExpiredJwtException e) {
-            if (isReissueRequest(request)) {
-                request.setAttribute("reissue", true);
-                filterChain.doFilter(request, response);
-                return;
-            }
             throw new TokenExpiredException("Access token expired");
         }
 
@@ -50,6 +49,13 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         Long userId = jwtUtil.getUserId(accessToken);
+
+        String logoutAccessToken = redisService.getValue(RedisKeyPrefixEnum.LOGOUT_ACCESS, userId);
+
+        if (accessToken.equals(logoutAccessToken)) {
+            throw new InvalidTokenException("Logout Access Token");
+        }
+
         String role = jwtUtil.getRole(accessToken);
 
         CustomUserDetails userDetails = new CustomUserDetails(userId, role);
@@ -60,11 +66,5 @@ public class JWTFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
-    }
-
-    private boolean isReissueRequest(HttpServletRequest request) {
-        String path = request.getServletPath();
-        String method = request.getMethod();
-        return path.equals("/reissue") && method.equals("POST");
     }
 }

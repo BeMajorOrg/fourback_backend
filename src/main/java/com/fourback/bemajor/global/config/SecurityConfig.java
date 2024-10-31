@@ -62,12 +62,12 @@ public class SecurityConfig {
                         .authenticationEntryPoint(new CustomAuthenticationEntryPoint(objectMapper)));
 
         http
-                .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new CustomLogoutFilter(redisService, jwtUtil), LogoutFilter.class)
-                .addFilterBefore(new JWTExceptionFilter(objectMapper), CustomLogoutFilter.class);
+                .addFilterBefore(new JWTFilter(jwtUtil, redisService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new ReissueTokenFilter(jwtUtil, redisService), JWTFilter.class)
+                .addFilterBefore(new JWTExceptionFilter(objectMapper), ReissueTokenFilter.class);
 
         http
-                .addFilterAfter(new ReissueTokenFilter(jwtUtil, redisService), JWTFilter.class);
+                .addFilterAfter(new CustomLogoutFilter(redisService, jwtUtil), JWTFilter.class);
 
         return http.build();
     }
@@ -75,12 +75,12 @@ public class SecurityConfig {
     private CorsConfigurationSource corsCustomizer() {
         return request -> {
             CorsConfiguration configuration = new CorsConfiguration();
-            configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-            configuration.setAllowedMethods(Collections.singletonList("*"));
-            configuration.setAllowCredentials(true);
-            configuration.setAllowedHeaders(Collections.singletonList("*"));
             configuration.setMaxAge(3600L);
+            configuration.setAllowCredentials(true);
             configuration.setExposedHeaders(List.of("access", "refresh"));
+            configuration.setAllowedMethods(Collections.singletonList("*"));
+            configuration.setAllowedHeaders(Collections.singletonList("*"));
+            configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
 
             return configuration;
         };

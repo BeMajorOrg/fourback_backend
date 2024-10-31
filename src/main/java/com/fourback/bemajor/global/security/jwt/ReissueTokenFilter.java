@@ -30,8 +30,9 @@ public class ReissueTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        Boolean reissue = (Boolean) request.getAttribute("reissue");
-        if (reissue != null && reissue) {
+        String path = request.getServletPath();
+        String method = request.getMethod();
+        if (path.equals("/reissue") && method.equals("POST")) {
             String refresh = request.getHeader("refresh");
             if (refresh == null) {
                 throw new InvalidTokenException("Refresh Token is empty");
@@ -49,13 +50,19 @@ public class ReissueTokenFilter extends OncePerRequestFilter {
             }
 
             Long userId = jwtUtil.getUserId(refresh);
+
+            String refreshInRedis = redisService.getValue(RedisKeyPrefixEnum.REFRESH, userId);
+
+            if(!refresh.equals(refreshInRedis)) {
+                throw new InvalidTokenException("Unmatched Refresh Token in Redis");
+            }
+
             String role = jwtUtil.getRole(refresh);
 
             List<Pair<String, String>> pairs = jwtUtil.createTokens(userId, role);
             pairs.forEach(pair -> response.setHeader(pair.getLeft(), pair.getRight()));
 
-            redisService.extendExpiration(
-                    RedisKeyPrefixEnum.FCM, userId, ExpiredTimeEnum.FCM.getExpiredTime());
+            redisService.extendExpiration(RedisKeyPrefixEnum.FCM, userId, ExpiredTimeEnum.FCM);
 
             response.setStatus(HttpServletResponse.SC_OK);
             return;

@@ -4,13 +4,14 @@ import lombok.Getter;
 
 @Getter
 public enum RedisKeyPrefixEnum {
+    FCM("fcm:"),
     REFRESH("refresh:"),
     DISCONNECTED("disConnected:"),
-    FCM("fcm:");
+    LOGOUT_ACCESS("logoutAccess:");
 
-    private final String description;
+    private final String keyPrefix;
 
-    RedisKeyPrefixEnum(String description) {
-        this.description = description;
+    RedisKeyPrefixEnum(String keyPrefix) {
+        this.keyPrefix = keyPrefix;
     }
 }

@@ -23,7 +23,7 @@ public class GroupRedisService {
         byte[] byteValueId = valueId.toString().getBytes();
         List<byte[]> byteFilteredDisConnectedKeys = keyIds.stream()
                 .filter(keyId -> !sessionsByStudyGroupId.get(keyId).isEmpty())
-                .map(keyId -> (RedisKeyPrefixEnum.DISCONNECTED.getDescription() + keyId).getBytes())
+                .map(keyId -> (RedisKeyPrefixEnum.DISCONNECTED.getKeyPrefix() + keyId).getBytes())
                 .toList();
 
         stringRedisTemplate.executePipelined((RedisCallback<?>) redisConnection -> {
@@ -36,7 +36,7 @@ public class GroupRedisService {
     @Scheduled(fixedDelay = 3000000)
     public void deleteDisConnectedUserFromInactiveChats() {
         Set<String> disConnectedKeys = stringRedisTemplate
-                .keys(RedisKeyPrefixEnum.DISCONNECTED.getDescription() + "*");
+                .keys(RedisKeyPrefixEnum.DISCONNECTED.getKeyPrefix() + "*");
         if (disConnectedKeys != null) {
             List<byte[]> byteFilteredDisConnectedKeys = disConnectedKeys.stream()
                     .filter(disConnectedKey -> {

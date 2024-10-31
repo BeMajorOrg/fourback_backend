@@ -4,9 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum ExpiredTimeEnum {
+    FCM(86460000L),
     ACCESS(600000L),
-    REFRESH(86400000L),
-    FCM(86460000L);
+    REFRESH(86400000L);
 
     private final long expiredTime;
 

@@ -1,5 +1,6 @@
 package com.fourback.bemajor.global.common.service;
 
+import com.fourback.bemajor.global.common.enums.ExpiredTimeEnum;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
@@ -17,39 +18,40 @@ import static java.util.Collections.singletonList;
 public class RedisService {
     private final StringRedisTemplate stringRedisTemplate;
 
-    public void setValueWithExpiredTime(RedisKeyPrefixEnum prefixEnum, Long id,
-                                        String value, long expiredTime) {
-        stringRedisTemplate.opsForValue().set(prefixEnum.getDescription() + id,
-                value, expiredTime, TimeUnit.MILLISECONDS);
+    public void setValueWithExpiredTime(RedisKeyPrefixEnum prefixEnum, Long id, String value, ExpiredTimeEnum expiredTimeEnum) {
+        stringRedisTemplate.opsForValue().set(prefixEnum.getKeyPrefix() + id,
+                value, expiredTimeEnum.getExpiredTime(), TimeUnit.MILLISECONDS);
     }
 
-    public void extendExpiration(RedisKeyPrefixEnum prefixEnum, Long id, long expiredTime) {
-        stringRedisTemplate.expire(prefixEnum.getDescription() + id, expiredTime, TimeUnit.MILLISECONDS);
+    public void setValueWithExpiredTime(RedisKeyPrefixEnum prefixEnum, Long id, String value, long expiredTime) {
+        stringRedisTemplate.opsForValue().set(prefixEnum.getKeyPrefix() + id, value, expiredTime, TimeUnit.MILLISECONDS);
+    }
+
+    public void extendExpiration(RedisKeyPrefixEnum prefixEnum, Long id, ExpiredTimeEnum expiredTimeEnum) {
+        stringRedisTemplate.expire(prefixEnum.getKeyPrefix() + id, expiredTimeEnum.getExpiredTime(), TimeUnit.MILLISECONDS);
     }
 
     public void deleteKey(RedisKeyPrefixEnum prefixEnum, Long id) {
-        stringRedisTemplate.delete(prefixEnum.getDescription() + id);
+        stringRedisTemplate.delete(prefixEnum.getKeyPrefix() + id);
     }
 
     public String getValue(RedisKeyPrefixEnum prefixEnum, Long id) {
-        return stringRedisTemplate.opsForValue().get(prefixEnum.getDescription() + id);
+        return stringRedisTemplate.opsForValue().get(prefixEnum.getKeyPrefix() + id);
     }
 
     public boolean hasKey(RedisKeyPrefixEnum prefixEnum, Long id) {
-        return Boolean.TRUE.equals(stringRedisTemplate.hasKey(prefixEnum.getDescription() + id));
+        return Boolean.TRUE.equals(stringRedisTemplate.hasKey(prefixEnum.getKeyPrefix() + id));
     }
 
-    public void putField(RedisKeyPrefixEnum prefixEnum,
-                         Long keyId, Long valueId, Boolean isAlarmSet) {
+    public void putField(RedisKeyPrefixEnum prefixEnum, Long keyId, Long valueId, Boolean isAlarmSet) {
         HashOperations<String, String, String> operations = stringRedisTemplate.opsForHash();
-        operations.put(prefixEnum.getDescription() + keyId, valueId.toString(), isAlarmSet.toString());
+        operations.put(prefixEnum.getKeyPrefix() + keyId, valueId.toString(), isAlarmSet.toString());
     }
 
-    public void putFields(RedisKeyPrefixEnum prefixEnum,
-                          Long keyId, Map<String, String> values) {
+    public void putFields(RedisKeyPrefixEnum prefixEnum, Long keyId, Map<String, String> values) {
         if (values != null && !values.isEmpty()) {
             HashOperations<String, String, String> operations = stringRedisTemplate.opsForHash();
-            operations.putAll(prefixEnum.getDescription() + keyId, values);
+            operations.putAll(prefixEnum.getKeyPrefix() + keyId, values);
         }
     }
 
@@ -57,27 +59,26 @@ public class RedisService {
                                    Long keyId, Long valueId, Boolean isAlarmSet) {
         String luaScript =
                 "local key = KEYS[1] " +
-                        "local field = ARGV[1] " +
-                        "local value = ARGV[2] " +
-                        "if redis.call('EXISTS', key) == 1 then " +
-                        "    redis.call('HSET', key, field, value) " +
-                        "end";
+                "local field = ARGV[1] " +
+                "local value = ARGV[2] " +
+                "if redis.call('EXISTS', key) == 1 then " +
+                "    redis.call('HSET', key, field, value) " +
+                "end";
 
-        String key = prefixEnum.getDescription() + keyId;
+        String key = prefixEnum.getKeyPrefix() + keyId;
         String field = valueId.toString();
         String value = isAlarmSet.toString();
 
-        stringRedisTemplate.execute(
-                new DefaultRedisScript<>(luaScript, String.class), singletonList(key), field, value);
+        stringRedisTemplate.execute(new DefaultRedisScript<>(luaScript, String.class), singletonList(key), field, value);
     }
 
     public Map<String, String> getEntries(RedisKeyPrefixEnum prefixEnum, Long id) {
         HashOperations<String, String, String> operations = stringRedisTemplate.opsForHash();
-        return operations.entries(prefixEnum.getDescription() + id);
+        return operations.entries(prefixEnum.getKeyPrefix() + id);
     }
 
     public void deleteField(RedisKeyPrefixEnum prefixEnum, Long keyId, Long valueId) {
         HashOperations<String, String, String> operation = stringRedisTemplate.opsForHash();
-        operation.delete(prefixEnum.getDescription() + keyId, valueId.toString());
+        operation.delete(prefixEnum.getKeyPrefix() + keyId, valueId.toString());
     }
 }
