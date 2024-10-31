@@ -15,7 +15,6 @@ import org.hibernate.annotations.SQLRestriction;
 @Getter
 @Builder
 @Table(name = "user")
-@SQLRestriction("is_deleted=false")
 @AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @SQLDelete(sql = "update user set is_deleted=true, name='<알 수 없음>', email='', birth=''," +
