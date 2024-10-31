@@ -2,8 +2,10 @@ package com.fourback.bemajor.global.common.service;
 
 import com.fourback.bemajor.global.common.enums.ExpiredTimeEnum;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import static java.util.Collections.singletonList;
 @Service
 @RequiredArgsConstructor
 public class RedisService {
+    //allKeys-lru 메모리 전략 사용
     private final StringRedisTemplate stringRedisTemplate;
 
     public void setValueWithExpiredTime(RedisKeyPrefixEnum prefixEnum, Long id, String value, ExpiredTimeEnum expiredTimeEnum) {
@@ -80,5 +83,23 @@ public class RedisService {
     public void deleteField(RedisKeyPrefixEnum prefixEnum, Long keyId, Long valueId) {
         HashOperations<String, String, String> operation = stringRedisTemplate.opsForHash();
         operation.delete(prefixEnum.getKeyPrefix() + keyId, valueId.toString());
+    }
+
+    public void deleteFieldInKeys(RedisKeyPrefixEnum keyPrefixEnum, List<Long> keyIds, Long valueId) {
+        byte[] byteValueId = valueId.toString().getBytes();
+        List<byte[]> byteFilteredDisConnectedKeys = keyIds.stream()
+            .map(keyId -> (keyPrefixEnum.getKeyPrefix() + keyId).getBytes()).toList();
+
+        int batchSize = 100;
+        for (int start = 0; start < byteFilteredDisConnectedKeys.size(); start += batchSize) {
+            int end = Math.min(start + batchSize, byteFilteredDisConnectedKeys.size());
+
+            List<byte[]> tempByteKeys = byteFilteredDisConnectedKeys.subList(start, end);
+
+            stringRedisTemplate.executePipelined((RedisCallback<?>) redisConnection -> {
+                tempByteKeys.forEach(tempByteKey -> redisConnection.hashCommands().hDel(tempByteKey, byteValueId));
+                return null;
+            });
+        }
     }
 }

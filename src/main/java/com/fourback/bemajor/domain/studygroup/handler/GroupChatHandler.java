@@ -5,7 +5,6 @@ import com.fourback.bemajor.domain.studygroup.dto.IncomingGroupChatMessageDto;
 import com.fourback.bemajor.domain.studygroup.dto.OutgoingGroupChatMessageDto;
 import com.fourback.bemajor.domain.studygroup.entity.GroupChatMessageEntity;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
-import com.fourback.bemajor.domain.studygroup.repository.GroupChatMessageRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.studygroup.service.GroupChatMessageService;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
@@ -50,7 +49,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
         UserGroupIdsBySession.put(session, Pair.of(userId, studyGroupId));
         sessionsByStudyGroupId.get(studyGroupId).add(session);
 
-        redisService.deleteField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
+        updateDisConnectedUsersOnJoin(userId, studyGroupId);
 
         sendPendingMessages(session, userId, studyGroupId);
     }
@@ -63,8 +62,6 @@ public class GroupChatHandler extends TextWebSocketHandler {
 
         Long senderId = ids.getLeft();
         Long studyGroupId = ids.getRight();
-
-        fetchDisConnectedUsers(senderId, studyGroupId);
 
         IncomingGroupChatMessageDto incomingMessageDto =
                 objectMapper.readValue(payload, IncomingGroupChatMessageDto.class);
@@ -109,7 +106,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
         }
     }
 
-    private void fetchDisConnectedUsers(Long userId, Long studyGroupId) {
+    private void updateDisConnectedUsersOnJoin(Long userId, Long studyGroupId) {
         if (!redisService.hasKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId)) {
             List<StudyJoined> joinedList = studyJoinedRepository
                     .findAllByUserIdNotAndStudyGroupIdWithUser(userId, studyGroupId);
@@ -119,6 +116,8 @@ public class GroupChatHandler extends TextWebSocketHandler {
                     studyJoined -> studyJoined.getIsAlarmSet().toString()));
 
             redisService.putFields(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, alarmSetByUserId);
+        } else {
+            redisService.deleteField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
         }
     }
 

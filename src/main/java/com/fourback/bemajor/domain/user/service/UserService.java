@@ -38,10 +38,13 @@ public class UserService {
         UserEntity user = this.findOrCreateUser(oauth2Id);
         this.restoreUserIfDeleted(user);
 
+        // refreshToken을 먼저 저장하고 fcm 토큰 저장해야 lru 조건 만족
+        List<Pair<String, String>> tokens = jwtUtil.createTokens(user.getId(), user.getRole());
+
         redisService.setValueWithExpiredTime(RedisKeyPrefixEnum.FCM, user.getId(),
                 requestDto.getFcmToken(), ExpiredTimeEnum.FCM);
 
-        return jwtUtil.createTokens(user.getId(), user.getRole());
+        return tokens;
     }
 
     public UserInquiryResponseDto get(Long userId) {
