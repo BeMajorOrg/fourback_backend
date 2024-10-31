@@ -18,8 +18,11 @@ public class StudyMemberResponse {
   private Long userId;
   private String name;
   private String profileImage;
+  private String belong;
+  private String department;
 
   public static StudyMemberResponse fromUserEntity(UserEntity userEntity) {
-    return new StudyMemberResponse(userEntity.getId(), userEntity.getUserName(), userEntity.getImageUrl());
+    return new StudyMemberResponse(userEntity.getId(), userEntity.getUserName(),
+            userEntity.getImageUrl(),userEntity.getBelong(),userEntity.getDepartment());
   }
 }

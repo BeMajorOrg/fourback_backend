@@ -76,7 +76,7 @@ public class StudyJoinedService {
         StudyGroup studyGroup = studyJoinApplication.getStudyGroup();
         Integer joinedUserCount = studyJoinedRepository.countByStudyGroup_Id(studyGroup.getId());
 
-        if (studyGroup.getTeamSize() >= joinedUserCount) throw new NoSpaceException("이미 가득 찬 그룹입니다..");
+        if (studyGroup.getTeamSize() <= joinedUserCount) throw new NoSpaceException("이미 가득 찬 그룹입니다..");
 
         UserEntity user = studyJoinApplication.getUser();
         studyJoinedRepository.save(new StudyJoined(studyGroup, user, true));

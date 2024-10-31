@@ -48,7 +48,7 @@ public class StudyGroupInvitationService {
         studyGroupInvitationRepository.findById(invitationId).orElseThrow(RuntimeException::new);
     StudyGroup studyGroup = studyGroupInvitation.getStudyGroup();
     Integer joinedCount = studyJoinedRepository.countByStudyGroup_Id(studyGroup.getId());
-    if (studyGroup.getTeamSize() >= joinedCount) throw new NoSpaceException("이미 가득찬 스터디 그룹입니다.");
+    if (studyGroup.getTeamSize() <= joinedCount) throw new NoSpaceException("이미 가득찬 스터디 그룹입니다.");
 
     StudyJoined studyJoined = studyGroupInvitation.acceptInvitation();
     studyJoinedRepository.save(studyJoined);
