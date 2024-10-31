@@ -5,8 +5,8 @@ import com.fourback.bemajor.domain.studygroup.dto.IncomingGroupChatMessageDto;
 import com.fourback.bemajor.domain.studygroup.dto.OutgoingGroupChatMessageDto;
 import com.fourback.bemajor.domain.studygroup.entity.GroupChatMessageEntity;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
-import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.studygroup.service.GroupChatMessageService;
+import com.fourback.bemajor.domain.studygroup.service.StudyJoinedService;
 import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
@@ -34,7 +34,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
     private final FcmService fcmService;
     private final RedisService redisService;
     private final ObjectMapper objectMapper;
-    private final StudyJoinedRepository studyJoinedRepository;
+    private final StudyJoinedService studyJoinedService;
     private final GroupChatMessageService groupChatMessageService;
     private final Map<Long, Set<WebSocketSession>> sessionsByStudyGroupId;
     private final Map<WebSocketSession, Pair<Long, Long>> UserGroupIdsBySession = new ConcurrentHashMap<>();
@@ -108,8 +108,8 @@ public class GroupChatHandler extends TextWebSocketHandler {
 
     private void updateDisConnectedUsersOnJoin(Long userId, Long studyGroupId) {
         if (!redisService.hasKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId)) {
-            List<StudyJoined> joinedList = studyJoinedRepository
-                    .findAllByUserIdNotAndStudyGroupIdWithUser(userId, studyGroupId);
+            List<StudyJoined> joinedList = studyJoinedService
+                .findAllInStudyGroupWithoutRecentReturnee(userId, studyGroupId);
 
             Map<String, String> alarmSetByUserId = joinedList.stream().collect(Collectors.toMap(
                     studyJoined -> studyJoined.getUser().getId().toString(),

@@ -194,6 +194,10 @@ public class StudyJoinedService {
         redisService.deleteFieldInKeys(RedisKeyPrefixEnum.DISCONNECTED, studyGroupIds, userId);
     }
 
+    public List<StudyJoined> findAllInStudyGroupWithoutRecentReturnee(Long userId, Long studyGroupId) {
+        return studyJoinedRepository.findAllByUserIdNotAndStudyGroupIdWithUser(userId, studyGroupId);
+    }
+
     protected void putDisConnectedUserIfActiveChat(Long userId, Long studyGroupId) {
         redisService.putFieldIfPresence(
                 RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId, true);
