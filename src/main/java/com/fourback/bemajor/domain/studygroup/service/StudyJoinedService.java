@@ -38,7 +38,6 @@ public class StudyJoinedService {
     private final StudyJoinApplicationRepository studyJoinApplicationRepository;
     private final RedisService redisService;
     private final FcmService fcmService;
-    private final GroupRedisService groupRedisService;
 
     /**
      * 스터디 그룹 참여 신청
@@ -192,9 +191,7 @@ public class StudyJoinedService {
         List<Long> studyGroupIds = joinedList.stream()
                 .map(studyJoined -> studyJoined.getStudyGroup().getId()).toList();
 
-        groupRedisService.deleteDisconnectedUserFromActiveChats(studyGroupIds, userId);
-
-        studyJoinedRepository.deleteAllInBatch(joinedList);
+        redisService.deleteFieldInKeys(RedisKeyPrefixEnum.DISCONNECTED, studyGroupIds, userId);
     }
 
     protected void putDisConnectedUserIfActiveChat(Long userId, Long studyGroupId) {
