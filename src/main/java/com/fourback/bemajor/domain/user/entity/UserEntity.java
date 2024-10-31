@@ -33,10 +33,10 @@ public class UserEntity {
     @Column(name = "birth")
     private String birth;
 
-    @Column(name = "oauth2_id")
+    @Column(name = "oauth2_id", unique = true, nullable = false, updatable = false)
     private String oauth2Id;
 
-    @Column(name = "role")
+    @Column(name = "role", nullable = false)
     private String role;
 
     @Column(name = "belong")
@@ -58,7 +58,7 @@ public class UserEntity {
     private String techStack;
 
     @Setter
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
     @Setter
