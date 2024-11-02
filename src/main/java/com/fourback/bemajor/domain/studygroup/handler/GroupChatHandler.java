@@ -68,7 +68,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
                 objectMapper.readValue(payload, IncomingGroupChatMessageDto.class);
 
         OutgoingGroupChatMessageDto outgoingMessageDto =
-                incomingMessageDto.toOutgoingMessageDto(senderId, LocalDateTime.now());
+                OutgoingGroupChatMessageDto.of(senderId, LocalDateTime.now(), incomingMessageDto.getContent());
 
         sendMessageToActiveSessions(studyGroupId, outgoingMessageDto);
 
@@ -95,7 +95,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
                 groupChatMessageService.findAll(userId, studyGroupId);
 
         List<OutgoingGroupChatMessageDto> outgoingMessageDtoList = groupChatMessages.stream().map(
-                GroupChatMessageEntity::toOutgoingMessageDto).toList();
+                OutgoingGroupChatMessageDto::from).toList();
 
         if (!outgoingMessageDtoList.isEmpty()) {
             for (OutgoingGroupChatMessageDto outgoingMessageDto : outgoingMessageDtoList) {

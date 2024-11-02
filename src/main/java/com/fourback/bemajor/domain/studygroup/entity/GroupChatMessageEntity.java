@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Table(name = "group_chat_message")
 public class GroupChatMessageEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "group_chat_message_id")
@@ -33,11 +34,14 @@ public class GroupChatMessageEntity {
     @Column(name = "send_time")
     private LocalDateTime sendTime;
 
-    public OutgoingGroupChatMessageDto toOutgoingMessageDto() {
-        return OutgoingGroupChatMessageDto.builder()
-                .content(this.message)
-                .senderId(this.senderId)
-                .sendTime(this.sendTime)
+    public static GroupChatMessageEntity of(Long receiverId, Long studyGroupId,
+                                            OutgoingGroupChatMessageDto outgoingMessageDto) {
+        return GroupChatMessageEntity.builder()
+                .senderId(outgoingMessageDto.getSenderId())
+                .message(outgoingMessageDto.getContent())
+                .receiverId(receiverId)
+                .sendTime(outgoingMessageDto.getSendTime())
+                .studyGroupId(studyGroupId)
                 .build();
     }
 }

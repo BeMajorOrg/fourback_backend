@@ -50,7 +50,7 @@ public class UserService {
     public UserInquiryResponseDto get(Long userId) {
         UserEntity user = this.getUserById(userId);
 
-        return user.toInquiryResponseDto();
+        return UserInquiryResponseDto.from(user);
     }
 
     @Transactional

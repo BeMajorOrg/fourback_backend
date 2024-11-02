@@ -13,12 +13,4 @@ public class IncomingGroupChatMessageDto {
     private String content;
     private String senderName;
     private String studyGroupName;
-
-    public OutgoingGroupChatMessageDto toOutgoingMessageDto(Long userId, LocalDateTime sendTime) {
-        return OutgoingGroupChatMessageDto.builder()
-                .senderId(userId)
-                .sendTime(sendTime)
-                .content(this.content)
-                .build();
-    }
 }

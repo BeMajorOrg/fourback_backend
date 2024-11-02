@@ -15,13 +15,19 @@ public class OutgoingGroupChatMessageDto {
     private Long senderId;
     private LocalDateTime sendTime;
 
-    public GroupChatMessageEntity toMessageEntity(Long receiverId, Long studyGroupId) {
-        return GroupChatMessageEntity.builder()
+    public static OutgoingGroupChatMessageDto from(GroupChatMessageEntity groupChatMessageEntity) {
+        return OutgoingGroupChatMessageDto.builder()
+                .content(groupChatMessageEntity.getMessage())
+                .senderId(groupChatMessageEntity.getSenderId())
+                .sendTime(groupChatMessageEntity.getSendTime())
+                .build();
+    }
+
+    public static OutgoingGroupChatMessageDto of(Long senderId, LocalDateTime sendTime, String content) {
+        return OutgoingGroupChatMessageDto.builder()
                 .senderId(senderId)
-                .message(this.content)
-                .receiverId(receiverId)
-                .sendTime(this.sendTime)
-                .studyGroupId(studyGroupId)
+                .sendTime(sendTime)
+                .content(content)
                 .build();
     }
 }

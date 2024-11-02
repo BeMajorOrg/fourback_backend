@@ -156,7 +156,7 @@ public class StudyJoinedService {
 
         //성능상 이점을 얻고 싶으면 for문 하나로 만들기
         List<UserInquiryResponseDto> userResponseDtoList = joinedList.stream().map(StudyJoined::getUser)
-                .map(UserEntity::toInquiryResponseDto).toList();
+                .map(UserInquiryResponseDto::from).toList();
 
         Boolean isAlarmSet = joinedList.stream().filter(joined -> joined.getUser().getId().equals(userId))
                 .map(StudyJoined::getIsAlarmSet).findFirst().orElse(false);

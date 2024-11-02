@@ -18,7 +18,7 @@ public class GroupChatMessageService {
     @Transactional
     @Async("threadPoolTaskExecutor")
     public void asyncSave(Long receiverId, Long studyGroupId, OutgoingGroupChatMessageDto outgoingMessageDto) {
-        GroupChatMessageEntity message = outgoingMessageDto.toMessageEntity(receiverId, studyGroupId);
+        GroupChatMessageEntity message = GroupChatMessageEntity.of(receiverId, studyGroupId, outgoingMessageDto);
         groupChatMessageRepository.save(message);
     }
 

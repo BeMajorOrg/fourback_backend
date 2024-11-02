@@ -2,14 +2,12 @@ package com.fourback.bemajor.domain.user.entity;
 
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
 import com.fourback.bemajor.domain.user.dto.request.UserUpdateRequestDto;
-import com.fourback.bemajor.domain.user.dto.response.UserInquiryResponseDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
@@ -75,23 +73,6 @@ public class UserEntity {
                 .role("ROLE_USER")
                 .oauth2Id(oauth2Id)
                 .studyJoinedList(new ArrayList<>())
-                .build();
-    }
-
-    public UserInquiryResponseDto toInquiryResponseDto() {
-        return UserInquiryResponseDto.builder()
-                .userId(this.id)
-                .userName(this.userName)
-                .address(this.address)
-                .department(this.department)
-                .imageUrl(this.imageUrl)
-                .email(this.email)
-                .hobby(this.hobby)
-                .birth(this.birth)
-                .belong(this.belong)
-                .objective(this.objective)
-                .techStack(this.techStack)
-                .isDeleted(this.isDeleted)
                 .build();
     }
 
