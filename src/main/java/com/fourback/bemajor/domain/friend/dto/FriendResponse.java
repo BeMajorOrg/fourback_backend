@@ -20,7 +20,7 @@ public class FriendResponse {
     private String hobby;
     private String objective;
     private String address;
-    private String techstack;
+    private String techStack;
     private String imageUrl;
 
     public static FriendResponse fromUser(UserEntity user) {
@@ -33,7 +33,7 @@ public class FriendResponse {
                 .hobby(user.getHobby())
                 .objective(user.getObjective())
                 .address(user.getAddress())
-                .techstack(user.getTechStack())
+                .techStack(user.getTechStack())
                 .imageUrl(user.getImageUrl())
                 .build();
     }
