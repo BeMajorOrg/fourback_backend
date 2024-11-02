@@ -11,7 +11,8 @@ import com.fourback.bemajor.domain.studygroup.repository.StudyGroupRepository;
 import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
-import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.enums.FieldKeyEnum;
+import com.fourback.bemajor.global.common.enums.KeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.NoSpaceException;
@@ -62,7 +63,10 @@ public class StudyGroupInvitationService {
     Long ownerUserId = studyJoined.getStudyGroup().getOwnerUserId();
     UserEntity userEntity = userRepository.findById(ownerUserId)
             .orElseThrow(() -> new NotFoundException("방장을 찾을 수 없는 그룹입니다."));
-    String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userEntity.getId());
+
+    String fcmToken = redisService.getFieldValue(
+        KeyPrefixEnum.TOKENS.getKeyPrefix() + userEntity.getId(), FieldKeyEnum.FCM.getFieldKey());
+
     if (fcmToken == null) return;
 
     fcmService.sendStudyGroupAlarm(StudyGroupAlarmDto.builder()
@@ -114,7 +118,8 @@ public class StudyGroupInvitationService {
     //TODO : 중복 참여 방지 로직 추가
     studyGroupInvitationRepository.save(new StudyGroupInvitation(studyGroup, userEntity));
 
-    String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, userEntity.getId());
+    String fcmToken = redisService.getFieldValue(
+        KeyPrefixEnum.TOKENS.getKeyPrefix() + userEntity.getId(), FieldKeyEnum.FCM.getFieldKey());
     fcmService.sendStudyGroupAlarm(StudyGroupAlarmDto.builder()
                     .fcmToken(fcmToken)
                     .title(studyGroup.getStudyName())

@@ -1,6 +1,6 @@
 package com.fourback.bemajor.global.security.custom;
 
-import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.enums.KeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.security.jwt.JWTUtil;
 import jakarta.servlet.FilterChain;
@@ -38,10 +38,9 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
         Long userId = jwtUtil.getUserId(accessToken);
 
-        redisService.setValueWithExpiredTime(
-            RedisKeyPrefixEnum.LOGOUT_ACCESS, userId, accessToken, jwtUtil.getExpirationInMillis(accessToken));
-        redisService.deleteKey(RedisKeyPrefixEnum.REFRESH, userId);
-        redisService.deleteKey(RedisKeyPrefixEnum.FCM, userId);
+        redisService.setValueWithExpiredTime(KeyPrefixEnum.LOGOUT_ACCESS.getKeyPrefix() + userId,
+            accessToken, jwtUtil.getExpirationInMillis(accessToken));
+        redisService.deleteKey(KeyPrefixEnum.TOKENS.getKeyPrefix() + userId);
 
         SecurityContextHolder.clearContext();
 

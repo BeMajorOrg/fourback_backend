@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourback.bemajor.domain.friendchat.dto.FriendChatMessageRequestDto;
 import com.fourback.bemajor.domain.friendchat.dto.FriendChatMessageResponseDto;
 import com.fourback.bemajor.domain.friendchat.service.FriendChatMessageService;
-import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.enums.FieldKeyEnum;
+import com.fourback.bemajor.global.common.enums.KeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
 import lombok.RequiredArgsConstructor;
@@ -90,7 +91,8 @@ public class FriendChatHandler extends TextWebSocketHandler {
 
         if (!isReceiverOnline) {
             friendChatMessageService.saveMessage(receiverId, friendchatMessageResponseDto);
-            String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, receiverId);
+            String fcmToken = redisService.getFieldValue(
+                KeyPrefixEnum.TOKENS.getKeyPrefix() + receiverId, FieldKeyEnum.FCM.getFieldKey());
             if (fcmToken != null) {
                 fcmService.sendFriendChatAlarm(friendchatMessageResponseDto, fcmToken);
             }
@@ -98,7 +100,7 @@ public class FriendChatHandler extends TextWebSocketHandler {
 
 //        if (onSessions != null && onSessions.size() == 1) {
 //            friendChatMessageService.saveMessage(receiverId, friendchatMessageResponseDto);
-//            String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, receiverId);
+//            String fcmToken = redisService.getValue(KeyPrefixEnum.FCM, receiverId);
 //            if (fcmToken != null) {
 //                fcmService.sendFriendChatAlarm(friendchatMessageResponseDto, fcmToken);
 //            }

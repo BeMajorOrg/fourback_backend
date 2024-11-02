@@ -1,7 +1,8 @@
 package com.fourback.bemajor.global.security.jwt;
 
 import com.fourback.bemajor.global.common.enums.ExpiredTimeEnum;
-import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.enums.FieldKeyEnum;
+import com.fourback.bemajor.global.common.enums.KeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
 import io.jsonwebtoken.Jwts;
 import org.apache.commons.lang3.tuple.Pair;
@@ -64,8 +65,8 @@ public class JWTUtil {
 
         tokens.add(Pair.of(refresh, refreshToken));
 
-        redisService.setValueWithExpiredTime(
-                RedisKeyPrefixEnum.REFRESH, userId, refreshToken, ExpiredTimeEnum.REFRESH);
+        redisService.putFieldWithExpiredTime(KeyPrefixEnum.TOKENS.getKeyPrefix() + userId,
+            FieldKeyEnum.REFRESH.getFieldKey(), refreshToken, ExpiredTimeEnum.REFRESH.getExpiredTime());
 
         return tokens;
     }

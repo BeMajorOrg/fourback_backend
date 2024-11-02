@@ -15,7 +15,8 @@ import com.fourback.bemajor.domain.studygroup.repository.StudyJoinedRepository;
 import com.fourback.bemajor.domain.user.dto.response.UserInquiryResponseDto;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
-import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.enums.FieldKeyEnum;
+import com.fourback.bemajor.global.common.enums.KeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.NoSpaceException;
@@ -55,7 +56,9 @@ public class StudyJoinedService {
         studyJoinApplicationRepository.save(new StudyJoinApplication(userEntity, studyGroup));
 
         Long ownerUserId = studyGroup.getOwnerUserId();
-        String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, ownerUserId);
+        String fcmToken = redisService.getFieldValue(
+            KeyPrefixEnum.TOKENS.getKeyPrefix() + ownerUserId, FieldKeyEnum.FCM.getFieldKey());
+
         fcmService.sendStudyGroupAlarm(StudyGroupAlarmDto.builder()
                         .title(studyGroup.getStudyName())
                         .fcmToken(fcmToken)
@@ -87,7 +90,8 @@ public class StudyJoinedService {
 
         studyJoinApplicationRepository.deleteById(studyJoinApplicationId);
 
-        String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, user.getId());
+        String fcmToken = redisService.getFieldValue(
+            KeyPrefixEnum.TOKENS.getKeyPrefix() + user.getId(), FieldKeyEnum.FCM.getFieldKey());
         fcmService.sendStudyGroupAlarm(StudyGroupAlarmDto.builder()
                 .fcmToken(fcmToken)
                 .title(studyGroup.getStudyName())
@@ -142,7 +146,7 @@ public class StudyJoinedService {
         List<Long> idsByStudyGroupIdAndOauth2Id = studyJoinedRepository.findIdsByStudyGroupIdAndOauth2Id(studyGroupId, userId);
         studyJoinedRepository.deleteByIds(idsByStudyGroupIdAndOauth2Id);
 
-        redisService.deleteField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
+        redisService.deleteField(KeyPrefixEnum.DISCONNECTED.getKeyPrefix() + studyGroupId, userId.toString());
 
         groupChatMessageService.deleteAll(userId, studyGroupId);
     }
@@ -177,21 +181,21 @@ public class StudyJoinedService {
         Boolean changedAlarmSet = !isAlarmSet;
 
         studyJoined.changeAlarmSet(changedAlarmSet);
-
         studyJoinedRepository.save(studyJoined);
 
-        redisService.putFieldIfPresence(
-                RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId, changedAlarmSet);
+        redisService.putFieldIfPresence(KeyPrefixEnum.DISCONNECTED.getKeyPrefix() + studyGroupId,
+            userId.toString(), changedAlarmSet.toString());
     }
 
     @Transactional
     public void exitAll(Long userId) {
-        List<StudyJoined> joinedList = studyJoinedRepository.findByUserId(userId);
+        List<StudyJoined> joinedList = studyJoinedRepository.findAllByUserId(userId);
 
-        List<Long> studyGroupIds = joinedList.stream()
-                .map(studyJoined -> studyJoined.getStudyGroup().getId()).toList();
+        List<String> disConnectedKeys = joinedList.stream()
+            .map(Joined -> KeyPrefixEnum.DISCONNECTED.getKeyPrefix() + Joined.getStudyGroup().getId())
+            .toList();
 
-        redisService.deleteFieldInKeys(RedisKeyPrefixEnum.DISCONNECTED, studyGroupIds, userId);
+        redisService.deleteFieldInKeys(disConnectedKeys, userId.toString());
     }
 
     public List<StudyJoined> findAllInStudyGroupWithoutRecentReturnee(Long userId, Long studyGroupId) {
@@ -200,6 +204,6 @@ public class StudyJoinedService {
 
     protected void putDisConnectedUserIfActiveChat(Long userId, Long studyGroupId) {
         redisService.putFieldIfPresence(
-                RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId, true);
+                KeyPrefixEnum.DISCONNECTED.getKeyPrefix() + studyGroupId, userId.toString(), "true");
     }
 }

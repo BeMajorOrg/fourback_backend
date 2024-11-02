@@ -7,7 +7,8 @@ import com.fourback.bemajor.domain.studygroup.entity.GroupChatMessageEntity;
 import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
 import com.fourback.bemajor.domain.studygroup.service.GroupChatMessageService;
 import com.fourback.bemajor.domain.studygroup.service.StudyJoinedService;
-import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.enums.FieldKeyEnum;
+import com.fourback.bemajor.global.common.enums.KeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.FcmService;
 import com.fourback.bemajor.global.common.service.RedisService;
 import lombok.RequiredArgsConstructor;
@@ -81,10 +82,9 @@ public class GroupChatHandler extends TextWebSocketHandler {
         Long userId = ids.getLeft();
         Long studyGroupId = ids.getRight();
 
-        Boolean isAlarmSet = Boolean.valueOf(Objects.requireNonNull(session.getUri())
-                .getQuery().split("&")[1].split("=")[1]);
+        String isAlarmSet = Objects.requireNonNull(session.getUri()).getQuery().split("&")[1].split("=")[1];
 
-        redisService.putField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId, isAlarmSet);
+        redisService.putField(KeyPrefixEnum.DISCONNECTED.getKeyPrefix() + studyGroupId, userId.toString(), isAlarmSet);
 
         sessionsByStudyGroupId.get(studyGroupId).remove(session);
         UserGroupIdsBySession.remove(session);
@@ -107,7 +107,7 @@ public class GroupChatHandler extends TextWebSocketHandler {
     }
 
     private void updateDisConnectedUsersOnJoin(Long userId, Long studyGroupId) {
-        if (!redisService.hasKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId)) {
+        if (!redisService.hasKey(KeyPrefixEnum.DISCONNECTED.getKeyPrefix() + studyGroupId)) {
             List<StudyJoined> joinedList = studyJoinedService
                 .findAllInStudyGroupWithoutRecentReturnee(userId, studyGroupId);
 
@@ -115,9 +115,9 @@ public class GroupChatHandler extends TextWebSocketHandler {
                     studyJoined -> studyJoined.getUser().getId().toString(),
                     studyJoined -> studyJoined.getIsAlarmSet().toString()));
 
-            redisService.putFields(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, alarmSetByUserId);
+            redisService.putFields(KeyPrefixEnum.DISCONNECTED.getKeyPrefix() + studyGroupId, alarmSetByUserId);
         } else {
-            redisService.deleteField(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId, userId);
+            redisService.deleteField(KeyPrefixEnum.DISCONNECTED.getKeyPrefix() + studyGroupId, userId.toString());
         }
     }
 
@@ -133,13 +133,14 @@ public class GroupChatHandler extends TextWebSocketHandler {
                                                 OutgoingGroupChatMessageDto outgoingMessageDto,
                                                 IncomingGroupChatMessageDto incomingMessageDto) {
         Map<String, String> alarmSetByReceiverId = redisService.getEntries(
-                RedisKeyPrefixEnum.DISCONNECTED, studyGroupId);
+                KeyPrefixEnum.DISCONNECTED.getKeyPrefix() + studyGroupId);
 
         alarmSetByReceiverId.forEach((receiverId, isAlarm) -> {
             Long longReceiverId = Long.valueOf(receiverId);
             groupChatMessageService.asyncSave(longReceiverId, studyGroupId, outgoingMessageDto);
 
-            String fcmToken = redisService.getValue(RedisKeyPrefixEnum.FCM, longReceiverId);
+            String fcmToken = redisService.getFieldValue(
+                KeyPrefixEnum.TOKENS.getKeyPrefix() + longReceiverId, FieldKeyEnum.FCM.getFieldKey());
             if (Boolean.parseBoolean(isAlarm) && fcmToken != null) {
                 fcmService.sendGroupChatAlarm(incomingMessageDto, fcmToken);
             }

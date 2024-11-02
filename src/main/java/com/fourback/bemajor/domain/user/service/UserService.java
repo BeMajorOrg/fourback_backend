@@ -8,8 +8,8 @@ import com.fourback.bemajor.domain.user.dto.request.UserUpdateRequestDto;
 import com.fourback.bemajor.domain.user.dto.response.UserInquiryResponseDto;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
-import com.fourback.bemajor.global.common.enums.ExpiredTimeEnum;
-import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.enums.FieldKeyEnum;
+import com.fourback.bemajor.global.common.enums.KeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.NotFoundException;
 import com.fourback.bemajor.global.security.jwt.JWTUtil;
@@ -41,8 +41,8 @@ public class UserService {
         // refreshToken을 먼저 저장하고 fcm 토큰 저장해야 lru 조건 만족
         List<Pair<String, String>> tokens = jwtUtil.createTokens(user.getId(), user.getRole());
 
-        redisService.setValueWithExpiredTime(RedisKeyPrefixEnum.FCM, user.getId(),
-                requestDto.getFcmToken(), ExpiredTimeEnum.FCM);
+        redisService.putField(KeyPrefixEnum.TOKENS.getKeyPrefix() + user.getId(),
+            FieldKeyEnum.FCM.getFieldKey(), requestDto.getFcmToken());
 
         return tokens;
     }
@@ -72,9 +72,7 @@ public class UserService {
 
         userRepository.delete(user);
 
-        redisService.deleteKey(RedisKeyPrefixEnum.REFRESH, userId);
-
-        redisService.deleteKey(RedisKeyPrefixEnum.FCM, userId);
+        redisService.deleteKey(KeyPrefixEnum.TOKENS.getKeyPrefix() + userId);
     }
 
     @Transactional

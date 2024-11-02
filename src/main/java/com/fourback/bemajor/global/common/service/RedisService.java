@@ -1,7 +1,5 @@
 package com.fourback.bemajor.global.common.service;
 
-import com.fourback.bemajor.global.common.enums.ExpiredTimeEnum;
-import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
@@ -21,74 +19,71 @@ public class RedisService {
     //allKeys-lru 메모리 전략 사용
     private final StringRedisTemplate stringRedisTemplate;
 
-    public void setValueWithExpiredTime(RedisKeyPrefixEnum prefixEnum, Long id, String value, ExpiredTimeEnum expiredTimeEnum) {
-        stringRedisTemplate.opsForValue().set(prefixEnum.getKeyPrefix() + id,
-                value, expiredTimeEnum.getExpiredTime(), TimeUnit.MILLISECONDS);
+    public void setValueWithExpiredTime(String key, String value, long expiredTime) {
+        stringRedisTemplate.opsForValue().set(key, value, expiredTime, TimeUnit.MILLISECONDS);
     }
 
-    public void setValueWithExpiredTime(RedisKeyPrefixEnum prefixEnum, Long id, String value, long expiredTime) {
-        stringRedisTemplate.opsForValue().set(prefixEnum.getKeyPrefix() + id, value, expiredTime, TimeUnit.MILLISECONDS);
+    public void deleteKey(String key) {
+        stringRedisTemplate.delete(key);
     }
 
-    public void extendExpiration(RedisKeyPrefixEnum prefixEnum, Long id, ExpiredTimeEnum expiredTimeEnum) {
-        stringRedisTemplate.expire(prefixEnum.getKeyPrefix() + id, expiredTimeEnum.getExpiredTime(), TimeUnit.MILLISECONDS);
+    public String getValue(String key) {
+        return stringRedisTemplate.opsForValue().get(key);
     }
 
-    public void deleteKey(RedisKeyPrefixEnum prefixEnum, Long id) {
-        stringRedisTemplate.delete(prefixEnum.getKeyPrefix() + id);
+    public boolean hasKey(String key) {
+        return Boolean.TRUE.equals(stringRedisTemplate.hasKey(key));
     }
 
-    public String getValue(RedisKeyPrefixEnum prefixEnum, Long id) {
-        return stringRedisTemplate.opsForValue().get(prefixEnum.getKeyPrefix() + id);
-    }
-
-    public boolean hasKey(RedisKeyPrefixEnum prefixEnum, Long id) {
-        return Boolean.TRUE.equals(stringRedisTemplate.hasKey(prefixEnum.getKeyPrefix() + id));
-    }
-
-    public void putField(RedisKeyPrefixEnum prefixEnum, Long keyId, Long valueId, Boolean isAlarmSet) {
+    public void putField(String key, String fieldKey, String fieldValue) {
         HashOperations<String, String, String> operations = stringRedisTemplate.opsForHash();
-        operations.put(prefixEnum.getKeyPrefix() + keyId, valueId.toString(), isAlarmSet.toString());
+        operations.put(key, fieldKey, fieldValue);
     }
 
-    public void putFields(RedisKeyPrefixEnum prefixEnum, Long keyId, Map<String, String> values) {
-        if (values != null && !values.isEmpty()) {
+    public void putFieldWithExpiredTime(String key, String fieldKey, String fieldValue, long expiredTime) {
+        HashOperations<String, String, String> operations = stringRedisTemplate.opsForHash();
+        operations.put(key, fieldKey, fieldValue);
+        stringRedisTemplate.expire(key, expiredTime, TimeUnit.MILLISECONDS);
+    }
+
+    public void putFields(String key, Map<String, String> fields) {
+        if (fields != null && !fields.isEmpty()) {
             HashOperations<String, String, String> operations = stringRedisTemplate.opsForHash();
-            operations.putAll(prefixEnum.getKeyPrefix() + keyId, values);
+            operations.putAll(key, fields);
         }
     }
 
-    public void putFieldIfPresence(RedisKeyPrefixEnum prefixEnum,
-                                   Long keyId, Long valueId, Boolean isAlarmSet) {
+    public void putFieldIfPresence(String key, String fieldKey, String fieldValue) {
         String luaScript =
                 "local key = KEYS[1] " +
-                "local field = ARGV[1] " +
-                "local value = ARGV[2] " +
+                "local fieldKey = ARGV[1] " +
+                "local fieldValue = ARGV[2] " +
                 "if redis.call('EXISTS', key) == 1 then " +
-                "    redis.call('HSET', key, field, value) " +
+                "    redis.call('HSET', key, fieldKey, fieldValue) " +
                 "end";
 
-        String key = prefixEnum.getKeyPrefix() + keyId;
-        String field = valueId.toString();
-        String value = isAlarmSet.toString();
-
-        stringRedisTemplate.execute(new DefaultRedisScript<>(luaScript, String.class), singletonList(key), field, value);
+        stringRedisTemplate.execute(new DefaultRedisScript<>(luaScript, String.class),
+            singletonList(key), fieldKey, fieldValue);
     }
 
-    public Map<String, String> getEntries(RedisKeyPrefixEnum prefixEnum, Long id) {
+    public Map<String, String> getEntries(String key) {
         HashOperations<String, String, String> operations = stringRedisTemplate.opsForHash();
-        return operations.entries(prefixEnum.getKeyPrefix() + id);
+        return operations.entries(key);
     }
 
-    public void deleteField(RedisKeyPrefixEnum prefixEnum, Long keyId, Long valueId) {
+    public void deleteField(String key, String fieldKey) {
         HashOperations<String, String, String> operation = stringRedisTemplate.opsForHash();
-        operation.delete(prefixEnum.getKeyPrefix() + keyId, valueId.toString());
+        operation.delete(key, fieldKey);
     }
 
-    public void deleteFieldInKeys(RedisKeyPrefixEnum keyPrefixEnum, List<Long> keyIds, Long valueId) {
-        byte[] byteValueId = valueId.toString().getBytes();
-        List<byte[]> byteFilteredDisConnectedKeys = keyIds.stream()
-            .map(keyId -> (keyPrefixEnum.getKeyPrefix() + keyId).getBytes()).toList();
+    public String getFieldValue(String key, String fieldKey) {
+        HashOperations<String, String, String> operation = stringRedisTemplate.opsForHash();
+        return operation.get(key, fieldKey);
+    }
+
+    public void deleteFieldInKeys(List<String> keys, String fieldKey) {
+        byte[] byteFieldKey = fieldKey.getBytes();
+        List<byte[]> byteFilteredDisConnectedKeys = keys.stream().map(String::getBytes).toList();
 
         int batchSize = 100;
         for (int start = 0; start < byteFilteredDisConnectedKeys.size(); start += batchSize) {
@@ -97,7 +92,8 @@ public class RedisService {
             List<byte[]> tempByteKeys = byteFilteredDisConnectedKeys.subList(start, end);
 
             stringRedisTemplate.executePipelined((RedisCallback<?>) redisConnection -> {
-                tempByteKeys.forEach(tempByteKey -> redisConnection.hashCommands().hDel(tempByteKey, byteValueId));
+                tempByteKeys.forEach(tempByteKey -> redisConnection.hashCommands().hDel(tempByteKey,
+                    byteFieldKey));
                 return null;
             });
         }

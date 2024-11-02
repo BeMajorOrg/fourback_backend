@@ -1,6 +1,7 @@
 package com.fourback.bemajor.global.security.jwt;
 
-import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.enums.FieldKeyEnum;
+import com.fourback.bemajor.global.common.enums.KeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.InvalidTokenException;
 import com.fourback.bemajor.global.exception.kind.TokenExpiredException;
@@ -50,9 +51,11 @@ public class JWTFilter extends OncePerRequestFilter {
 
         Long userId = jwtUtil.getUserId(accessToken);
 
-        String logoutAccessToken = redisService.getValue(RedisKeyPrefixEnum.LOGOUT_ACCESS, userId);
+        String logoutAccessToken = redisService.getValue(KeyPrefixEnum.LOGOUT_ACCESS.getKeyPrefix() + userId);
+        String refreshToken = redisService.getFieldValue(
+            KeyPrefixEnum.TOKENS.getKeyPrefix() + userId, FieldKeyEnum.REFRESH.getFieldKey());
 
-        if (accessToken.equals(logoutAccessToken)) {
+        if (accessToken.equals(logoutAccessToken) || refreshToken == null) {
             throw new InvalidTokenException("Logout Access Token");
         }
 

@@ -1,7 +1,7 @@
 package com.fourback.bemajor.global.security.jwt;
 
-import com.fourback.bemajor.global.common.enums.ExpiredTimeEnum;
-import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.enums.FieldKeyEnum;
+import com.fourback.bemajor.global.common.enums.KeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.InvalidTokenException;
 import com.fourback.bemajor.global.exception.kind.TokenExpiredException;
@@ -51,7 +51,8 @@ public class ReissueTokenFilter extends OncePerRequestFilter {
 
             Long userId = jwtUtil.getUserId(refresh);
 
-            String refreshInRedis = redisService.getValue(RedisKeyPrefixEnum.REFRESH, userId);
+            String refreshInRedis = redisService.getFieldValue(
+                KeyPrefixEnum.TOKENS.getKeyPrefix() + userId, FieldKeyEnum.REFRESH.getFieldKey());
 
             if(!refresh.equals(refreshInRedis)) {
                 throw new InvalidTokenException("Unmatched Refresh Token in Redis");
@@ -61,8 +62,6 @@ public class ReissueTokenFilter extends OncePerRequestFilter {
 
             List<Pair<String, String>> pairs = jwtUtil.createTokens(userId, role);
             pairs.forEach(pair -> response.setHeader(pair.getLeft(), pair.getRight()));
-
-            redisService.extendExpiration(RedisKeyPrefixEnum.FCM, userId, ExpiredTimeEnum.FCM);
 
             response.setStatus(HttpServletResponse.SC_OK);
             return;

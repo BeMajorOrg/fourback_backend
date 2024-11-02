@@ -6,7 +6,7 @@ import com.fourback.bemajor.domain.studygroup.entity.StudyJoined;
 import com.fourback.bemajor.domain.studygroup.repository.*;
 import com.fourback.bemajor.domain.user.entity.UserEntity;
 import com.fourback.bemajor.domain.user.repository.UserRepository;
-import com.fourback.bemajor.global.common.enums.RedisKeyPrefixEnum;
+import com.fourback.bemajor.global.common.enums.KeyPrefixEnum;
 import com.fourback.bemajor.global.common.service.RedisService;
 import com.fourback.bemajor.global.exception.kind.NotAuthorizedException;
 import com.fourback.bemajor.global.exception.kind.NotFoundException;
@@ -95,7 +95,7 @@ public class StudyGroupService {
 
         groupChatMessageService.deleteAllFromStudyGroup(studyGroupId);
 
-        redisService.deleteKey(RedisKeyPrefixEnum.DISCONNECTED, studyGroupId);
+        redisService.deleteKey(KeyPrefixEnum.DISCONNECTED.getKeyPrefix() + studyGroupId);
 
         sessionsByStudyGroupId.remove(studyGroupId);
     }
