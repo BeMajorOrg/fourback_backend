@@ -1,6 +1,5 @@
 package com.fourback.bemajor.global.common.service;
 
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisCallback;
@@ -8,6 +7,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +18,7 @@ import static java.util.Collections.singletonList;
 public class RedisService {
     //allKeys-lru 메모리 전략 사용
     private final StringRedisTemplate stringRedisTemplate;
+    private final DefaultRedisScript<Void> hsetxxScript;
 
     public void setValueWithExpiredTime(String key, String value, long expiredTime) {
         stringRedisTemplate.opsForValue().set(key, value, expiredTime, TimeUnit.MILLISECONDS);
@@ -54,16 +55,7 @@ public class RedisService {
     }
 
     public void putFieldIfPresence(String key, String fieldKey, String fieldValue) {
-        String luaScript =
-                "local key = KEYS[1] " +
-                "local fieldKey = ARGV[1] " +
-                "local fieldValue = ARGV[2] " +
-                "if redis.call('EXISTS', key) == 1 then " +
-                "    redis.call('HSET', key, fieldKey, fieldValue) " +
-                "end";
-
-        stringRedisTemplate.execute(new DefaultRedisScript<>(luaScript, String.class),
-            singletonList(key), fieldKey, fieldValue);
+        stringRedisTemplate.execute(hsetxxScript, singletonList(key), fieldKey, fieldValue);
     }
 
     public Map<String, String> getEntries(String key) {
@@ -93,7 +85,7 @@ public class RedisService {
 
             stringRedisTemplate.executePipelined((RedisCallback<?>) redisConnection -> {
                 tempByteKeys.forEach(tempByteKey -> redisConnection.hashCommands().hDel(tempByteKey,
-                    byteFieldKey));
+                        byteFieldKey));
                 return null;
             });
         }
