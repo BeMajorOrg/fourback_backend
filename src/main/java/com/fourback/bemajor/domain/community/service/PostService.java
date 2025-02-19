@@ -1,7 +1,7 @@
 package com.fourback.bemajor.domain.community.service;
 
 
-import com.fourback.bemajor.domain.aws.service.S3UploadService;
+import com.fourback.bemajor.domain.aws.service.S3ImageService;
 import com.fourback.bemajor.domain.comment.entity.Comment;
 import com.fourback.bemajor.domain.comment.entity.FavoriteComment;
 import com.fourback.bemajor.domain.comment.repository.CommentRepository;
@@ -47,10 +47,10 @@ public class PostService {
     private final FavoritePostRepository favoritePostRepository;
     private final FavoriteCommentRepository favoriteCommentRepository;
     private final CommentRepository commentRepository;
-    private final S3UploadService s3UploadService;
+    private final S3ImageService s3ImageService;
 
     @Transactional
-    public Long create(PostDto postDto, Long userId, MultipartFile[] images) throws IOException {
+    public Long create(PostDto postDto, Long userId, List<String> imageUrls) throws IOException {
         Post post = new Post();
         Optional<Board> optionalBoard = boardRepository.findById((postDto.getBoardId()));
         Board board = optionalBoard.orElse(new Board());
@@ -61,7 +61,7 @@ public class PostService {
         post.setUser(userEntity);
         postRepository.save(post);
 
-        this.saveImages(post, images);
+        this.saveImages(post, imageUrls);
 
         return post.getId();
     }
@@ -198,7 +198,7 @@ public class PostService {
     }
 
     @Transactional
-    public ResponseEntity<String> update(Long postId, String title, String content, MultipartFile[] images) throws IOException {
+    public ResponseEntity<String> update(Long postId, String title, String content, List<String> images) throws IOException {
         Optional<Post> optionalPost = postRepository.findById(postId);
         Post post = optionalPost.get();
         post.setTitle(title);
@@ -291,10 +291,9 @@ public class PostService {
         this.deleteImagesFromS3AndDB(images);
     }
 
-    private void saveImages(Post post, MultipartFile[] files) throws IOException {
-        if (files != null) {
-            for (MultipartFile file : files) {
-                String imageUrl = s3UploadService.saveFile(file);
+    private void saveImages(Post post, List<String> imageUrls) throws IOException {
+        if (imageUrls != null) {
+            for (String imageUrl : imageUrls) {
                 ImageEntity image = ImageEntity.of(post, imageUrl);
                 imageRepository.save(image);
             }
@@ -316,7 +315,7 @@ public class PostService {
     private void deleteImagesFromS3AndDB(List<ImageEntity> images) {
         if (!images.isEmpty()) {
             List<String> imageUrls = images.stream().map(ImageEntity::getImageUrl).toList();
-            s3UploadService.deleteFiles(imageUrls);
+            s3ImageService.deleteFiles(imageUrls);
             imageRepository.deleteAllInBatch(images);
         }
     }

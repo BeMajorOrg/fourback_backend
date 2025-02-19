@@ -1,6 +1,6 @@
 package com.fourback.bemajor.domain.user.service;
 
-import com.fourback.bemajor.domain.aws.service.S3UploadService;
+import com.fourback.bemajor.domain.aws.service.S3ImageService;
 import com.fourback.bemajor.domain.studygroup.service.GroupChatMessageService;
 import com.fourback.bemajor.domain.studygroup.service.StudyJoinedService;
 import com.fourback.bemajor.domain.user.dto.request.UserLoginRequestDto;
@@ -17,7 +17,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,7 +27,7 @@ public class UserService {
     private final JWTUtil jwtUtil;
     private final RedisService redisService;
     private final UserRepository userRepository;
-    private final S3UploadService s3UploadService;
+    private final S3ImageService s3ImageService;
     private final StudyJoinedService studyJoinedService;
     private final GroupChatMessageService groupChatMessageService;
 
@@ -42,7 +41,7 @@ public class UserService {
         List<Pair<String, String>> tokens = jwtUtil.createTokens(user.getId(), user.getRole());
 
         redisService.putField(KeyPrefixEnum.TOKENS.getKeyPrefix() + user.getId(),
-            FieldKeyEnum.FCM.getFieldKey(), requestDto.getFcmToken());
+                FieldKeyEnum.FCM.getFieldKey(), requestDto.getFcmToken());
 
         return tokens;
     }
@@ -76,10 +75,8 @@ public class UserService {
     }
 
     @Transactional
-    public String saveImage(MultipartFile file, Long userId) throws IOException {
+    public String saveImage(String imageUrl, Long userId) throws IOException {
         UserEntity user = this.getUserById(userId);
-
-        String imageUrl = s3UploadService.saveFile(file);
 
         user.setImageUrl(imageUrl);
         userRepository.save(user);
@@ -91,7 +88,7 @@ public class UserService {
     public void deleteImage(Long userId) {
         UserEntity user = this.getUserById(userId);
 
-        s3UploadService.deleteFile(user.getImageUrl());
+        s3ImageService.deleteFile(user.getImageUrl());
 
         user.setImageUrl(null);
         userRepository.save(user);
@@ -116,7 +113,7 @@ public class UserService {
 
     private void deleteImageFromS3(UserEntity user) {
         String imageUrl = user.getImageUrl();
-        s3UploadService.deleteFile(imageUrl);
+        s3ImageService.deleteFile(imageUrl);
     }
 
     private UserEntity getUserById(Long userId) {

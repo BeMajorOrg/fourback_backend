@@ -50,9 +50,9 @@ public class UserController {
     }
 
     @PostMapping("/image")
-    public ResponseEntity<?> saveImage(@RequestParam("file") MultipartFile file,
+    public ResponseEntity<?> saveImage(@RequestParam("imageUrl") String imageUrl,
                                        @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
-        String imageUrl = userService.saveImage(file, userDetails.getUserId());
+        String savedImageUrl = userService.saveImage(imageUrl, userDetails.getUserId());
         return ResponseUtil.onSuccess(imageUrl);
     }
 

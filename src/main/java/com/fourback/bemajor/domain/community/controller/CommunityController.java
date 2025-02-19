@@ -34,7 +34,7 @@ public class CommunityController {
                               @RequestParam("content") String content,
                               @RequestParam("boardId") Long boardId,
                              @AuthenticationPrincipal CustomUserDetails customUserDetails,
-                             @RequestParam(value = "images", required = false) MultipartFile[] images) throws IOException {
+                             @RequestParam(value = "images", required = false) List<String> images) throws IOException {
         Long userId = customUserDetails.getUserId();
         PostDto postDto = new PostDto();
         postDto.setTitle(title);
@@ -96,7 +96,7 @@ public class CommunityController {
     public ResponseEntity<String> updatePost(@PathVariable("id") Long postId,
                                              @RequestParam("title") String title,
                                              @RequestParam("content") String content,
-                                             @RequestParam(value = "images", required = false) MultipartFile[] images) throws IOException {
+                                             @RequestParam(value = "images", required = false) List<String> images) throws IOException {
         return postService.update(postId,title,content,images);
 
     }
